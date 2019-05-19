@@ -9,7 +9,19 @@ import scotty.simulator.QuantumSim.Implicits._
 case class SimState(data: Array[Complex]) extends State {
   lazy val fieldVector = new ArrayFieldVector[ApacheComplex](data, false)
 
+  def map(f: ApacheComplex => ApacheComplex): SimState = {
+    val resultVector = new ArrayFieldVector(ComplexField.getInstance, fieldVector.getDimension)
+
+    for (index <- 0 until fieldVector.getDimension) {
+      resultVector.setEntry(index, f(fieldVector.getEntry(index)))
+    }
+
+    SimState(resultVector.getData)
+  }
+
   def ⊗(state: SimState): SimState = kroneckerProduct(state)
+
+  def scalarProduct(factor: Complex): SimState = map(entry => entry.multiply(factor))
 
   def kroneckerProduct(state: SimState): SimState = {
     if (data.length == 0) {

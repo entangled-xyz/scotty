@@ -2,8 +2,6 @@ package scotty.simulator
 
 import scotty.quantum.QuantumMachine
 import scotty.quantum.QuantumMachine._
-
-import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
 import scala.util.{Failure, Random, Success, Try}
 import org.apache.commons.math3.complex.{Complex => ApacheComplex}
@@ -31,6 +29,8 @@ case class QuantumSim(random: Random) extends QuantumMachine {
 
   def indexOf(qubit: Qubit): Int = storage.indexOf(qubit)
 
+  // may be this should return `Unit` and State should be represented with a sum type that is
+  // in superposition by default and can be collapsed by a measurement
   def applyOp(qubit: Qubit)(op: Op): State = {
     val stepOp = qubits.map(q => {
       if (q == qubit) op
@@ -75,14 +75,4 @@ object QuantumSim {
   }
 
   def apply(): QuantumSim = this(new scala.util.Random)
-
-  def toBinary(n: Long): Seq[Long] = {
-    @tailrec
-    def binary(acc: Seq[Long], n: Long): Seq[Long] = n match {
-      case 0 | 1 => n +: acc
-      case _ => binary((n % 2) +: acc, n / 2)
-    }
-
-    binary(Seq(), n)
-  }
 }

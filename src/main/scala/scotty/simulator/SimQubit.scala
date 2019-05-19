@@ -12,4 +12,9 @@ object SimQubit {
   def one: (Complex, Complex) = (Complex(0), Complex(1))
 
   def zero: (Complex, Complex) = (Complex(1), Complex(0))
+
+  def from(n: (Complex, Complex)): Complex = n match {
+    case (Complex(1, 0), Complex(0, 0)) => Complex(0)
+    case (Complex(0, 0), Complex(1, 0)) => Complex(1)
+  }
 }
