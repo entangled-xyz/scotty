@@ -1,7 +1,7 @@
 package scotty.simulator
 
 import scotty.quantum.QuantumContext
-import scotty.quantum.QuantumContext.{Complex, Op, State}
+import scotty.quantum.QuantumContext.{Complex, Gate, Op, State}
 import scotty.simulator.math.LinearAlgebra.VectorTransformations
 import scotty.simulator.math.Implicits._
 
@@ -14,7 +14,7 @@ case class StateWithVector(rawVector: Array[Complex])
     else StateWithVector((this ⊗ StateWithVector(state).fieldVector).getData)
   }
 
-  def applyOp(op: Op): State = StateWithVector(OpWithMatrix(op).product(fieldVector).getData)
+  def applyGate(gate: Gate): State = StateWithVector(GateWithMatrix(gate).product(fieldVector).getData)
 }
 
 object StateWithVector {

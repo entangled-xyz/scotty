@@ -28,38 +28,35 @@ case class QuantumSimulator(random: Random) extends QuantumContext {
   def add(op: Op): Unit = opsQueue.enqueue((op, op.qs))
 
   def run(): Unit = {
-    def pad(op: Op, qs: Seq[Qubit]): Seq[Op] = {
-      def padTop(op: Op): Seq[Op] = (0 until qs.sortWith(_.index < _.index)(0).index).map(_ => op)
-      def padBottom(op: Op): Seq[Op] = (qs.sortWith(_.index > _.index)(0).index until register.length - 1).map(_ => op)
-
-      (padTop(I()(this)) :+ op) ++ padBottom(I()(this))
-    }
-
     mutableState = opsQueue
       .dequeueAll(_ => true)
-        .map(pair => prepareOp(pair._1, pair._2))
-        .foldLeft(mutableState)((state, op) => StateWithVector(state.applyOp(op).vector())(this))
+      .flatMap {
+        case (gate: Gate, qs) => Some((gate, qs))
+        case _ => None
+      }
+      .map(pair => prepareGate(pair._1, pair._2))
+      .foldLeft(mutableState)((state, op) => StateWithVector(state.applyGate(op).vector())(this))
   }
 
-  def prepareOp(op: Op, qs: Seq[Qubit]): Op = {
-    def pad(op: Op, qs: Seq[Qubit]): Seq[Op] = {
-      def padTop(op: Op): Seq[Op] = (0 until qs.sortWith(_.index < _.index)(0).index).map(_ => op)
-      def padBottom(op: Op): Seq[Op] = (qs.sortWith(_.index > _.index)(0).index until register.length - 1).map(_ => op)
+  def prepareGate(gate: Gate, qs: Seq[Qubit]): Gate = {
+    def pad(g: Gate, qs: Seq[Qubit]): Seq[Gate] = {
+      def padTop(g: Gate): Seq[Gate] = (0 until qs.sortWith(_.index < _.index)(0).index).map(_ => g)
+      def padBottom(g: Gate): Seq[Gate] = (qs.sortWith(_.index > _.index)(0).index until register.length - 1).map(_ => g)
 
-      (padTop(I()(this)) :+ op) ++ padBottom(I()(this))
+      (padTop(I()(this)) :+ g) ++ padBottom(I()(this))
     }
 
-    pad(op, qs).reduce((a, b) => a combine b)
+    pad(gate, qs).reduce((a, b) => a combine b)
   }
 
-  def combineOps(op1: Op, op2: Op): Op = OpWithMatrix(op1)(this) combine op2
+  def combineGates(g1: Gate, g2: Gate): Gate= GateWithMatrix(g1)(this) combine g2
 
-  def isUnitary(op: Op): Boolean = OpWithMatrix(op)(this).isUnitaryMatrix
+  def isUnitary(g: Gate): Boolean = GateWithMatrix(g)(this).isUnitaryMatrix
 
-  def matrixGenerator(op: Op): () => Matrix = () => {
+  def matrixGenerator(gate: Gate): () => Matrix = () => {
     implicit val _ = this
 
-    op match {
+    gate match {
       case I(_) => Gate.I
       case X(_) => Gate.X
       case C(g, qs) =>

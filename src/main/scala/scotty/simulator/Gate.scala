@@ -1,7 +1,7 @@
 package scotty.simulator
 
 import scotty.quantum.QuantumContext
-import scotty.quantum.QuantumContext.{Complex, Op}
+import scotty.quantum.QuantumContext.{Complex, Gate, Op}
 import scotty.simulator.math.MathUtils
 
 object Gate {
@@ -15,7 +15,7 @@ object Gate {
     Array(Complex(1), Complex(0))
   )
 
-  def C(gate: Op, gap: Int, isFlipped: Boolean)(implicit ctx: QuantumContext): Array[Array[Complex]] = {
+  def C(gate: Gate, gap: Int, isFlipped: Boolean)(implicit ctx: QuantumContext): Array[Array[Complex]] = {
     def toBasisState(n: Complex): (Complex, Complex) = n match {
       case Complex(1, _) => (Complex(0), Complex(1))
       case Complex(0, _) => (Complex(1), Complex(0))
@@ -31,7 +31,7 @@ object Gate {
 
       if (binary(controlIndex) == Complex(1)) {
         val state = StateWithVector(toBasisState(binary(targetIndex)))
-        val data = (state applyOp gate).vector()
+        val data = (state applyGate gate).vector()
 
         binary(targetIndex) = Complex(toBinary((data(0), data(1))))
       }
