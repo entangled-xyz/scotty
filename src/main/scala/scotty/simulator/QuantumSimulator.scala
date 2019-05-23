@@ -5,6 +5,7 @@ import scotty.quantum.QuantumContext._
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
 import scala.collection.mutable
+import scotty.simulator.math.Implicits._
 
 case class QuantumSimulator(random: Random) extends QuantumContext {
   private val register = ListBuffer[Qubit]()
@@ -53,7 +54,7 @@ case class QuantumSimulator(random: Random) extends QuantumContext {
 
   def combineOps(op1: Op, op2: Op): Op = OpWithMatrix(op1)(this) combine op2
 
-  def isUnitary(op: Op): Boolean = ??? // (T * toMatrix(this.data)).round == identity
+  def isUnitary(op: Op): Boolean = OpWithMatrix(op)(this).isUnitaryMatrix
 
   def matrixGenerator(op: Op): () => Matrix = () => {
     implicit val _ = this

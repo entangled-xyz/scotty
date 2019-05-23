@@ -16,16 +16,12 @@ object LinearAlgebra {
     lazy val rowCount: Int = fieldMatrix.getRowDimension
     lazy val columnCount: Int = fieldMatrix.getColumnDimension
 
-    def toMatrix(array: Array[Array[Complex]]) = new Matrix(array, false)
+    def map(m: Matrix, f: ApacheComplex => ApacheComplex): Matrix = {
+      val resultMatrix = new Array2DRowFieldMatrix(ComplexField.getInstance, m.getRowDimension, m.getColumnDimension)
 
-    def toVector(array: Array[Complex]) = new Vector(array, false)
-
-    def map(f: ApacheComplex => ApacheComplex): Matrix = {
-      val resultMatrix = new Array2DRowFieldMatrix(ComplexField.getInstance, rowCount, columnCount)
-
-      for (rowIndex <- 0 until rowCount) {
-        for (columnIndex <- 0 until columnCount) {
-          resultMatrix.setEntry(rowIndex, columnIndex, f(fieldMatrix.getEntry(rowIndex, columnIndex)))
+      for (rowIndex <- 0 until m.getRowDimension) {
+        for (columnIndex <- 0 until m.getColumnDimension) {
+          resultMatrix.setEntry(rowIndex, columnIndex, f(m.getEntry(rowIndex, columnIndex)))
         }
       }
 
@@ -42,18 +38,29 @@ object LinearAlgebra {
 
     def T: Matrix = conjugateTranspose
 
-    def round: Matrix = map(entry => Complex(MathUtils.round(entry.getReal), MathUtils.round(entry.getImaginary)))
+    def isUnitaryMatrix: Boolean = equals(round(product(T, fieldMatrix)), identity)
+
+    def round(m: Matrix): Matrix =
+      map(m, entry => Complex(MathUtils.round(entry.getReal), MathUtils.round(entry.getImaginary)))
+
+    def round: Matrix = round(fieldMatrix)
 
     def conjugateTranspose: Matrix = new Matrix(fieldMatrix.transpose().getData.map(c => c.map(v => v.conjugate())), false)
 
     def identity: Matrix =
       new Matrix(MatrixUtils.createFieldIdentityMatrix(ComplexField.getInstance, rowCount).getData, false)
 
-    def product(m: Matrix): Matrix = fieldMatrix.multiply(m)
+    def product(m: Matrix): Matrix = product(fieldMatrix, m)
 
-    def ==(m: Matrix): Boolean = fieldMatrix.equals(m)
+    def product(m1: Matrix, m2: Matrix): Matrix = m1.multiply(m2)
 
-    def scalarProduct(factor: Complex): Matrix = map(entry => entry.multiply(factor))
+    def ==(m: Matrix): Boolean = equals(m)
+
+    def equals(m: Matrix): Boolean = equals(fieldMatrix, m)
+
+    def equals(m1: Matrix, m2: Matrix): Boolean = m1.equals(m2)
+
+    def scalarProduct(factor: Complex): Matrix = map(fieldMatrix, entry => entry.multiply(factor))
 
     def product(v: Vector): Vector = {
       val resultVector = new Vector(ComplexField.getInstance, v.getDimension)
