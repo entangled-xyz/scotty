@@ -32,15 +32,13 @@ object LinearAlgebra {
       resultMatrix
     }
 
-    def *(v: Matrix): Matrix = product(v)
+    def *(m: Matrix): Matrix = product(m)
 
     def *(v: Vector): Vector = product(v)
 
     def *(factor: Complex): Matrix = scalarProduct(factor)
 
-    def ⋅(v: Vector): Vector = product(v)
-
-    def ⊗(v: Matrix): Matrix = kroneckerProduct(v)
+    def ⊗(m: Matrix): Matrix = kroneckerProduct(m)
 
     def T: Matrix = conjugateTranspose
 
@@ -109,22 +107,22 @@ object LinearAlgebra {
       resultVector
     }
 
-    def ⊗(state: Vector): Vector = kroneckerProduct(state)
+    def ⊗(v: Vector): Vector = kroneckerProduct(v)
 
     def *(factor: Complex): Vector = scalarProduct(factor)
 
     def scalarProduct(factor: Complex): Vector = map(entry => entry.multiply(factor))
 
-    def kroneckerProduct(state: Vector): Vector = {
+    def kroneckerProduct(v: Vector): Vector = {
       val v1Size = fieldVector.getDimension
-      val v2Size = state.getDimension
+      val v2Size = v.getDimension
       val resultVector = new ArrayFieldVector(ComplexField.getInstance, v1Size * v2Size)
 
       for (v1Index <- 0 until v1Size) {
         for (v2Index <- 0 until v2Size) {
           resultVector.setEntry(
             (v1Index * v2Size) + v2Index,
-            fieldVector.getEntry(v1Index).multiply(state.getEntry(v2Index))
+            fieldVector.getEntry(v1Index).multiply(v.getEntry(v2Index))
           )
         }
       }

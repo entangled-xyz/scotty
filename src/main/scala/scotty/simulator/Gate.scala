@@ -2,7 +2,6 @@ package scotty.simulator
 
 import scotty.quantum.QuantumContext
 import scotty.quantum.QuantumContext.{Complex, Op}
-import scotty.simulator.QuantumSimulator.StateWithVector
 import scotty.simulator.math.MathUtils
 
 object Gate {
@@ -32,7 +31,7 @@ object Gate {
 
       if (binary(controlIndex) == Complex(1)) {
         val state = StateWithVector(toBasisState(binary(targetIndex)))
-        val data = (state applyOp gate).vector
+        val data = (state applyOp gate).vector()
 
         binary(targetIndex) = Complex(toBinary((data(0), data(1))))
       }

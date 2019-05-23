@@ -2,8 +2,6 @@ package scotty.simulator
 
 import scotty.quantum.QuantumContext
 import scotty.quantum.QuantumContext._
-import scotty.simulator.QuantumSimulator.{OpWithMatrix, StateWithVector}
-import scotty.simulator.math.LinearAlgebra.{MatrixTransformations, VectorTransformations}
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
 import scala.collection.mutable
@@ -39,7 +37,7 @@ case class QuantumSimulator(random: Random) extends QuantumContext {
     mutableState = opsQueue
       .dequeueAll(_ => true)
         .map(pair => prepareOp(pair._1, pair._2))
-        .foldLeft(mutableState)((state, op) => StateWithVector(state.applyOp(op).vector)(this))
+        .foldLeft(mutableState)((state, op) => StateWithVector(state.applyOp(op).vector())(this))
   }
 
   def prepareOp(op: Op, qs: Seq[Qubit]): Op = {
@@ -74,38 +72,5 @@ case class QuantumSimulator(random: Random) extends QuantumContext {
 }
 
 object QuantumSimulator {
-  import scotty.simulator.math.Implicits._
-
-  case class StateWithVector(rawVector: Array[Complex])
-                            (implicit val computer: QuantumContext) extends State with VectorTransformations {
-    val vector = rawVector
-
-    def combine(state: State): StateWithVector = {
-      if (rawVector.length == 0) StateWithVector(state.vector)
-      else StateWithVector((this ⊗ StateWithVector(state).fieldVector).getData)
-    }
-
-    def applyOp(op: Op): State = StateWithVector(OpWithMatrix(op).product(fieldVector).getData)
-  }
-
-  object StateWithVector {
-    def apply()(implicit ctx: QuantumContext): StateWithVector = this(Array[Complex]())
-    def apply(base: (Complex, Complex))(implicit ctx: QuantumContext): StateWithVector = this(Array(base._1, base._2))
-    def apply(state: State)(implicit ctx: QuantumContext): StateWithVector = this(state.vector)
-  }
-
-  case class OpWithMatrix(rawMatrix: Array[Array[Complex]])
-                         (implicit val computer: QuantumContext) extends Op with MatrixTransformations {
-    val qs: Seq[Qubit] = Seq() // qubits don't matter in this context
-
-    override lazy val matrixGenerator = () => rawMatrix
-
-    override def combine(op: Op): OpWithMatrix = OpWithMatrix((this ⊗ OpWithMatrix(op).fieldMatrix).getData)
-  }
-
-  object OpWithMatrix {
-    def apply(op: Op)(implicit ctx: QuantumContext): OpWithMatrix = this(op.matrixGenerator.apply())
-  }
-
   def apply(): QuantumSimulator = this(new scala.util.Random)
 }

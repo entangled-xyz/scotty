@@ -50,18 +50,18 @@ object QuantumContext {
   trait State {
     implicit val computer: QuantumContext
 
-    val vector: Vector
+    lazy val qubitCount: Int = (Math.log10(vector().length) / Math.log10(2)).toInt
 
-    lazy val qubitCount: Int = (Math.log10(vector.length) / Math.log10(2)).toInt
+    def vector(): Vector
 
     def applyOp(op: Op): State
 
     def combine(state: State): State
 
-    override def toString: String = vector.toList.mkString("\n")
+    override def toString: String = vector().toList.mkString("\n")
 
     def collapsedValues: Option[Seq[Long]] = {
-      val index = vector.indexWhere(v => v.r == 1)
+      val index = vector().indexWhere(v => v.r == 1)
 
       if (index == -1) None
       else {
