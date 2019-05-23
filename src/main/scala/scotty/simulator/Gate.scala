@@ -1,7 +1,7 @@
 package scotty.simulator
 
-import scotty.quantum.QuantumComputer
-import scotty.quantum.QuantumComputer.{Complex, Op}
+import scotty.quantum.QuantumContext
+import scotty.quantum.QuantumContext.{Complex, Op}
 import scotty.simulator.QuantumSimulator.StateWithVector
 import scotty.simulator.math.MathUtils
 
@@ -16,7 +16,7 @@ object Gate {
     Array(Complex(1), Complex(0))
   )
 
-  def C(gate: Op, gap: Int, isFlipped: Boolean)(implicit machine: QuantumComputer): Array[Array[Complex]] = {
+  def C(gate: Op, gap: Int, isFlipped: Boolean)(implicit ctx: QuantumContext): Array[Array[Complex]] = {
     def toBasisState(n: Complex): (Complex, Complex) = n match {
       case Complex(1, _) => (Complex(0), Complex(1))
       case Complex(0, _) => (Complex(1), Complex(0))

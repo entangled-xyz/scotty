@@ -1,6 +1,6 @@
 package scotty.simulator.math
 
-import scotty.quantum.QuantumComputer.Complex
+import scotty.quantum.QuantumContext.Complex
 import org.apache.commons.math3.complex.{Complex => ApacheComplex}
 
 object Implicits {
