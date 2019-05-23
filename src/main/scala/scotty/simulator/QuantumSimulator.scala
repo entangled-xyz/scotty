@@ -10,16 +10,14 @@ import scala.collection.mutable
 
 case class QuantumSimulator(random: Random) extends QuantumComputer {
   private val register = ListBuffer[Qubit]()
-  private var mutableState = StateWithVector()(this) // TODO: change this to val
+  private var mutableState = StateWithVector()(this)
   private val opsQueue = mutable.Queue[(Op, Seq[Qubit])]()
 
   def allocate(n: Int): Seq[Qubit] = allocate(Qubit.zero, n)
 
   def allocate(qubitState: (Complex, Complex), n: Int): Seq[Qubit] = {
     (0 until n).foldLeft(register)((qs, index) => {
-      mutableState =
-        if (mutableState.rawVector.length == 0) StateWithVector(qubitState)(this)
-        else mutableState combine StateWithVector(qubitState)(this)
+      mutableState = mutableState.combine(StateWithVector(qubitState)(this))
       qs += Qubit(index)
     }).toList
   }
@@ -30,7 +28,7 @@ case class QuantumSimulator(random: Random) extends QuantumComputer {
 
   def add(op: Op): Unit = opsQueue.enqueue((op, op.qs))
 
-  def run: Unit = {
+  def run(): Unit = {
     def pad(op: Op, qs: Seq[Qubit]): Seq[Op] = {
       def padTop(op: Op): Seq[Op] = (0 until qs.sortWith(_.index < _.index)(0).index).map(_ => op)
       def padBottom(op: Op): Seq[Op] = (qs.sortWith(_.index > _.index)(0).index until register.length - 1).map(_ => op)
@@ -60,7 +58,7 @@ case class QuantumSimulator(random: Random) extends QuantumComputer {
         Gate.C(g,
           Math.abs(indices.reduceLeft(_ - _)) - 1,
           indices.sliding(2).forall { case Seq(x, y) => x > y })
-      case CNOT(q1, q2) => matrixGenerator(C(X(q2), Seq(q1, q2))).apply()
+      case CNOT(qs) => matrixGenerator(C(X(), qs)).apply()
     }
   }
 }
@@ -72,16 +70,18 @@ object QuantumSimulator {
                             (implicit val computer: QuantumComputer) extends State with VectorTransformations {
     val vector = rawVector
 
-    def combine(newState: StateWithVector): StateWithVector =
-      StateWithVector((this ⊗ StateWithVector(newState.rawVector).fieldVector).getData)
+    def combine(state: State): StateWithVector = {
+      if (rawVector.length == 0) StateWithVector(state.vector)
+      else StateWithVector((this ⊗ StateWithVector(state).fieldVector).getData)
+    }
 
-    override def applyOp(newOp: Op): State = StateWithVector(OpWithMatrix(newOp).product(fieldVector).getData)
+    def applyOp(op: Op): State = StateWithVector(OpWithMatrix(op).product(fieldVector).getData)
   }
 
   object StateWithVector {
     def apply()(implicit machine: QuantumComputer): StateWithVector = this(Array[Complex]())
     def apply(tuple: (Complex, Complex))(implicit machine: QuantumComputer): StateWithVector = this(Array(tuple._1, tuple._2))
-    def apply(op: State)(implicit machine: QuantumComputer): OpWithMatrix = this(op)
+    def apply(state: State)(implicit machine: QuantumComputer): StateWithVector = this(state.vector)
   }
 
   case class OpWithMatrix(rawMatrix: Array[Array[Complex]])
@@ -90,7 +90,7 @@ object QuantumSimulator {
 
     override lazy val matrixGenerator = () => rawMatrix
 
-    override def combine(newOp: Op): OpWithMatrix = OpWithMatrix((this ⊗ OpWithMatrix(newOp).fieldMatrix).getData)
+    override def combine(op: Op): OpWithMatrix = OpWithMatrix((this ⊗ OpWithMatrix(op).fieldMatrix).getData)
   }
 
   object OpWithMatrix {

@@ -5,7 +5,6 @@ import scotty.quantum.QuantumComputer.{Complex, Op}
 import scotty.simulator.QuantumSimulator.StateWithVector
 import scotty.simulator.math.MathUtils
 
-// array of rows
 object Gate {
   val I = Array(
     Array(Complex(1), Complex(0)),

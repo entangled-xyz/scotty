@@ -2,6 +2,7 @@ package scotty.quantum
 
 import scotty.quantum.QuantumComputer._
 import scotty.simulator.QuantumSimulator
+import scotty.simulator.QuantumSimulator.StateWithVector
 import scotty.simulator.math.MathUtils
 
 trait QuantumComputer {
@@ -17,7 +18,7 @@ trait QuantumComputer {
   def add(op: Op): Unit
 
   // TODO: this should return Try
-  def run: Unit
+  def run(): Unit
 
   def matrixGenerator(gate: Op): () => Matrix
 
@@ -57,6 +58,8 @@ object QuantumComputer {
 
     def applyOp(op: Op): State
 
+    def combine(state: State): State
+
     override def toString: String = vector.toList.mkString("\n")
 
     def collapsedValues: Option[Seq[Long]] = {
@@ -80,39 +83,38 @@ object QuantumComputer {
 
     lazy val matrixGenerator: () => Matrix = computer.matrixGenerator(this)
 
-    def initAndAddToComputer[T <: Op](): T = {
-      computer.add(this)
-      this.asInstanceOf[T]
-    }
-
-    def addToComputer(): Unit = computer.add(this)
-
     def combine(op: Op): Op = computer.combineOps(this, op)
 
     override def toString: String = matrixGenerator.apply().toList.map(_.toList.mkString(" ")).mkString("\n")
+
+    protected def addToComputer[T <: Op](): T = {
+      computer.add(this)
+      this.asInstanceOf[T]
+    }
   }
 
   case class X(qs: Seq[Qubit])(implicit val computer: QuantumComputer) extends Op
   object X {
-    def apply(q: Qubit)(implicit machine: QuantumComputer): X = this(Seq(q)).initAndAddToComputer()
+    def apply(q: Qubit)(implicit machine: QuantumComputer): X = this(Seq(q)).addToComputer()
     def apply()(implicit machine: QuantumComputer): X = this(Seq())
   }
 
   case class I(qs: Seq[Qubit])(implicit val computer: QuantumComputer) extends Op
   object I {
-    def apply(q: Qubit)(implicit machine: QuantumComputer): I = this(Seq(q)).initAndAddToComputer()
+    def apply(q: Qubit)(implicit machine: QuantumComputer): I = this(Seq(q)).addToComputer()
     def apply()(implicit machine: QuantumComputer): I = this(Seq())
   }
 
   case class C(gate: Op, qs: Seq[Qubit])(implicit val computer: QuantumComputer) extends Op
   object C {
-//    def apply(gate: Op, controlQ: Qubit)(implicit machine: QuantumComputer): C =
-//      this(gate, controlQ +: gate.qs).initAndAddToComputer()
     def apply(gate: Op, controlQ: Qubit, targetQ: Qubit)(implicit machine: QuantumComputer): C =
-      this(gate, Seq(controlQ, targetQ)).initAndAddToComputer()
+      this(gate, Seq(controlQ, targetQ)).addToComputer()
   }
 
-  case class CNOT(controlQ: Qubit, targetQ: Qubit)(implicit val computer: QuantumComputer) extends Op {
-    val qs: Seq[Qubit] = Seq(controlQ, targetQ)
+  case class CNOT(qs: Seq[Qubit])(implicit val computer: QuantumComputer) extends Op
+
+  object CNOT {
+    def apply(controlQ: Qubit, targetQ: Qubit)(implicit machine: QuantumComputer): CNOT =
+      this(Seq(controlQ, targetQ)).addToComputer()
   }
 }
