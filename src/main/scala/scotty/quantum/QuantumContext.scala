@@ -13,12 +13,10 @@ trait QuantumContext {
   def state: State
 
   // TODO: this should return Try
-  def add(op: Op): Unit
+  def addToCircuit(op: Op): Unit
 
   // TODO: this should return Try
   def run(): Unit
-
-  def matrixGenerator(gate: Gate): () => Matrix
 
   def combineGates(gate1: Gate, gate2: Gate): Gate
 
@@ -56,7 +54,7 @@ object QuantumContext {
 
     def applyGate(gate: Gate): State
 
-    def combine(state: State): State
+    def parCombination(state: State): State
 
     override def toString: String = vector().toList.mkString("\n")
 
@@ -75,43 +73,19 @@ object QuantumContext {
   trait Op {
     implicit val computer: QuantumContext
     val qs: Seq[Qubit]
-
-    protected def addToComputer[T <: Op](): T = {
-      computer.add(this)
-      this.asInstanceOf[T]
-    }
   }
 
   trait Gate extends Op {
-    lazy val matrixGenerator: () => Matrix = computer.matrixGenerator(this)
     lazy val isUnitary: Boolean = computer.isUnitary(this)
 
     def combine(gate: Gate): Gate = computer.combineGates(this, gate)
 
-    override def toString: String = matrixGenerator.apply().toList.map(_.toList.mkString(" ")).mkString("\n")
+    def matrix(): Matrix
+
+    override def toString: String = matrix().toList.map(_.toList.mkString(" ")).mkString("\n")
   }
 
-  case class X(qs: Seq[Qubit])(implicit val computer: QuantumContext) extends Gate
-  object X {
-    def apply(q: Qubit)(implicit ctx: QuantumContext): X = this(Seq(q)).addToComputer()
-    def apply()(implicit ctx: QuantumContext): X = this(Seq())
-  }
-
-  case class I(qs: Seq[Qubit])(implicit val computer: QuantumContext) extends Gate
-  object I {
-    def apply(q: Qubit)(implicit ctx: QuantumContext): I = this(Seq(q)).addToComputer()
-    def apply()(implicit ctx: QuantumContext): I = this(Seq())
-  }
-
-  case class C(gate: Gate, qs: Seq[Qubit])(implicit val computer: QuantumContext) extends Gate
-  object C {
-    def apply(gate: Gate, controlQ: Qubit, targetQ: Qubit)(implicit ctx: QuantumContext): C =
-      this(gate, Seq(controlQ, targetQ)).addToComputer()
-  }
-
-  case class CNOT(qs: Seq[Qubit])(implicit val computer: QuantumContext) extends Gate
-  object CNOT {
-    def apply(controlQ: Qubit, targetQ: Qubit)(implicit ctx: QuantumContext): CNOT =
-      this(Seq(controlQ, targetQ)).addToComputer()
+  trait CircuitGate extends Gate {
+    computer.addToCircuit(this)
   }
 }
