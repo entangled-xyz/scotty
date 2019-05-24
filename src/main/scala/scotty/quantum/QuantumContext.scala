@@ -21,6 +21,13 @@ trait QuantumContext {
   def combineGates(gate1: Gate, gate2: Gate): Gate
 
   def isUnitary(gate: Gate): Boolean
+
+  def measure(): Collapsed
+
+  def runAndMeasure(): Collapsed = {
+    run()
+    measure()
+  }
 }
 
 object QuantumContext {
@@ -43,34 +50,25 @@ object QuantumContext {
     def zero: (Complex, Complex) = (Complex(1), Complex(0))
   }
 
-  // State should be represented with a sum type that is
-  // in superposition by default and can be collapsed by a measurement
-  trait State {
+  sealed trait State
+
+  trait Superposition extends State {
     implicit val computer: QuantumContext
 
-    lazy val qubitCount: Int = (Math.log10(vector().length) / Math.log10(2)).toInt
+    val vector: Vector
 
-    def vector(): Vector
+    lazy val qubitCount: Int = (Math.log10(vector.length) / Math.log10(2)).toInt
 
-    def applyGate(gate: Gate): State
+    def applyGate(gate: Gate): Superposition
 
-    def parCombination(state: State): State
+    def parCombination(state: Superposition): Superposition
 
-    override def toString: String = vector().toList.mkString("\n")
-
-    def collapsedValues: Option[Seq[Long]] = {
-      val index = vector().indexWhere(v => v.r == 1)
-
-      if (index == -1) None
-      else {
-        val bits = MathUtils.toBinary(index)
-
-        Some(List.fill(qubitCount - bits.length)(0L) ++ bits)
-      }
-    }
+    override def toString: String = vector.toList.mkString("\n")
   }
 
-  trait Op {
+  case class Collapsed(values: List[Long]) extends State
+
+  sealed trait Op {
     implicit val computer: QuantumContext
     val qs: Seq[Qubit]
   }

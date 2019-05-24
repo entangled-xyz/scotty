@@ -2,7 +2,7 @@ package scotty.simulator.gate
 
 import scotty.quantum.QuantumContext
 import scotty.quantum.QuantumContext._
-import scotty.simulator.StateWithVector
+import scotty.simulator.SimSuperposition
 import scotty.simulator.math.{MathUtils, RawGate}
 
 case class C(gateMatrix: Matrix, q1: Qubit, q2: Qubit)(implicit val computer: QuantumContext) extends CircuitGate {
@@ -31,14 +31,14 @@ object C {
       val targetIndex = if (isFlipped) 0 else binary.length - 1
 
       if (binary(controlIndex) == Complex(1)) {
-        val state = StateWithVector(toBasisState(binary(targetIndex)))
-        val data = (state applyGate RawGate(gateMatrix)).vector()
+        val state = SimSuperposition(toBasisState(binary(targetIndex)))
+        val data = (state applyGate RawGate(gateMatrix)).vector
 
         binary(targetIndex) = Complex(toBinary((data(0), data(1))))
       }
 
       binary
-        .map(b => StateWithVector(toBasisState(b)))
+        .map(b => SimSuperposition(toBasisState(b)))
         .reduce((s1, s2) => s1 parCombination s2)
         .rawVector
     }).toArray
