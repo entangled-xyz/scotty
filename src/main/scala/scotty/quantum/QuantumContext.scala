@@ -1,6 +1,6 @@
 package scotty.quantum
 
-import scotty.math.MathUtils
+import scotty.quantum.math.MathUtils
 import scotty.quantum.QuantumContext._
 
 trait QuantumContext {

@@ -1,4 +1,4 @@
-package scotty.math
+package scotty.quantum.math
 
 import scala.annotation.tailrec
 

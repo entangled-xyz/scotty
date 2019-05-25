@@ -1,6 +1,6 @@
 package scotty.simulator.gate
 
-import scotty.math.MathUtils
+import scotty.quantum.math.MathUtils
 import scotty.quantum.QuantumContext
 import scotty.quantum.QuantumContext._
 import scotty.simulator.SimSuperposition
