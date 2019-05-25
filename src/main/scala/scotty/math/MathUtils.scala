@@ -1,12 +1,12 @@
-package scotty.simulator.math
-
-import scotty.simulator.Config
+package scotty.math
 
 import scala.annotation.tailrec
 
 object MathUtils {
+  val PRECISION = 1e-8
+
   def round(d: Double): Double = {
-    val precision = 1 / Config.PRECISION
+    val precision = 1 / PRECISION
 
     Math.rint(d * precision) / precision
   }
@@ -19,5 +19,11 @@ object MathUtils {
     }
 
     binary(Seq(), n)
+  }
+
+  def toBinaryPadded(n: Long, qubitCount: Int): List[Long] = {
+    val bits = toBinary(n)
+
+    List.fill(qubitCount - bits.length)(0L) ++ bits
   }
 }

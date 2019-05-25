@@ -1,9 +1,11 @@
 package scotty.simulator
 
+import scotty.math.MathUtils
 import scotty.quantum.QuantumContext
 import scotty.quantum.QuantumContext._
 import scotty.simulator.gate.I
-import scotty.simulator.math.{MathUtils, RawGate}
+import scotty.simulator.math.RawGate
+
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
 import scala.collection.mutable
@@ -61,20 +63,19 @@ case class QuantumSimulator(random: Random) extends QuantumContext {
 
   def measure(): Collapsed = {
     val initialIterator = (0, 0d, None: Option[Int])
-    val result = superposition.vector.foldLeft(initialIterator)((iterator, possibility) => {
-      val currentStateP = Math.pow(MathUtils.round(possibility.abs()), 2)
-      val newTotalP = iterator._2 + currentStateP
-      val tryCollapse = (c: Int) => if (currentStateP > 0 && random.nextDouble() <= newTotalP) Some(c) else None
+    val result = superposition.probabilities().foldLeft(initialIterator)((iterator, prob) => {
+      val probSum = iterator._2 + prob
+      val tryCollapse = (c: Int) => if (prob > 0 && random.nextDouble() <= probSum) Some(c) else None
 
       iterator match {
-        case (count, _, None) => (count + 1, newTotalP, tryCollapse(count))
-        case (count, _, valueOp) => (count + 1, newTotalP, valueOp)
+        case (count, _, None) => (count + 1, probSum, tryCollapse(count))
+        case (count, _, valueOp) => (count + 1, probSum, valueOp)
       }
     })._3
 
-    val bits = result.fold(List[Long]())(MathUtils.toBinary(_).toList)
+    val bits = result.fold(List[Long]())(MathUtils.toBinaryPadded(_, superposition.qubitCount).toList)
 
-    collapsedState = Some(Collapsed(List.fill(superposition.qubitCount - bits.length)(0L) ++ bits))
+    collapsedState = Some(Collapsed(bits))
 
     collapsedState.get
   }

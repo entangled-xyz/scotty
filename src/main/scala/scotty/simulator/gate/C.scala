@@ -1,9 +1,10 @@
 package scotty.simulator.gate
 
+import scotty.math.MathUtils
 import scotty.quantum.QuantumContext
 import scotty.quantum.QuantumContext._
 import scotty.simulator.SimSuperposition
-import scotty.simulator.math.{MathUtils, RawGate}
+import scotty.simulator.math.RawGate
 
 case class C(gateMatrix: Matrix, q1: Qubit, q2: Qubit)(implicit val computer: QuantumContext) extends CircuitGate {
   lazy val qs = Seq(q1, q2)
@@ -25,8 +26,7 @@ object C {
     val isFlipped = indices.sliding(2).forall { case Seq(x, y) => x > y }
 
     (0 until Math.pow(2, 2 + gap).toInt).map(index => {
-      val rawBinary = MathUtils.toBinary(index).map(Complex(_))
-      val binary = (List.fill(2 + gap - rawBinary.length)(Complex(0)) ++ rawBinary).toArray
+      val binary = MathUtils.toBinaryPadded(index, 2 + gap).map(Complex(_)).toArray
       val controlIndex = if (isFlipped) binary.length - 1 else 0
       val targetIndex = if (isFlipped) 0 else binary.length - 1
 

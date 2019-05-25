@@ -2,6 +2,7 @@ package scotty.simulator.math
 
 import org.apache.commons.math3.complex.{ComplexField, Complex => ApacheComplex}
 import org.apache.commons.math3.linear.{Array2DRowFieldMatrix, ArrayFieldVector, MatrixUtils}
+import scotty.math.MathUtils
 import scotty.quantum.QuantumContext.Complex
 import scotty.simulator.math.Implicits._
 

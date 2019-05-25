@@ -1,7 +1,7 @@
 package scotty.quantum
 
+import scotty.math.MathUtils
 import scotty.quantum.QuantumContext._
-import scotty.simulator.math.MathUtils
 
 trait QuantumContext {
   def allocate(n: Int): Seq[Qubit]
@@ -38,6 +38,8 @@ object QuantumContext {
 
   case class Complex(r: Double, i: Double = 0) {
     override def toString: String = if (i == 0) s"$r" else s"$r + ${i}i"
+
+    def abs(): Double = Math.sqrt(Math.pow(r, 2) + Math.pow(i, 2))
   }
 
   case class Qubit(index: Int)
@@ -61,12 +63,18 @@ object QuantumContext {
 
     def applyGate(gate: Gate): Superposition
 
+    def probabilities(): Seq[Double] = vector.map(s => Math.pow(MathUtils.round(s.abs()), 2))
+
     def parCombination(state: Superposition): Superposition
 
-    override def toString: String = vector.toList.mkString("\n")
+    override def toString: String = probabilities().zipWithIndex.map(pair => {
+      s"|${MathUtils.toBinaryPadded(pair._2, qubitCount).mkString("")}> ${pair._1}"
+    }).mkString("\n")
   }
 
-  case class Collapsed(values: List[Long]) extends State
+  case class Collapsed(values: List[Long]) extends State {
+    override def toString: String = s"|${values.mkString("")}> 1.0"
+  }
 
   sealed trait Op {
     implicit val computer: QuantumContext
