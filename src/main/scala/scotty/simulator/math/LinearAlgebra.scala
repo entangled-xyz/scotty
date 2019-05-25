@@ -63,6 +63,12 @@ object LinearAlgebra {
 
     def scalarProduct(factor: Complex): Matrix = map(fieldMatrix, entry => entry.multiply(factor))
 
+    def product(q: (Complex, Complex)): Vector = product(q._1, q._2)
+
+    def product(a: Complex, b: Complex): Vector = product(
+      new ArrayFieldVector[ApacheComplex](Array(a, b), false)
+    )
+
     def product(v: Vector): Vector = {
       val resultVector = new Vector(ComplexField.getInstance, v.getDimension)
 

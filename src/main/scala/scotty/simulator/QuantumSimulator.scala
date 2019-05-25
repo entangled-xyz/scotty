@@ -73,7 +73,7 @@ case class QuantumSimulator(random: Random) extends QuantumContext {
       }
     })._3
 
-    val bits = result.fold(List[Long]())(MathUtils.toBinaryPadded(_, superposition.qubitCount).toList)
+    val bits = result.fold(List[Int]())(MathUtils.toBinaryPadded(_, superposition.qubitCount).toList)
 
     collapsedState = Some(Collapsed(bits))
 

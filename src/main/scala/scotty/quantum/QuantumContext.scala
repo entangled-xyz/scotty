@@ -72,7 +72,7 @@ object QuantumContext {
     }).mkString("\n")
   }
 
-  case class Collapsed(values: List[Long]) extends State {
+  case class Collapsed(values: List[Int]) extends State {
     override def toString: String = s"|${values.mkString("")}> 1.0"
   }
 
