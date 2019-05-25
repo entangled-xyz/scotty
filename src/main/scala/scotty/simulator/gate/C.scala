@@ -8,7 +8,7 @@ import scotty.simulator.math.RawGate
 import scotty.simulator.math.Implicits._
 
 object C {
-  def matrix(qs: Seq[Qubit], params: Seq[Complex], target: Matrix)(implicit computer: QuantumContext): Matrix = {
+  def matrix(qs: Seq[Qubit], params: Seq[Complex], target: Matrix)(implicit ctx: QuantumContext): Matrix = {
     def toBasisState(n: Int): (Complex, Complex) = if (n == 1) (Complex(0), Complex(1)) else (Complex(1), Complex(0))
     def toBinary(a: Complex, b: Complex): Int = if (a == Complex(0) && b == Complex(1)) 1 else 0
 

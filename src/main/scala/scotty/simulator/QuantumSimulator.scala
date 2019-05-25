@@ -7,7 +7,6 @@ import scotty.simulator.math.RawGate
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
 import scala.collection.mutable
-import scotty.simulator.math.Implicits._
 
 case class QuantumSimulator(random: Random) extends QuantumContext {
   type GateGen = (Seq[Qubit], Seq[Complex], Matrix) => Matrix

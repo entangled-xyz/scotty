@@ -12,11 +12,11 @@ trait QuantumContext {
 
   def state: State
 
-  // TODO: this should return Try
   def addToCircuit(op: Op): Unit
 
-  // TODO: this should return Try
   def run(): Unit
+
+  def targetGate(gateType: AnyRef): TargetGate = TargetGate(gateType, gateMatrix(gateType.toString))
 
   def gateMatrix(name: String): Matrix = gateMatrix(name, Seq(), Seq(), None)
 
@@ -59,7 +59,7 @@ object QuantumContext {
   sealed trait State
 
   trait Superposition extends State {
-    implicit val computer: QuantumContext
+    implicit val ctx: QuantumContext
 
     val vector: Vector
 
@@ -81,7 +81,7 @@ object QuantumContext {
   }
 
   sealed trait Op {
-    implicit val computer: QuantumContext
+    implicit val ctx: QuantumContext
     val qs: Seq[Qubit]
   }
 
@@ -94,30 +94,38 @@ object QuantumContext {
 
     val params = Seq()
 
-    lazy val isUnitary: Boolean = computer.isUnitary(this)
+    lazy val isUnitary: Boolean = ctx.isUnitary(this)
 
-    lazy val matrix = computer.gateMatrix(name.toString, qs, params, targetGate)
+    lazy val matrix = ctx.gateMatrix(name.toString, qs, params, targetGate)
 
-    def combine(gate: Gate): Gate = computer.combineGates(this, gate)
+    def combine(gate: Gate): Gate = ctx.combineGates(this, gate)
 
     override def toString: String = matrix.toList.map(_.toList.mkString(" ")).mkString("\n")
   }
 
   trait CircuitGate extends Gate {
-    computer.addToCircuit(this)
+    ctx.addToCircuit(this)
   }
 
-  case class H(qs: Qubit*)(implicit val computer: QuantumContext) extends CircuitGate
+  case class H(q1: Qubit)(implicit val ctx: QuantumContext) extends CircuitGate {
+    lazy val qs = Seq(q1)
+  }
 
-  case class I(qs: Qubit*)(implicit val computer: QuantumContext) extends CircuitGate
+  case class I(q1: Qubit)(implicit val ctx: QuantumContext) extends CircuitGate {
+    lazy val qs = Seq(q1)
+  }
 
-  case class X(qs: Qubit*)(implicit val computer: QuantumContext) extends CircuitGate
+  case class X(q1: Qubit)(implicit val ctx: QuantumContext) extends CircuitGate {
+    lazy val qs = Seq(q1)
+  }
 
-  case class C(qs: Qubit*)(target: TargetGate)(implicit val computer: QuantumContext) extends CircuitGate {
+  case class C(target: TargetGate, q1: Qubit, q2: Qubit)(implicit val ctx: QuantumContext) extends CircuitGate {
+    lazy val qs = Seq(q1, q2)
     override val targetGate = Some(target)
   }
 
-  case class CNOT(qs: Qubit*)(implicit val computer: QuantumContext) extends CircuitGate {
-    override val targetGate = Some(TargetGate(X, computer.gateMatrix("X")))
+  case class CNOT(q1: Qubit, q2: Qubit)(implicit val ctx: QuantumContext) extends CircuitGate {
+    lazy val qs = Seq(q1, q2)
+    override val targetGate = Some(TargetGate(X, ctx.gateMatrix("X")))
   }
 }

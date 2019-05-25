@@ -7,7 +7,7 @@ import scotty.simulator.math.LinearAlgebra.VectorTransformations
 import scotty.simulator.math.Implicits._
 
 case class SimSuperposition(vector: Vector)
-                           (implicit val computer: QuantumContext) extends Superposition with VectorTransformations {
+                           (implicit val ctx: QuantumContext) extends Superposition with VectorTransformations {
   val rawVector = vector
 
   def parCombination(state: Superposition): SimSuperposition = {

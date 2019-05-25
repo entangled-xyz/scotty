@@ -8,7 +8,7 @@ import scotty.simulator.math.Implicits._
 import scotty.simulator.math.RawGate
 
 object CNOT {
-  def matrix(qs: Seq[Qubit], params: Seq[Complex], target: Matrix)(implicit computer: QuantumContext): Matrix = {
+  def matrix(qs: Seq[Qubit], params: Seq[Complex], target: Matrix)(implicit ctx: QuantumContext): Matrix = {
     C.matrix(qs, params, target)
   }
 }

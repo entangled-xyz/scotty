@@ -6,7 +6,7 @@ import scotty.simulator.math.Implicits._
 import scotty.simulator.math.LinearAlgebra.MatrixTransformations
 
 case class RawGate(rawMatrix: Matrix)
-                  (implicit val computer: QuantumContext) extends Gate with MatrixTransformations {
+                  (implicit val ctx: QuantumContext) extends Gate with MatrixTransformations {
   val qs: Seq[Qubit] = Seq() // qubits don't matter in this context
 
   override lazy val matrix = rawMatrix
