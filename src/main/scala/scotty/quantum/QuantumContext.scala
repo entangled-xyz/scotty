@@ -18,6 +18,10 @@ trait QuantumContext {
   // TODO: this should return Try
   def run(): Unit
 
+  def gateMatrix(name: String): Matrix = gateMatrix(name, Seq(), Seq(), None)
+
+  def gateMatrix(name: String, qs: Seq[Qubit], params: Seq[Complex], target: Option[TargetGate]): Matrix
+
   def combineGates(gate1: Gate, gate2: Gate): Gate
 
   def isUnitary(gate: Gate): Boolean
@@ -34,6 +38,8 @@ object QuantumContext {
   type Vector = Array[Complex]
   type Matrix = Array[Array[Complex]]
 
+  def Matrix(xs: Array[Complex]*) = Array(xs: _*)
+
   case class QuantumException(message: String) extends Exception(message)
 
   case class Complex(r: Double, i: Double = 0) {
@@ -45,8 +51,6 @@ object QuantumContext {
   case class Qubit(index: Int)
 
   object Qubit {
-    def fiftyFifty: (Complex, Complex) = (Complex(1 / Math.sqrt(2.0)), Complex(1 / Math.sqrt(2.0)))
-
     def one: (Complex, Complex) = (Complex(0), Complex(1))
 
     def zero: (Complex, Complex) = (Complex(1), Complex(0))
@@ -81,17 +85,39 @@ object QuantumContext {
     val qs: Seq[Qubit]
   }
 
+  case class TargetGate(gateType: AnyRef, matrix: Matrix)
+
   trait Gate extends Op {
+    val name = getClass.getSimpleName
+
+    val targetGate: Option[TargetGate] = None
+
+    val params = Seq()
+
     lazy val isUnitary: Boolean = computer.isUnitary(this)
+
+    lazy val matrix = computer.gateMatrix(name.toString, qs, params, targetGate)
 
     def combine(gate: Gate): Gate = computer.combineGates(this, gate)
 
-    def matrix(): Matrix
-
-    override def toString: String = matrix().toList.map(_.toList.mkString(" ")).mkString("\n")
+    override def toString: String = matrix.toList.map(_.toList.mkString(" ")).mkString("\n")
   }
 
   trait CircuitGate extends Gate {
     computer.addToCircuit(this)
+  }
+
+  case class H(qs: Qubit*)(implicit val computer: QuantumContext) extends CircuitGate
+
+  case class I(qs: Qubit*)(implicit val computer: QuantumContext) extends CircuitGate
+
+  case class X(qs: Qubit*)(implicit val computer: QuantumContext) extends CircuitGate
+
+  case class C(qs: Qubit*)(target: TargetGate)(implicit val computer: QuantumContext) extends CircuitGate {
+    override val targetGate = Some(target)
+  }
+
+  case class CNOT(qs: Qubit*)(implicit val computer: QuantumContext) extends CircuitGate {
+    override val targetGate = Some(TargetGate(X, computer.gateMatrix("X")))
   }
 }

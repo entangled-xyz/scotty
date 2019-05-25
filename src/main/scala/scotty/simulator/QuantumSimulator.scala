@@ -2,20 +2,23 @@ package scotty.simulator
 
 import scotty.quantum.math.MathUtils
 import scotty.quantum.QuantumContext
-import scotty.quantum.QuantumContext._
-import scotty.simulator.gate.I
+import scotty.quantum.QuantumContext.{Matrix, _}
 import scotty.simulator.math.RawGate
-
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
 import scala.collection.mutable
 import scotty.simulator.math.Implicits._
 
 case class QuantumSimulator(random: Random) extends QuantumContext {
+  type GateGen = (Seq[Qubit], Seq[Complex], Matrix) => Matrix
+
   private val register = ListBuffer[Qubit]()
   private var superposition = SimSuperposition()(this)
   private var collapsedState: Option[Collapsed] = None
   private val circuit = mutable.Queue[(Op, Seq[Qubit])]()
+  private val gateGenerators = mutable.Map[Symbol, GateGen]()
+
+  GateLoader.loadDefaultGens(this)
 
   def allocate(n: Int): Seq[Qubit] = allocate(Qubit.zero, n)
 
@@ -25,6 +28,8 @@ case class QuantumSimulator(random: Random) extends QuantumContext {
       qs += Qubit(index)
     }).toList
   }
+
+  def addGateGen(name: String, f: GateGen) = gateGenerators(Symbol(name)) = f
 
   def qubits: Seq[Qubit] = register.toList
 
@@ -51,7 +56,9 @@ case class QuantumSimulator(random: Random) extends QuantumContext {
       def padTop(g: Gate) = (0 until qs.sortWith(_.index < _.index)(0).index).map(_ => g)
       def padBottom(g: Gate) = (qs.sortWith(_.index > _.index)(0).index until register.length - 1).map(_ => g)
 
-      (padTop(RawGate(I.matrix)(this)) :+ g) ++ padBottom(RawGate(I.matrix)(this))
+      val identity = gateGenerators(Symbol("I")).apply(Seq(), Seq(), Array())
+
+      (padTop(RawGate(identity)(this)) :+ g) ++ padBottom(RawGate(identity)(this))
     }
 
     pad(gate, qs).reduce((a, b) => a combine b)
@@ -79,6 +86,9 @@ case class QuantumSimulator(random: Random) extends QuantumContext {
 
     collapsedState.get
   }
+
+  def gateMatrix(name: String, qs: Seq[Qubit], params: Seq[Complex], target: Option[TargetGate]): Matrix =
+    gateGenerators(Symbol(name)).apply(qs, params, target.fold(Matrix())(_.matrix))
 }
 
 object QuantumSimulator {

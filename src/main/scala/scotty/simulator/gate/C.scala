@@ -7,14 +7,8 @@ import scotty.simulator.SimSuperposition
 import scotty.simulator.math.RawGate
 import scotty.simulator.math.Implicits._
 
-case class C(gateMatrix: Matrix, q1: Qubit, q2: Qubit)(implicit val computer: QuantumContext) extends CircuitGate {
-  lazy val qs = Seq(q1, q2)
-
-  def matrix() = C.matrix(qs, gateMatrix)
-}
-
 object C {
-  def matrix(qs: Seq[Qubit], gateMatrix: Matrix)(implicit computer: QuantumContext): Matrix = {
+  def matrix(qs: Seq[Qubit], params: Seq[Complex], target: Matrix)(implicit computer: QuantumContext): Matrix = {
     def toBasisState(n: Int): (Complex, Complex) = if (n == 1) (Complex(0), Complex(1)) else (Complex(1), Complex(0))
     def toBinary(a: Complex, b: Complex): Int = if (a == Complex(0) && b == Complex(1)) 1 else 0
 
@@ -28,7 +22,7 @@ object C {
       val targetIndex = if (isFlipped) 0 else binary.length - 1
 
       if (binary(controlIndex) == 1) {
-        val data = RawGate(gateMatrix).product(toBasisState(binary(targetIndex))).getData
+        val data = RawGate(target).product(toBasisState(binary(targetIndex))).getData
 
         binary(targetIndex) = toBinary(data(0), data(1))
       }
