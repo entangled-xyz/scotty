@@ -2,7 +2,7 @@ package scotty.simulator.math
 
 import org.apache.commons.math3.complex.{ComplexField, Complex => ApacheComplex}
 import org.apache.commons.math3.linear.{Array2DRowFieldMatrix, ArrayFieldVector, MatrixUtils}
-import scotty.quantum.math.MathUtils
+import scotty.quantum.math.MathUtils._
 import scotty.quantum.QuantumContext.Complex
 import scotty.simulator.math.Implicits._
 
@@ -42,7 +42,7 @@ object LinearAlgebra {
     def isUnitaryMatrix: Boolean = equals(round(product(T, fieldMatrix)), identity)
 
     def round(m: Matrix): Matrix =
-      map(m, entry => Complex(MathUtils.round(entry.getReal), MathUtils.round(entry.getImaginary)))
+      map(m, entry => Complex(entry.getReal.roundWithPrecision, entry.getImaginary.roundWithPrecision))
 
     def round: Matrix = round(fieldMatrix)
 

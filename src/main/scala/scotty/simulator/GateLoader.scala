@@ -7,7 +7,5 @@ object GateLoader {
     sim.addGateGen("H", H.matrix)
     sim.addGateGen("X", X.matrix)
     sim.addGateGen("I", I.matrix)
-    sim.addGateGen("C", C.matrix)
-    sim.addGateGen("CNOT", CNOT.matrix)
   }
 }
