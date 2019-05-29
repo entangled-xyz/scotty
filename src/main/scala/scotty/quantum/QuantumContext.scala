@@ -7,7 +7,7 @@ import scotty.quantum.math.MathUtils._
 trait QuantumContext {
   def run(circuit: Circuit): Superposition
 
-  def controlMatrix(gate: Controlled): Matrix
+  def controlMatrix(gate: Control): Matrix
 
   def par(gate1: Gate, gate2: Gate): Matrix
 
@@ -96,7 +96,7 @@ object QuantumContext {
 
     def matrix()(implicit ctx: QuantumContext): Matrix = this match {
       case targetGate: Target => ctx.matrix(targetGate)
-      case controlGate: Controlled => ctx.controlMatrix(controlGate)
+      case controlGate: Control => ctx.controlMatrix(controlGate)
     }
 
     def par(gate: Gate)(implicit ctx: QuantumContext): Matrix = ctx.par(this, gate)
@@ -111,16 +111,20 @@ object QuantumContext {
     val indexes = Seq(index)
   }
 
-  case class Controlled(controlIndex: Int, target: Gate) extends Gate {
+  trait Control extends Gate {
+    val controlIndex: Int
+    val target: Gate
     val indexes = controlIndex +: target.indexes
     val finalTarget: Target = target match {
       case t: Target => t
-      case c: Controlled => c.finalTarget
+      case c: Control => c.finalTarget
     }
     val finalTargetIndex = finalTarget.index
     val controlIndexes = indexes.filter(i => i != finalTargetIndex)
     val isAsc = controlIndex < target.indexes(0)
   }
+
+  case class Controlled(controlIndex: Int, target: Gate) extends Control
 
   case class H(index: Int) extends Target
 
@@ -128,8 +132,7 @@ object QuantumContext {
 
   case class X(index: Int) extends Target
 
-//  case class CNOT(q1: Qubit, q2: Qubit)(implicit ctx: QuantumContext) extends Control {
-//    lazy val qs = Seq(q1, q2)
-//    override val targetGate = Some(TargetGate(X, ctx.gateMatrix("X")))
-//  }
+  case class CNOT(controlIndex: Int, targetIndex: Int) extends Control {
+    lazy val target = X(targetIndex)
+  }
 }

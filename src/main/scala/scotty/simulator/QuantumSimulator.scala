@@ -52,12 +52,12 @@ case class QuantumSimulator(seed: Option[Long] = None) extends QuantumContext {
 
   def isUnitary(g: Gate): Boolean = RawGate(g)(this).isUnitaryMatrix
 
-  def controlMatrix(gate: Controlled): Matrix = {
+  def controlMatrix(gate: Control): Matrix = {
     def toBasisState(n: Double): Array[Complex] =
       if (n == 1) Array(Complex(0), Complex(1))
       else Array(Complex(1), Complex(0))
 
-    val minIndex = gate.controlIndexes.min
+    val minIndex = gate.indexes.min
     val normalizedControlIndexes = gate.controlIndexes.map(i => i - minIndex)
     val sortedControlIndexes = gate.indexes.sorted
     val targetIndex = gate.finalTargetIndex - minIndex
