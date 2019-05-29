@@ -114,14 +114,15 @@ object QuantumContext {
   trait Control extends Gate {
     val controlIndex: Int
     val target: Gate
-    val indexes = controlIndex +: target.indexes
-    val finalTarget: Target = target match {
+
+    lazy val indexes = controlIndex +: target.indexes
+    lazy val finalTarget: Target = target match {
       case t: Target => t
       case c: Control => c.finalTarget
     }
-    val finalTargetIndex = finalTarget.index
-    val controlIndexes = indexes.filter(i => i != finalTargetIndex)
-    val isAsc = controlIndex < target.indexes(0)
+    lazy val finalTargetIndex = finalTarget.index
+    lazy val controlIndexes = indexes.filter(i => i != finalTargetIndex)
+    lazy val isAsc = controlIndex < target.indexes(0)
   }
 
   case class Controlled(controlIndex: Int, target: Gate) extends Control
@@ -133,6 +134,10 @@ object QuantumContext {
   case class X(index: Int) extends Target
 
   case class CNOT(controlIndex: Int, targetIndex: Int) extends Control {
-    lazy val target = X(targetIndex)
+    val target = X(targetIndex)
+  }
+
+  case class CCNOT(controlIndex: Int, controlIndex2: Int, targetIndex: Int) extends Control {
+    val target = Controlled(controlIndex2, X(targetIndex))
   }
 }
