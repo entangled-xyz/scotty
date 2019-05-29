@@ -16,19 +16,21 @@ object MathUtils {
   }
 
   implicit class IntHelpers(i: Int) {
-    def toBinary(n: Int): Seq[Int] = {
-      @tailrec
-      def binary(acc: Seq[Int], n: Int): Seq[Int] = n match {
-        case 0 | 1 => n +: acc
-        case _ => binary((n % 2) +: acc, n / 2)
-      }
+    def toBinary: Seq[Int] = toBinaryImpl(i)
+  }
 
-      binary(Seq(), n)
+  def toBinaryImpl(n: Int): Seq[Int] = {
+    @tailrec
+    def binary(acc: Seq[Int], n: Int): Seq[Int] = n match {
+      case 0 | 1 => n +: acc
+      case _ => binary((n % 2) +: acc, n / 2)
     }
+
+    binary(Seq(), n)
   }
 
   def toBinaryPadded(n: Int, qubitCount: Int): List[Int] = {
-    val bits = n.toBinary(n)
+    val bits = n.toBinary
 
     List.fill(qubitCount - bits.length)(0) ++ bits
   }

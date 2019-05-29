@@ -1,11 +1,15 @@
 package scotty.simulator.math
 
 import scotty.quantum.QuantumContext
-import scotty.quantum.QuantumContext.{Gate, Matrix, Qubit, Target}
+import scotty.quantum.QuantumContext.{Gate, Matrix, Target}
 import scotty.simulator.math.LinearAlgebra.MatrixTransformations
 
 case class RawGate(rawMatrix: Matrix) extends Target with MatrixTransformations {
-  val qs: Seq[Qubit] = Seq() // qubits don't matter in this context
+  // Exact qubit indexes don't matter in this context because we only use this gate
+  // for arbitrary matrix calculations.
+  val index = -1
+
+  override lazy val qubitCount = Math.sqrt(rawMatrix.length).toInt
 
   override def matrix()(implicit ctx: QuantumContext) = rawMatrix
 }

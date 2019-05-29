@@ -63,10 +63,10 @@ object LinearAlgebra {
 
     def scalarProduct(factor: Complex): Matrix = map(fieldMatrix, entry => entry.multiply(factor))
 
-    def product(q: (Complex, Complex)): Vector = product(q._1, q._2)
+    def product(q: (Complex, Complex)): Vector = product(Array(q._1, q._2))
 
-    def product(a: Complex, b: Complex): Vector = product(
-      new ArrayFieldVector[ApacheComplex](Array(a, b), false)
+    def product(vs: Array[Complex]): Vector = product(
+      new ArrayFieldVector[ApacheComplex](vs, false)
     )
 
     def product(v: Vector): Vector = {

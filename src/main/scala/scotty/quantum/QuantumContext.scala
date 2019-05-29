@@ -7,9 +7,9 @@ import scotty.quantum.math.MathUtils._
 trait QuantumContext {
   def run(circuit: Circuit): Superposition
 
-  def control(q: Qubit, gate: Gate): Matrix
+  def controlMatrix(gate: Controlled): Matrix
 
-  def par(gate1: Gate, gate2: Gate): Gate
+  def par(gate1: Gate, gate2: Gate): Matrix
 
   def isUnitary(gate: Gate): Boolean
 
@@ -24,25 +24,33 @@ object QuantumContext {
   type Vector = Array[Complex]
   type Matrix = Array[Array[Complex]]
 
-  def Matrix(xs: Array[Complex]*) = Array(xs: _*)
-
   case class QuantumException(message: String) extends Exception(message)
 
   case class Complex(r: Double, i: Double = 0) {
-    override def toString: String = if (i == 0) s"$r" else s"$r + ${i}i"
+    override def toString: String = s"$r ${if (i >= 0) "+ " else ""}${i}i"
 
     def abs(): Double = Math.sqrt(Math.pow(r, 2) + Math.pow(i, 2))
   }
 
-  case class Qubit(index: Int, state: (Complex, Complex))
+  case class Qubit(state: (Complex, Complex))
 
   object Qubit {
-    def one(index: Int): Qubit = Qubit(index, (Complex(0), Complex(1)))
+    def one(): Qubit = Qubit((Complex(0), Complex(1)))
 
-    def zero(index: Int): Qubit = Qubit(index, (Complex(1), Complex(0)))
+    def zero(): Qubit = Qubit((Complex(1), Complex(0)))
   }
 
-  case class Circuit(qs: Seq[Qubit], ops: Seq[Op])
+  case class Circuit(qs: Seq[Qubit], ops: Seq[Op]) {
+    val indexes = qs.zipWithIndex.map(_._2)
+  }
+
+  object Circuit {
+    def apply(ops: Op*): Circuit = {
+      val qubitCount = ops.flatMap(op => op.indexes).distinct.max + 1
+
+      this(List.fill(qubitCount)(Qubit.zero()), ops)
+    }
+  }
 
   sealed trait State {
     def toHumanString(index: Int, qubitCount: Int, amp: Complex, prob: Double) =
@@ -72,52 +80,53 @@ object QuantumContext {
 
   case class Collapsed(qubitCount: Int, index: Int) extends State {
     override def toString: String = toHumanString(index, qubitCount, Complex(1), 1)
-
-//      s"|${values.mkString("")}> 1.0"
   }
 
   sealed trait Op {
     val qubitCount: Int
+    val indexes: Seq[Int]
   }
 
   sealed trait Gate extends Op {
     val name = getClass.getSimpleName
 
-    val qs: Seq[Qubit]
+    lazy val qubitCount = indexes.length
 
     def isUnitary()(implicit ctx: QuantumContext): Boolean = ctx.isUnitary(this)
 
     def matrix()(implicit ctx: QuantumContext): Matrix = this match {
       case targetGate: Target => ctx.matrix(targetGate)
-      case controlGate: Controlled => ctx.control(controlGate.control, controlGate.target)
+      case controlGate: Controlled => ctx.controlMatrix(controlGate)
     }
 
-    def par(gate: Gate)(implicit ctx: QuantumContext): Gate = ctx.par(this, gate)
+    def par(gate: Gate)(implicit ctx: QuantumContext): Matrix = ctx.par(this, gate)
 
     def toString(implicit ctx: QuantumContext): String = matrix.toList.map(_.toList.mkString(" ")).mkString("\n")
   }
 
-  case class Controlled(control: Qubit, target: Gate) extends Gate {
-    val qs = control +: target.qs
-    val qubitCount = 1 + target.qubitCount
-  }
-
   trait Target extends Gate {
+    val index: Int
+
     val params = Seq[Double]()
-    val qubitCount = 1
+    val indexes = Seq(index)
   }
 
-  case class H(q1: Qubit) extends Target {
-    lazy val qs = Seq(q1)
+  case class Controlled(controlIndex: Int, target: Gate) extends Gate {
+    val indexes = controlIndex +: target.indexes
+    val finalTarget: Target = target match {
+      case t: Target => t
+      case c: Controlled => c.finalTarget
+    }
+    val finalTargetIndex = finalTarget.index
+    val controlIndexes = indexes.filter(i => i != finalTargetIndex)
+    val isAsc = controlIndex < target.indexes(0)
   }
 
-  case class I(q1: Qubit) extends Target {
-    lazy val qs = Seq(q1)
-  }
+  case class H(index: Int) extends Target
 
-  case class X(q1: Qubit) extends Target {
-    lazy val qs = Seq(q1)
-  }
+  case class I(index: Int) extends Target
+
+  case class X(index: Int) extends Target
 
 //  case class CNOT(q1: Qubit, q2: Qubit)(implicit ctx: QuantumContext) extends Control {
 //    lazy val qs = Seq(q1, q2)
