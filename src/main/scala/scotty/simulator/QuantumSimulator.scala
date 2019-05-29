@@ -3,7 +3,6 @@ package scotty.simulator
 import scotty.quantum.QuantumContext
 import scotty.quantum.QuantumContext._
 import scotty.quantum.math.MathUtils
-import scotty.quantum.math.MathUtils._
 import scotty.simulator.math.RawGate
 import scotty.simulator.math.Implicits._
 import scala.collection.mutable
@@ -57,8 +56,6 @@ case class QuantumSimulator(seed: Option[Long] = None) extends QuantumContext {
     def toBasisState(n: Double): Array[Complex] =
       if (n == 1) Array(Complex(0), Complex(1))
       else Array(Complex(1), Complex(0))
-
-    def arrayToBinary(array: Array[Complex]): Double = Math.sqrt(Math.pow(array(0).abs(), 2) + Math.pow(array(1).abs(), 2))
 
     val minIndex = gate.controlIndexes.min
     val normalizedControlIndexes = gate.controlIndexes.map(i => i - minIndex)
