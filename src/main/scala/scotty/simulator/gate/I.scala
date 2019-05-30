@@ -1,6 +1,6 @@
 package scotty.simulator.gate
 
-import scotty.quantum.QuantumContext._
+import scotty.quantum.QuantumContext.Matrix
 import scotty.quantum.math.Complex
 
 object I {

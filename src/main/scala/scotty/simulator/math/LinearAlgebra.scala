@@ -39,12 +39,12 @@ object LinearAlgebra {
 
     def T: Matrix = conjugateTranspose
 
-    def isUnitaryMatrix: Boolean = equals(round(product(T, fieldMatrix)), identity)
+    def isUnitaryMatrix: Boolean = equals(roundValues(product(T, fieldMatrix)), identity)
 
-    def round(m: Matrix): Matrix =
+    def roundValues(m: Matrix): Matrix =
       map(m, entry => Complex(entry.getReal.roundWithPrecision, entry.getImaginary.roundWithPrecision))
 
-    def round: Matrix = round(fieldMatrix)
+    def round: Matrix = roundValues(fieldMatrix)
 
     def conjugateTranspose: Matrix = new Matrix(fieldMatrix.transpose().getData.map(c => c.map(v => v.conjugate())), false)
 

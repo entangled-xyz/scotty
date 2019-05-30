@@ -9,5 +9,8 @@ object GateLoader {
     sim.addGateGen("Y", Y.matrix)
     sim.addGateGen("Z", Z.matrix)
     sim.addGateGen("I", I.matrix)
+    sim.addGateGen("RX", RX.matrix)
+    sim.addGateGen("RY", RY.matrix)
+    sim.addGateGen("RZ", RZ.matrix)
   }
 }
