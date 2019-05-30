@@ -1,6 +1,6 @@
 package scotty.simulator
 
-import scotty.quantum.{Circuit, QuantumContext}
+import scotty.quantum._
 import scotty.quantum.QuantumContext._
 import scotty.quantum.math.MathUtils
 import scotty.simulator.math.RawGate

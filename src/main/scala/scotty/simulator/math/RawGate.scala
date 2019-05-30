@@ -1,7 +1,7 @@
 package scotty.simulator.math
 
-import scotty.quantum.QuantumContext
-import scotty.quantum.QuantumContext.{Gate, Matrix, Target}
+import scotty.quantum.{Gate, QuantumContext, Target}
+import scotty.quantum.QuantumContext.Matrix
 import scotty.simulator.math.LinearAlgebra.MatrixTransformations
 
 case class RawGate(rawMatrix: Matrix) extends Target with MatrixTransformations {

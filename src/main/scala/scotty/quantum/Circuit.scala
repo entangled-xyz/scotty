@@ -1,6 +1,6 @@
 package scotty.quantum
 
-import scotty.quantum.QuantumContext.{Op, Qubit}
+import scotty.quantum.QuantumContext.Qubit
 
 case class Circuit(register: Seq[Qubit], ops: Op*) {
   val qubitCount = Circuit.qubitCountFromOps(ops)

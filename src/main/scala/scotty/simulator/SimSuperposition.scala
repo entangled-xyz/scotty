@@ -1,7 +1,7 @@
 package scotty.simulator
 
-import scotty.quantum.QuantumContext
-import scotty.quantum.QuantumContext.{Collapsed, Gate, Op, Qubit, Superposition, Vector}
+import scotty.quantum.QuantumContext.{Qubit, Vector}
+import scotty.quantum._
 import scotty.simulator.math.LinearAlgebra.VectorTransformations
 import scotty.simulator.math.Implicits._
 import scotty.simulator.math.RawGate
