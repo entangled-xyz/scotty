@@ -1,10 +1,11 @@
 package scotty.simulator
 
 import scotty.quantum.QuantumContext
-import scotty.quantum.QuantumContext.{Collapsed, Complex, Gate, Op, QubitState, Superposition, Vector}
+import scotty.quantum.QuantumContext.{Collapsed, Gate, Op, Qubit, Superposition, Vector}
 import scotty.simulator.math.LinearAlgebra.VectorTransformations
 import scotty.simulator.math.Implicits._
 import scotty.simulator.math.RawGate
+import scotty.quantum.math.Complex
 
 import scala.util.Random
 
@@ -40,7 +41,7 @@ case class SimSuperposition(vector: Vector)
 
 object SimSuperposition {
   def apply()(implicit random: Random): SimSuperposition = this(Array[Complex]())
-  def apply(q: QubitState)(implicit random: Random): SimSuperposition = this(Array(q.a, q.b))
+  def apply(q: Qubit)(implicit random: Random): SimSuperposition = this(Array(q.a, q.b))
   def apply(a: Complex, b: Complex)(implicit random: Random): SimSuperposition = this(Array(a, b))
   def apply(state: Superposition)(implicit random: Random): SimSuperposition = this(state.vector)
 }

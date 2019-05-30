@@ -1,6 +1,6 @@
 package scotty.quantum
 
-import scotty.quantum.math.MathUtils
+import scotty.quantum.math.{Complex, MathUtils}
 import scotty.quantum.QuantumContext._
 import scotty.quantum.math.MathUtils._
 
@@ -26,32 +26,12 @@ object QuantumContext {
 
   case class QuantumException(message: String) extends Exception(message)
 
-  case class Complex(r: Double, i: Double = 0) {
-    override def toString: String = s"$r ${if (i >= 0) "+ " else ""}${i}i"
+  case class Qubit(a: Complex, b: Complex)
 
-    def abs(): Double = Math.sqrt(Math.pow(r, 2) + Math.pow(i, 2))
-  }
+  object Qubit {
+    def one: Qubit = Qubit(Complex(0), Complex(1))
 
-  case class QubitState(a: Complex, b: Complex)
-
-  object QubitState {
-    def one(): QubitState = QubitState(Complex(0), Complex(1))
-
-    def zero(): QubitState = QubitState(Complex(1), Complex(0))
-  }
-
-  case class Circuit(initState: QubitState, ops: Op*) {
-    val qubitCount = ops.flatMap(op => op.indexes).distinct.max + 1
-    val initRegister = List.fill(qubitCount)(initState)
-    val indexes = 0 until qubitCount
-
-    def combine(circuit: Circuit): Circuit = Circuit(ops ++ circuit.ops: _*)
-
-    def combine(newOps: Op*): Circuit = Circuit(ops ++ newOps: _*)
-  }
-
-  object Circuit {
-    def apply(ops: Op*): Circuit = this(QubitState.zero(), ops: _*)
+    def zero: Qubit = Qubit(Complex(1), Complex(0))
   }
 
   sealed trait State {

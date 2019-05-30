@@ -1,6 +1,7 @@
 package scotty.simulator.gate
 
 import scotty.quantum.QuantumContext._
+import scotty.quantum.math.Complex
 
 object I {
   def matrix(params: Seq[Double]): Matrix = Array(

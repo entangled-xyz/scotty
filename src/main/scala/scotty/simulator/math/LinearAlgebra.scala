@@ -3,7 +3,7 @@ package scotty.simulator.math
 import org.apache.commons.math3.complex.{ComplexField, Complex => ApacheComplex}
 import org.apache.commons.math3.linear.{Array2DRowFieldMatrix, ArrayFieldVector, MatrixUtils}
 import scotty.quantum.math.MathUtils._
-import scotty.quantum.QuantumContext.Complex
+import scotty.quantum.math.Complex
 import scotty.simulator.math.Implicits._
 
 object LinearAlgebra {

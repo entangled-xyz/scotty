@@ -1,12 +1,13 @@
 package scotty.simulator
 
-import scotty.quantum.QuantumContext
+import scotty.quantum.{Circuit, QuantumContext}
 import scotty.quantum.QuantumContext._
 import scotty.quantum.math.MathUtils
 import scotty.simulator.math.RawGate
 import scotty.simulator.math.Implicits._
 import scala.collection.mutable
 import scala.util.Random
+import scotty.quantum.math.Complex
 
 case class QuantumSimulator(seed: Option[Long] = None) extends QuantumContext {
   type GateGen = Seq[Double] => Matrix
@@ -21,10 +22,10 @@ case class QuantumSimulator(seed: Option[Long] = None) extends QuantumContext {
   def run(circuit: Circuit): Superposition = {
     circuit.ops
       .map(prepareOp(_, circuit.indexes))
-      .foldLeft(qsToSuperposition(circuit.initRegister))((state, op) => state.applyOp(op)(this))
+      .foldLeft(qsToSuperposition(circuit.register))((state, op) => state.applyOp(op)(this))
   }
 
-  def qsToSuperposition(qs: Seq[QubitState]): Superposition =
+  def qsToSuperposition(qs: Seq[Qubit]): Superposition =
     qs.foldLeft(SimSuperposition())((superposition, q) => superposition.par(SimSuperposition(q)))
 
   def prepareOp(op: Op, indexes: Seq[Int]): Op = op match {
