@@ -21,11 +21,11 @@ case class QuantumSimulator(seed: Option[Long] = None) extends QuantumContext {
   def run(circuit: Circuit): Superposition = {
     circuit.ops
       .map(prepareOp(_, circuit.indexes))
-      .foldLeft(qsToSuperposition(circuit.qs))((state, op) => state.applyOp(op)(this))
+      .foldLeft(qsToSuperposition(circuit.initRegister))((state, op) => state.applyOp(op)(this))
   }
 
-  def qsToSuperposition(qs: Seq[Qubit]): Superposition =
-    qs.foldLeft(SimSuperposition())((superposition, q) => superposition.par(SimSuperposition(q.state)))
+  def qsToSuperposition(qs: Seq[QubitState]): Superposition =
+    qs.foldLeft(SimSuperposition())((superposition, q) => superposition.par(SimSuperposition(q)))
 
   def prepareOp(op: Op, indexes: Seq[Int]): Op = op match {
     case g: Gate => prepareGate(g, indexes)

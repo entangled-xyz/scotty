@@ -32,29 +32,33 @@ object QuantumContext {
     def abs(): Double = Math.sqrt(Math.pow(r, 2) + Math.pow(i, 2))
   }
 
-  case class Qubit(state: (Complex, Complex))
+  case class QubitState(a: Complex, b: Complex)
 
-  object Qubit {
-    def one(): Qubit = Qubit((Complex(0), Complex(1)))
+  object QubitState {
+    def one(): QubitState = QubitState(Complex(0), Complex(1))
 
-    def zero(): Qubit = Qubit((Complex(1), Complex(0)))
+    def zero(): QubitState = QubitState(Complex(1), Complex(0))
   }
 
-  case class Circuit(qs: Seq[Qubit], ops: Seq[Op]) {
-    val indexes = qs.zipWithIndex.map(_._2)
+  case class Circuit(initState: QubitState, ops: Op*) {
+    val qubitCount = ops.flatMap(op => op.indexes).distinct.max + 1
+    val initRegister = List.fill(qubitCount)(initState)
+    val indexes = 0 until qubitCount
+
+    def combine(circuit: Circuit): Circuit = Circuit(ops ++ circuit.ops: _*)
+
+    def combine(newOps: Op*): Circuit = Circuit(ops ++ newOps: _*)
   }
 
   object Circuit {
-    def apply(ops: Op*): Circuit = {
-      val qubitCount = ops.flatMap(op => op.indexes).distinct.max + 1
-
-      this(List.fill(qubitCount)(Qubit.zero()), ops)
-    }
+    def apply(ops: Op*): Circuit = this(QubitState.zero(), ops: _*)
   }
 
   sealed trait State {
-    def toHumanString(index: Int, qubitCount: Int, amp: Complex, prob: Double) =
-      s"|${MathUtils.toBinaryPadded(index, qubitCount).mkString("")}>: $amp, P: ${prob.toPercent}%"
+    def toHumanString(index: Int, qubitCount: Int, amp: Option[Complex], prob: Double) =
+      s"|${MathUtils.toBinaryPadded(index, qubitCount).mkString("")}>: " +
+        s"Amplitude: ${amp.getOrElse("n/a")}, " +
+        s"P: ${prob.toPercent}%"
   }
 
   trait Superposition extends State {
@@ -74,12 +78,12 @@ object QuantumContext {
       .zip(probabilities())
       .zipWithIndex
       .map(pair => (pair._2, pair._1._1, pair._1._2))
-      .map(pair => toHumanString(pair._1, qubitCount, pair._2, pair._3))
+      .map(pair => toHumanString(pair._1, qubitCount, Some(pair._2), pair._3))
       .mkString("\n")
   }
 
   case class Collapsed(qubitCount: Int, index: Int) extends State {
-    override def toString: String = toHumanString(index, qubitCount, Complex(1), 1)
+    override def toString: String = toHumanString(index, qubitCount, None, 1)
   }
 
   sealed trait Op {
@@ -132,6 +136,10 @@ object QuantumContext {
   case class I(index: Int) extends Target
 
   case class X(index: Int) extends Target
+
+  case class Y(index: Int) extends Target
+
+  case class Z(index: Int) extends Target
 
   case class CNOT(controlIndex: Int, targetIndex: Int) extends Control {
     val target = X(targetIndex)
