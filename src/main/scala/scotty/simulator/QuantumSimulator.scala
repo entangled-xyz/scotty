@@ -8,16 +8,14 @@ import scotty.simulator.math.Implicits._
 import scala.collection.mutable
 import scala.util.Random
 import scotty.quantum.math.Complex
+import scotty.simulator.QuantumSimulator.GateGen
 
 case class QuantumSimulator(seed: Option[Long] = None) extends QuantumContext {
-  type GateGen = Seq[Double] => Matrix
-
-  private implicit val random = seed.fold(new Random)(s => new Random(s))
   private val gateGenerators = mutable.Map[String, GateGen]()
+  private val gateGenAdder = (sim: QuantumSimulator, name: String, f: GateGen) => sim.gateGenerators(name) = f
+  private implicit val random = seed.fold(new Random)(s => new Random(s))
 
-  GateLoader.loadDefaultGens(this)
-
-  def addGateGen(name: String, f: GateGen) = gateGenerators(name) = f
+  GateLoader.loadDefaultGens(this, gateGenAdder)
 
   def run(circuit: Circuit): State = {
     val shouldMeasure = circuit.ops.exists(op => op.isInstanceOf[Measure])
@@ -86,4 +84,9 @@ case class QuantumSimulator(seed: Option[Long] = None) extends QuantumContext {
   }
 
   def matrix(targetGate: Target): Matrix = gateGenerators(targetGate.name).apply(targetGate.params)
+}
+
+object QuantumSimulator {
+  type GateGen = Seq[Double] => Matrix
+  type GateGenAdder = (QuantumSimulator, String, GateGen) => Unit
 }
