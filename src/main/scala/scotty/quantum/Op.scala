@@ -8,7 +8,7 @@ sealed trait Op {
 }
 
 case class CircuitConnector(circuit: Circuit) extends Op {
-  val qubitCount = circuit.qubitCount
+  val qubitCount = circuit.register.size
   val indexes = circuit.indexes
 }
 

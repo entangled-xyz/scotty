@@ -3,9 +3,7 @@ package scotty.quantum
 import scotty.quantum.QuantumContext.{QuantumRegister, Qubit}
 
 case class Circuit(register: QuantumRegister, ops: Op*) {
-  val qubitCount = Circuit.qubitCountFromOps(ops)
-
-  val indexes = 0 until qubitCount
+  val indexes = 0 until register.size
 
   def combine(newCircuit: Circuit): Circuit = Circuit(ops ++ newCircuit.ops: _*)
 
@@ -15,7 +13,7 @@ case class Circuit(register: QuantumRegister, ops: Op*) {
 
   def withRegister(newQubits: Qubit*): Circuit = Circuit(QuantumRegister(newQubits: _*), ops: _*)
 
-  def isValid: Boolean = register.size == qubitCount
+  def isValid: Boolean = register.size >= Circuit.qubitCountFromOps(ops)
 
   require(isValid, "The number of qubits in the register has to be the same as the number of qubits used in all ops.")
 }
@@ -25,7 +23,7 @@ object Circuit {
 
   def apply(ops: Op*): Circuit = this(generateRegister(ops), ops: _*)
 
-  def qubitCountFromOps(ops: Seq[Op]): Int = ops.flatMap(op => op.indexes).distinct.max + 1
+  def qubitCountFromOps(ops: Seq[Op]): Int = if (ops.isEmpty) 0 else ops.flatMap(op => op.indexes).distinct.max + 1
 
   def generateRegister(n: Int): QuantumRegister =
     QuantumRegister(List.fill(n)(defaultState): _*)
