@@ -7,6 +7,11 @@ sealed trait Op {
   val indexes: Seq[Int]
 }
 
+case class CircuitConnector(circuit: Circuit) extends Op {
+  val qubitCount = circuit.qubitCount
+  val indexes = circuit.indexes
+}
+
 case class Measure(index: Int) extends Op {
   val qubitCount = 1
   val indexes = Seq(index)
