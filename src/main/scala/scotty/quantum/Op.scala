@@ -7,6 +7,11 @@ sealed trait Op {
   val indexes: Seq[Int]
 }
 
+case class Measure(index: Int) extends Op {
+  val qubitCount = 1
+  val indexes = Seq(index)
+}
+
 sealed trait Gate extends Op {
   val name = getClass.getSimpleName
 

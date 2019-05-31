@@ -18,10 +18,8 @@ case class SimSuperposition(vector: Vector)
     else SimSuperposition((this ⊗ SimSuperposition(state).fieldVector).getData)
   }
 
-  def applyOp(op: Op)(implicit ctx: QuantumContext): Superposition = op match {
-    case g: Gate => SimSuperposition(RawGate(g).product(fieldVector).getData)
-    case _ => this // TODO: add support for measurements
-  }
+  def applyGate(gate: Gate)(implicit ctx: QuantumContext): Superposition =
+    SimSuperposition(RawGate(gate).product(fieldVector).getData)
 
   def measure(): Collapsed = {
     val initialIterator = (0, 0d, None: Option[Int])

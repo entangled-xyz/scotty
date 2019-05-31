@@ -16,7 +16,7 @@ trait Superposition extends State {
 
   lazy val qubitCount: Int = (Math.log10(vector.length) / Math.log10(2)).toInt
 
-  def applyOp(op: Op)(implicit ctx: QuantumContext): Superposition
+  def applyGate(gate: Gate)(implicit ctx: QuantumContext): Superposition
 
   def probabilities(): Seq[Double] = vector.map(s => Math.pow(s.abs().roundWithPrecision, 2))
 

@@ -21,19 +21,19 @@ case class QuantumSimulator(seed: Option[Long] = None) extends QuantumContext {
 
   def run(circuit: Circuit): Superposition = {
     circuit.ops
-      .map(prepareOp(_, circuit.indexes))
-      .foldLeft(qsToSuperposition(circuit.register))((state, op) => state.applyOp(op)(this))
+      .map(opToGate(_, circuit.indexes))
+      .foldLeft(qsToSuperposition(circuit.register))((state, gate) => state.applyGate(gate)(this))
   }
 
   def qsToSuperposition(qs: Seq[Qubit]): Superposition =
     qs.foldLeft(SimSuperposition())((superposition, q) => superposition.par(SimSuperposition(q)))
 
-  def prepareOp(op: Op, indexes: Seq[Int]): Op = op match {
+  def opToGate(op: Op, indexes: Seq[Int]): Gate = op match {
     case g: Gate => prepareGate(g, indexes)
-    case _ => op // TODO: add support for measurements
+    case m: Measure => prepareGate(I(m.index), indexes)
   }
 
-  def prepareGate(gate: Gate, indexes: Seq[Int]): Op = {
+  def prepareGate(gate: Gate, indexes: Seq[Int]): Gate = {
     def pad(): Seq[Gate] = {
       val identityGate = RawGate(Array(
         Array(Complex(1), Complex(0)),

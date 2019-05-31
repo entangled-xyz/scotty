@@ -7,9 +7,13 @@ case class Circuit(register: Seq[Qubit], ops: Op*) {
 
   val indexes = 0 until qubitCount
 
-  def combine(circuit: Circuit): Circuit = Circuit(circuit.register, ops ++ circuit.ops: _*)
+  def combine(newCircuit: Circuit): Circuit = Circuit(
+    if (newCircuit.qubitCount > qubitCount) newCircuit.register else register,
+    ops ++ newCircuit.ops: _*)
 
-  def combine(newOps: Op*): Circuit = Circuit(Circuit.generateQubits(newOps), ops ++ newOps: _*)
+  def combine(newOps: Op*): Circuit = Circuit(
+    if (Circuit.qubitCountFromOps(newOps) > qubitCount) Circuit.generateQubits(newOps) else register,
+    ops ++ newOps: _*)
 
   def combine(newRegister: Qubit*)(newOps: Op*): Circuit = Circuit(newRegister, ops ++ newOps: _*)
 
