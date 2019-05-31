@@ -19,5 +19,5 @@ val circuit = bellState(1, 2)
 
 val superposition = sim.run(circuit)
 
-val collapsed = superposition.measure()
+val collapsed = superposition.measure
 ```

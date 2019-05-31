@@ -16,7 +16,7 @@ trait QuantumContext {
 
   def runAndMeasure(circuit: Circuit): Collapsed = {
     run(circuit) match {
-      case s: Superposition => s.measure()
+      case s: Superposition => s.measure
       case s: Collapsed => s
     }
   }

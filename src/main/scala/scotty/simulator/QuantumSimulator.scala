@@ -26,7 +26,7 @@ case class QuantumSimulator(seed: Option[Long] = None) extends QuantumContext {
       .flatMap(opToGate(_, circuit.indexes))
       .foldLeft(registerToSuperposition(circuit.register))((state, gate) => state.applyGate(gate)(this))
 
-    if (shouldMeasure) result.measure() else result
+    if (shouldMeasure) result.measure else result
   }
 
   def registerToSuperposition(register: QuantumRegister): Superposition =

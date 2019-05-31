@@ -21,9 +21,9 @@ case class SimSuperposition(vector: Vector)
   def applyGate(gate: Gate)(implicit ctx: QuantumContext): Superposition =
     SimSuperposition(RawGate(gate).product(fieldVector).getData)
 
-  def measure(): Collapsed = {
+  def measure: Collapsed = {
     val initialIterator = (0, 0d, None: Option[Int])
-    val result = probabilities().foldLeft(initialIterator)((iterator, prob) => {
+    val result = probabilities.foldLeft(initialIterator)((iterator, prob) => {
       val probSum = iterator._2 + prob
       val tryCollapse = (c: Int) => if (prob > 0 && random.nextDouble() <= probSum) Some(c) else None
 
