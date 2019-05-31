@@ -19,14 +19,18 @@ case class QuantumSimulator(seed: Option[Long] = None) extends QuantumContext {
 
   def addGateGen(name: String, f: GateGen) = gateGenerators(name) = f
 
-  def run(circuit: Circuit): Superposition = {
-    circuit.ops
+  def run(circuit: Circuit): State = {
+    val shouldMeasure = circuit.ops.exists(op => op.isInstanceOf[Measure])
+
+    val result = circuit.ops
       .flatMap(opToGate(_, circuit.indexes))
-      .foldLeft(qsToSuperposition(circuit.register))((state, gate) => state.applyGate(gate)(this))
+      .foldLeft(registerToSuperposition(circuit.register))((state, gate) => state.applyGate(gate)(this))
+
+    if (shouldMeasure) result.measure() else result
   }
 
-  def qsToSuperposition(qs: Seq[Qubit]): Superposition =
-    qs.foldLeft(SimSuperposition())((superposition, q) => superposition.par(SimSuperposition(q)))
+  def registerToSuperposition(register: QuantumRegister): Superposition =
+    register.values.foldLeft(SimSuperposition())((superposition, q) => superposition.par(SimSuperposition(q)))
 
   def opToGate(op: Op, indexes: Seq[Int]): Seq[Gate] = op match {
     case c: CircuitConnector => c.circuit.ops.flatMap(o => opToGate(o, c.indexes))

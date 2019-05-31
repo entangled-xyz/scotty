@@ -1,4 +1,4 @@
-# Scotty: Quantum Computing for Mere Mortals in Scala
+# Scotty: Quantum Computing for Scala/JVM
 
 *"Whatever you say, sir. Thy will be done."*<br>—Montgomery Scott
 

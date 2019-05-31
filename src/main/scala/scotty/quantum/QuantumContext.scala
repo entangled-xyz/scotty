@@ -4,7 +4,7 @@ import scotty.quantum.math.Complex
 import scotty.quantum.QuantumContext._
 
 trait QuantumContext {
-  def run(circuit: Circuit): Superposition
+  def run(circuit: Circuit): State
 
   def controlMatrix(gate: Control): Matrix
 
@@ -15,7 +15,10 @@ trait QuantumContext {
   def matrix(targetGate: Target): Matrix
 
   def runAndMeasure(circuit: Circuit): Collapsed = {
-    run(circuit).measure()
+    run(circuit) match {
+      case s: Superposition => s.measure()
+      case s: Collapsed => s
+    }
   }
 }
 
@@ -32,4 +35,14 @@ object QuantumContext {
 
     def zero: Qubit = Qubit(Complex(1), Complex(0))
   }
+
+  sealed trait Register[T] {
+    val values: Seq[T]
+
+    def size = values.length
+  }
+
+  case class QuantumRegister(values: Qubit*) extends Register[Qubit]
+
+  case class BinaryRegister(values: Int*) extends Register[Int]
 }
