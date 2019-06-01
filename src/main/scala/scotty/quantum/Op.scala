@@ -54,5 +54,3 @@ trait Control extends Gate {
   lazy val controlIndexes = indexes.filter(i => i != finalTargetIndex)
   lazy val isAsc = controlIndex < target.indexes(0)
 }
-
-case class Controlled(controlIndex: Int, target: Gate) extends Control

@@ -1,6 +1,8 @@
 package scotty.quantum
 
 object StandardGate {
+  case class Controlled(controlIndex: Int, target: Gate) extends Control
+
   case class H(index: Int) extends Target
 
   case class I(index: Int) extends Target

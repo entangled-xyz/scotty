@@ -19,6 +19,10 @@ object MathUtils {
     def toBinary: Seq[Int] = toBinaryImpl(i)
   }
 
+  implicit class ComplexHelpers(c: Complex) {
+    def roundWithPrecision: Complex = Complex(c.r.roundWithPrecision, c.i.roundWithPrecision)
+  }
+
   def toBinaryImpl(n: Int): Seq[Int] = {
     @tailrec
     def binary(acc: Seq[Int], n: Int): Seq[Int] = n match {

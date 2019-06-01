@@ -7,60 +7,60 @@ import scotty.quantum._
 import scotty.simulator.QuantumSimulator
 
 class QuantumSimulator extends FlatSpec {
-  val qs = QuantumSimulator()
+  val sim = QuantumSimulator()
 
   "QuantumSimulator" should "run an empty circuit" in {
-    qs.run(Circuit()) match {
+    sim.run(Circuit()) match {
       case s: Superposition => assert(s.qubitCount == 0)
     }
   }
 
   it should "run a circuit with one qubit" in {
-    qs.run(Circuit().withRegister(Qubit.zero)) match {
+    sim.run(Circuit().withRegister(Qubit.zero)) match {
       case s: Superposition => assert(s.qubitCount == 1)
     }
   }
 
   it should "run and measure a circuit with 2 qubits" in {
-    val result = qs.runAndMeasure(Circuit().withRegister(Qubit.one, Qubit.zero))
+    val result = sim.runAndMeasure(Circuit().withRegister(Qubit.one, Qubit.zero))
 
     assert(result.qubitCount == 2)
     assert(result.toBinaryRegister == BinaryRegister(1, 0))
   }
 
   it should "run and measure a 2 qubit circuit with an X gate applied to qubit 1" in {
-    val result = qs.runAndMeasure(Circuit(X(0)).withRegister(Qubit.one, Qubit.zero))
+    val result = sim.runAndMeasure(Circuit(X(0)).withRegister(Qubit.one, Qubit.zero))
 
     assert(result.toBinaryRegister == BinaryRegister(0, 0))
   }
 
   it should "run and measure a 2 qubit circuit with an X gate applied to qubit 2" in {
-    val result = qs.runAndMeasure(Circuit(X(1)).withRegister(Qubit.zero, Qubit.zero))
+    val result = sim.runAndMeasure(Circuit(X(1)).withRegister(Qubit.zero, Qubit.zero))
 
     assert(result.toBinaryRegister == BinaryRegister(0, 1))
   }
 
   it should "return a collapsed state after being measured" in {
-    qs.run(Circuit(X(0)).withRegister(Qubit.zero)) match {
+    sim.run(Circuit(X(0)).withRegister(Qubit.zero)) match {
       case s: Superposition =>  assert(s.measure.toBinaryRegister == BinaryRegister(1))
     }
   }
 
   it should "automatically get measured if there's a Measure op" in {
-    qs.run(Circuit(X(0), Measure(0)).withRegister(Qubit.zero)) match {
+    sim.run(Circuit(X(0), Measure(0)).withRegister(Qubit.zero)) match {
       case s: Collapsed => assert(s.toBinaryRegister == BinaryRegister(1))
     }
   }
 
   it should "throw IllegalArgumentException if the number of custom qubits is less than op qubits" in {
     assertThrows[IllegalArgumentException] {
-      qs.run(Circuit(X(1)).withRegister(Qubit.zero))
+      sim.run(Circuit(X(1)).withRegister(Qubit.zero))
     }
   }
 
   it should "work if the number of custom qubits is greater than op qubits" in {
     assertThrows[IllegalArgumentException] {
-      qs.run(Circuit(X(1)).withRegister(Qubit.zero))
+      sim.run(Circuit(X(1)).withRegister(Qubit.zero))
     }
   }
 }
