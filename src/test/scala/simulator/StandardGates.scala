@@ -11,7 +11,7 @@ import scotty.quantum.math.MathUtils._
 class StandardGates extends FlatSpec {
   val sim = QuantumSimulator()
   val quarterTurn = Math.PI / 2
-  val fiftyPercent = (Math.sqrt(2) / 2).roundWithPrecision
+  val fiftyPercent = (Math.sqrt(2) / 2).rounded
 
   "CNOT" should "change target qubit when control is 1" in {
     assert(sim.runAndMeasure(Circuit(X(0), CNOT(0, 1))).toBinaryRegister == BinaryRegister(1, 1))
@@ -31,7 +31,7 @@ class StandardGates extends FlatSpec {
 
   "H" should "set superposition to 50/50" in {
     sim.run(Circuit(H(0))) match {
-      case s: Superposition => assert(QubitReader(s).read(0)._2.roundWithPrecision == 0.5)
+      case s: Superposition => assert(QubitReader(s).read(0)._2.rounded == 0.5)
     }
   }
 
@@ -74,23 +74,23 @@ class StandardGates extends FlatSpec {
   "RX" should "rotate qubit around X" in {
     sim.run(Circuit(RX(quarterTurn, 0))) match {
       case s: Superposition =>
-        assert(StateReader(s).read(0)._2.roundWithPrecision == Complex(fiftyPercent, 0))
-        assert(StateReader(s).read(1)._2.roundWithPrecision == Complex(0, -fiftyPercent))
+        assert(StateReader(s).read(0)._2.rounded == Complex(fiftyPercent, 0))
+        assert(StateReader(s).read(1)._2.rounded == Complex(0, -fiftyPercent))
     }
   }
 
   "RY" should "rotate qubit around Y" in {
     sim.run(Circuit(RY(quarterTurn, 0))) match {
       case s: Superposition =>
-        assert(StateReader(s).read(0)._2.roundWithPrecision == Complex(fiftyPercent, 0))
-        assert(StateReader(s).read(1)._2.roundWithPrecision == Complex(fiftyPercent, 0))
+        assert(StateReader(s).read(0)._2.rounded == Complex(fiftyPercent, 0))
+        assert(StateReader(s).read(1)._2.rounded == Complex(fiftyPercent, 0))
     }
   }
 
   "RZ" should "rotate qubit around Z" in {
     sim.run(Circuit(RZ(quarterTurn, 0))) match {
       case s: Superposition =>
-        assert(StateReader(s).read(0)._2.roundWithPrecision == Complex(fiftyPercent, -fiftyPercent))
+        assert(StateReader(s).read(0)._2.rounded == Complex(fiftyPercent, -fiftyPercent))
         assert(StateReader(s).read(1)._2 == Complex(0, 0))
     }
   }

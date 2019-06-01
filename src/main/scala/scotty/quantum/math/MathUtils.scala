@@ -6,7 +6,7 @@ object MathUtils {
   val PRECISION = 1e-8
 
   implicit class DoubleHelpers(d: Double) {
-    def roundWithPrecision: Double = {
+    def rounded: Double = {
       val precision = 1 / PRECISION
 
       Math.rint(d * precision) / precision
@@ -20,7 +20,7 @@ object MathUtils {
   }
 
   implicit class ComplexHelpers(c: Complex) {
-    def roundWithPrecision: Complex = Complex(c.r.roundWithPrecision, c.i.roundWithPrecision)
+    def rounded: Complex = Complex(c.r.rounded, c.i.rounded)
   }
 
   def toBinaryImpl(n: Int): Seq[Int] = {

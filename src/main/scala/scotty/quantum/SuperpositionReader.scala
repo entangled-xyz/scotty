@@ -13,11 +13,11 @@ case class StateReader(state: Superposition) extends SuperpositionReader[(Seq[In
   def read: Seq[(Seq[Int], Complex, Double)] = state.vector.zipWithIndex.map(pair => (
     MathUtils.toBinaryPadded(pair._2, state.qubitCount),
     pair._1,
-    Math.pow(pair._1.abs().roundWithPrecision, 2)
+    Math.pow(pair._1.abs().rounded, 2)
   )).toSeq
 
   override def toString: String = read
-    .map(p => s"|${p._1.mkString("")}>: Amplitude: ${p._2}, P: ${p._3.roundWithPrecision.toPercent}%")
+    .map(p => s"|${p._1.mkString("")}>: Amplitude: ${p._2}, P: ${p._3.rounded.toPercent}%")
     .mkString("\n")
 }
 
@@ -31,6 +31,6 @@ case class QubitReader(state: Superposition) extends SuperpositionReader[(Int, D
   }
 
   override def toString: String = read
-    .map(p => s"qubits[${p._1}] == 1 => probability ${p._2.roundWithPrecision.toPercent}%")
+    .map(p => s"qubits[${p._1}] == 1 => probability ${p._2.rounded.toPercent}%")
     .mkString("\n")
 }

@@ -42,7 +42,7 @@ object LinearAlgebra {
     def isUnitaryMatrix: Boolean = equals(roundValues(product(T, fieldMatrix)), identity)
 
     def roundValues(m: Matrix): Matrix =
-      map(m, entry => Complex(entry.getReal.roundWithPrecision, entry.getImaginary.roundWithPrecision))
+      map(m, entry => Complex(entry.getReal.rounded, entry.getImaginary.rounded))
 
     def round: Matrix = roundValues(fieldMatrix)
 
