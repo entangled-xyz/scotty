@@ -2,15 +2,17 @@ package scotty.simulator
 
 import scotty.quantum._
 import scotty.quantum.QuantumContext._
+import scotty.quantum.StandardGate
 import scotty.quantum.math.MathUtils
 import scotty.simulator.math.RawGate
 import scotty.simulator.math.Implicits._
+
 import scala.util.Random
 import scotty.quantum.math.Complex
 
 case class QuantumSimulator(seed: Option[Long] = None) extends QuantumContext {
   implicit val random = seed.fold(new Random)(s => new Random(s))
-  val gateGenerators = QuantumSimulator.defaultGates
+  val gateGenerators = QuantumSimulator.standardGates
 
   def run(circuit: Circuit): State = {
     val shouldMeasure = circuit.ops.exists(op => op.isInstanceOf[Measure])
@@ -28,7 +30,7 @@ case class QuantumSimulator(seed: Option[Long] = None) extends QuantumContext {
   def opToGate(op: Op, indexes: Seq[Int]): Seq[Gate] = op match {
     case c: CircuitConnector => c.circuit.ops.flatMap(o => opToGate(o, c.indexes))
     case g: Gate => Seq(prepareGate(g, indexes))
-    case m: Measure => Seq(prepareGate(I(m.index), indexes))
+    case m: Measure => Seq(prepareGate(StandardGate.I(m.index), indexes))
   }
 
   def prepareGate(gate: Gate, indexes: Seq[Int]): Gate = {
@@ -86,7 +88,7 @@ object QuantumSimulator {
 
   type GateGen = Seq[Double] => Matrix
 
-  def defaultGates: Map[String, GateGen] = Map(
+  def standardGates: Map[String, GateGen] = Map(
     "H" -> H.matrix,
     "X" -> X.matrix,
     "Y" -> Y.matrix,
