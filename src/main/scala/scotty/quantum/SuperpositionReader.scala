@@ -9,7 +9,7 @@ sealed trait SuperpositionReader[T] {
   def read: Seq[T]
 }
 
-case class StateReader(state: Superposition) extends SuperpositionReader[(Seq[Int], Complex, Double)] {
+case class StateProbabilityReader(state: Superposition) extends SuperpositionReader[(Seq[Int], Complex, Double)] {
   def read: Seq[(Seq[Int], Complex, Double)] = state.vector.zipWithIndex.map(pair => (
     MathUtils.toBinaryPadded(pair._2, state.qubitCount),
     pair._1,
@@ -21,9 +21,9 @@ case class StateReader(state: Superposition) extends SuperpositionReader[(Seq[In
     .mkString("\n")
 }
 
-case class QubitReader(state: Superposition) extends SuperpositionReader[(Int, Double)] {
+case class QubitProbabilityReader(state: Superposition) extends SuperpositionReader[(Int, Double)] {
   def read: Seq[(Int, Double)] = {
-    val ps = StateReader(state).read
+    val ps = StateProbabilityReader(state).read
 
     (0 until state.qubitCount).map(q => {
       (q, ps.foldLeft(0d)((sum, pair) => if (pair._1(q) == 1) sum + pair._3 else sum))

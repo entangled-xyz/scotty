@@ -31,15 +31,15 @@ class StandardGates extends FlatSpec {
 
   "H" should "set superposition to 50/50" in {
     sim.run(Circuit(H(0))) match {
-      case s: Superposition => assert(QubitReader(s).read(0)._2.rounded == 0.5)
+      case s: Superposition => assert(QubitProbabilityReader(s).read(0)._2.rounded == 0.5)
     }
   }
 
   "I" should "do nothing" in {
     sim.run(Circuit(I(0))) match {
       case s: Superposition =>
-        assert(StateReader(s).read(0)._2 == Complex(1))
-        assert(StateReader(s).read(1)._2 == Complex(0))
+        assert(StateProbabilityReader(s).read(0)._2 == Complex(1))
+        assert(StateProbabilityReader(s).read(1)._2 == Complex(0))
         assert(s.measure.toBinaryRegister == BinaryRegister(0))
     }
   }
@@ -47,8 +47,8 @@ class StandardGates extends FlatSpec {
   "X" should "negate qubit" in {
     sim.run(Circuit(X(0))) match {
       case s: Superposition =>
-        assert(StateReader(s).read(0)._2 == Complex(0))
-        assert(StateReader(s).read(1)._2 == Complex(1))
+        assert(StateProbabilityReader(s).read(0)._2 == Complex(0))
+        assert(StateProbabilityReader(s).read(1)._2 == Complex(1))
         assert(s.measure.toBinaryRegister == BinaryRegister(1))
     }
   }
@@ -56,8 +56,8 @@ class StandardGates extends FlatSpec {
   "Y" should "negate qubit" in {
     sim.run(Circuit(Y(0))) match {
       case s: Superposition =>
-        assert(StateReader(s).read(0)._2 == Complex(0, 0))
-        assert(StateReader(s).read(1)._2 == Complex(0, 1))
+        assert(StateProbabilityReader(s).read(0)._2 == Complex(0, 0))
+        assert(StateProbabilityReader(s).read(1)._2 == Complex(0, 1))
         assert(s.measure.toBinaryRegister == BinaryRegister(1))
     }
   }
@@ -65,8 +65,8 @@ class StandardGates extends FlatSpec {
   "Z" should "change phase" in {
     sim.run(Circuit(Z(0))) match {
       case s: Superposition =>
-        assert(StateReader(s).read(0)._2 == Complex(1, 0))
-        assert(StateReader(s).read(1)._2 == Complex(0, 0))
+        assert(StateProbabilityReader(s).read(0)._2 == Complex(1, 0))
+        assert(StateProbabilityReader(s).read(1)._2 == Complex(0, 0))
         assert(s.measure.toBinaryRegister == BinaryRegister(0))
     }
   }
@@ -74,24 +74,24 @@ class StandardGates extends FlatSpec {
   "RX" should "rotate qubit around X" in {
     sim.run(Circuit(RX(quarterTurn, 0))) match {
       case s: Superposition =>
-        assert(StateReader(s).read(0)._2.rounded == Complex(fiftyPercent, 0))
-        assert(StateReader(s).read(1)._2.rounded == Complex(0, -fiftyPercent))
+        assert(StateProbabilityReader(s).read(0)._2.rounded == Complex(fiftyPercent, 0))
+        assert(StateProbabilityReader(s).read(1)._2.rounded == Complex(0, -fiftyPercent))
     }
   }
 
   "RY" should "rotate qubit around Y" in {
     sim.run(Circuit(RY(quarterTurn, 0))) match {
       case s: Superposition =>
-        assert(StateReader(s).read(0)._2.rounded == Complex(fiftyPercent, 0))
-        assert(StateReader(s).read(1)._2.rounded == Complex(fiftyPercent, 0))
+        assert(StateProbabilityReader(s).read(0)._2.rounded == Complex(fiftyPercent, 0))
+        assert(StateProbabilityReader(s).read(1)._2.rounded == Complex(fiftyPercent, 0))
     }
   }
 
   "RZ" should "rotate qubit around Z" in {
     sim.run(Circuit(RZ(quarterTurn, 0))) match {
       case s: Superposition =>
-        assert(StateReader(s).read(0)._2.rounded == Complex(fiftyPercent, -fiftyPercent))
-        assert(StateReader(s).read(1)._2 == Complex(0, 0))
+        assert(StateProbabilityReader(s).read(0)._2.rounded == Complex(fiftyPercent, -fiftyPercent))
+        assert(StateProbabilityReader(s).read(1)._2 == Complex(0, 0))
     }
   }
 }

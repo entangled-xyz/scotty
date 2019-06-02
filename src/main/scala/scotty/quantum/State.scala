@@ -20,7 +20,7 @@ trait Superposition extends State {
   def measure: Collapsed
 
   def toString(fullState: Boolean): String =
-    if (fullState) StateReader(this).toString else QubitReader(this).toString
+    if (fullState) StateProbabilityReader(this).toString else QubitProbabilityReader(this).toString
 
   override def toString: String = toString(true)
 }
