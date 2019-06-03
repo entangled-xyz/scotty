@@ -13,7 +13,7 @@ trait Superposition extends State {
 
   def applyGate(gate: Gate)(implicit ctx: QuantumContext): Superposition
 
-  def probabilities: Seq[Double] = vector.map(s => Math.pow(s.abs().rounded, 2))
+  def probabilities: Seq[Double] = vector.map(s => Math.pow(s.abs.rounded, 2))
 
   def par(state: Superposition): Superposition
 

@@ -1,6 +1,6 @@
 package scotty.quantum
 
-import scotty.quantum.math.Complex
+import scotty.quantum.math.{Complex, MathUtils}
 import scotty.quantum.QuantumContext._
 
 trait QuantumContext {
@@ -28,12 +28,18 @@ object QuantumContext {
 
   case class QuantumException(message: String) extends Exception(message)
 
-  case class Qubit(a: Complex, b: Complex)
+  case class Qubit(a: Complex, b: Complex) {
+    require(Qubit.areAmplitudesValid(this), "Amplitudes have to add up to 1")
+  }
 
   object Qubit {
     def one: Qubit = Qubit(Complex(0), Complex(1))
 
     def zero: Qubit = Qubit(Complex(1), Complex(0))
+
+    def fiftyFifty: Qubit = this(Complex(1 / Math.sqrt(2.0)), Complex(1 / Math.sqrt(2.0)))
+
+    def areAmplitudesValid(q: Qubit): Boolean = MathUtils.isProbabilityValid(q.a.abs, q.b.abs)
   }
 
   sealed trait Register[T] {

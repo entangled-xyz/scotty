@@ -59,8 +59,8 @@ class QuantumSimulator extends FlatSpec {
   }
 
   it should "work if the number of custom qubits is greater than op qubits" in {
-    assertThrows[IllegalArgumentException] {
-      sim.run(Circuit(X(1)).withRegister(Qubit.zero))
+    sim.run(Circuit(X(0), Measure(0)).withRegister(Qubit.zero, Qubit.zero, Qubit.zero, Qubit.zero)) match {
+      case s: Collapsed => assert(s.toBinaryRegister == BinaryRegister(1, 0, 0, 0))
     }
   }
 }

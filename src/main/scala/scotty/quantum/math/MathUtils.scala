@@ -38,4 +38,10 @@ object MathUtils {
 
     List.fill(qubitCount - bits.length)(0) ++ bits
   }
+
+  def isProbabilityValid(a: Double, b: Double): Boolean = {
+    val sumOfSquares = Math.pow(a, 2) + Math.pow(b, 2)
+
+    Math.abs(sumOfSquares - 1) < MathUtils.PRECISION
+  }
 }
