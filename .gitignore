@@ -1,3 +1,5 @@
 .idea
 /target
-/project
+/project/target
+/project/project
+/project/build.properties
