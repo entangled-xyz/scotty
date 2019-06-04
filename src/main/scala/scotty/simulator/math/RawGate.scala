@@ -11,7 +11,7 @@ case class RawGate(rawMatrix: Matrix) extends Target with MatrixTransformations 
 
   override lazy val qubitCount = Math.sqrt(rawMatrix.length).toInt
 
-  override def matrix()(implicit ctx: QuantumContext) = rawMatrix
+  override def targetMatrix = Some(rawMatrix)
 }
 
 object RawGate {

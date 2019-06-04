@@ -24,10 +24,12 @@ sealed trait Gate extends Op {
 
   def isUnitary()(implicit ctx: QuantumContext): Boolean = ctx.isUnitary(this)
 
-  def matrix()(implicit ctx: QuantumContext): Matrix = this match {
-    case targetGate: Target => ctx.matrix(targetGate)
-    case controlGate: Control => ctx.controlMatrix(controlGate)
+  def matrix(implicit ctx: QuantumContext): Matrix = this match {
+    case target: Target => targetMatrix.getOrElse(ctx.targetMatrix(target))
+    case control: Control => ctx.controlMatrix(control)
   }
+
+  def targetMatrix: Option[Matrix] = None
 
   def par(gate: Gate)(implicit ctx: QuantumContext): Matrix = ctx.par(this, gate)
 

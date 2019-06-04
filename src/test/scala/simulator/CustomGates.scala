@@ -11,10 +11,10 @@ class CustomGates extends FlatSpec {
 
   "Custom gate" should "negate a qubit" in {
     case class CustomGate(index: Int) extends Target {
-      override def matrix()(implicit ctx: QuantumContext): Matrix = Array(
+      override def targetMatrix = Some(Array(
         Array(Complex(0), Complex(1)),
         Array(Complex(1), Complex(0))
-      )
+      ))
     }
 
     assert(sim.runAndMeasure(Circuit(CustomGate(0))).toBinaryRegister == BinaryRegister(1))

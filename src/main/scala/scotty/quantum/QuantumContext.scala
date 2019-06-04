@@ -12,7 +12,7 @@ trait QuantumContext {
 
   def isUnitary(gate: Gate): Boolean
 
-  def matrix(targetGate: Target): Matrix
+  def targetMatrix(target: Target): Matrix
 
   def runAndMeasure(circuit: Circuit): Collapsed = {
     run(circuit) match {

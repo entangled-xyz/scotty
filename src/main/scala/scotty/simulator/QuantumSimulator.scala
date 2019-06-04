@@ -79,7 +79,7 @@ case class QuantumSimulator(implicit random: Random = new Random) extends Quantu
     }).toArray
   }
 
-  def matrix(targetGate: Target): Matrix = gateGenerators(targetGate.name).apply(targetGate.params)
+  def targetMatrix(targetGate: Target): Matrix = gateGenerators(targetGate.name).apply(targetGate.params)
 }
 
 object QuantumSimulator {
