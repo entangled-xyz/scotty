@@ -1,5 +1,4 @@
 .idea
 /target
-/project/target
-/project/project
-/project/build.properties
+/project
+!/project/plugins.sbt
