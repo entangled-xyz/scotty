@@ -17,7 +17,7 @@ case class QuantumSimulator(implicit random: Random = new Random) extends Quantu
     val shouldMeasure = circuit.ops.exists(op => op.isInstanceOf[Measure])
 
     val result = circuit.ops
-      .flatMap(opToGate(_, circuit.indexes))
+      .flatMap(opToGate(_, circuit.register.size))
       .foldLeft(registerToSuperposition(circuit.register))((state, gate) => state.applyGate(gate)(this))
 
     if (shouldMeasure) result.measure else result
@@ -26,13 +26,13 @@ case class QuantumSimulator(implicit random: Random = new Random) extends Quantu
   def registerToSuperposition(register: QuantumRegister): Superposition =
     register.values.foldLeft(SimSuperposition())((superposition, q) => superposition.par(SimSuperposition(q)))
 
-  def opToGate(op: Op, indexes: Seq[Int]): Seq[Gate] = op match {
-    case c: CircuitConnector => c.circuit.ops.flatMap(o => opToGate(o, c.indexes))
-    case g: Gate => Seq(prepareGate(g, indexes))
-    case m: Measure => Seq(prepareGate(StandardGate.I(m.index), indexes))
+  def opToGate(op: Op, qubitCount: Int): Seq[Gate] = op match {
+    case c: CircuitConnector => c.circuit.ops.flatMap(o => opToGate(o, qubitCount))
+    case g: Gate => Seq(prepareGate(g, qubitCount))
+    case m: Measure => Seq(prepareGate(StandardGate.I(m.index), qubitCount))
   }
 
-  def prepareGate(gate: Gate, indexes: Seq[Int]): Gate = {
+  def prepareGate(gate: Gate, qubitCount: Int): Gate = {
     def pad(): Seq[Gate] = {
       val identityGate = RawGate(Array(
         Array(Complex(1), Complex(0)),
@@ -40,7 +40,7 @@ case class QuantumSimulator(implicit random: Random = new Random) extends Quantu
       ))
 
       def topPad = (0 until gate.indexes.sortWith(_ < _)(0)).map(_ => identityGate)
-      def bottomPad = (gate.indexes.sortWith(_ > _)(0) until indexes.length - 1).map(_ => identityGate)
+      def bottomPad = (gate.indexes.sortWith(_ > _)(0) until qubitCount - 1).map(_ => identityGate)
 
       (topPad :+ gate) ++ bottomPad
     }

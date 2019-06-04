@@ -40,6 +40,12 @@ class QuantumSimulator extends FlatSpec {
     assert(result.toBinaryRegister == BinaryRegister(0, 1))
   }
 
+  it should "run a circuit with CircuitConnector in it" in {
+    val result = sim.runAndMeasure(Circuit(X(0), CircuitConnector(Circuit(X(4))), X(2)))
+
+    assert(result.toBinaryRegister == BinaryRegister(1, 0, 1, 0, 1))
+  }
+
   it should "return a collapsed state after being measured" in {
     sim.run(Circuit(X(0)).withRegister(Qubit.zero)) match {
       case s: Superposition =>  assert(s.measure.toBinaryRegister == BinaryRegister(1))
