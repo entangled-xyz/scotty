@@ -1,5 +1,7 @@
 # Scotty: Quantum Computing in Scala
 
+[![Build Status](https://travis-ci.org/entangled-xyz/scotty.svg?branch=master)](https://travis-ci.org/entangled-xyz/scotty)
+
 *"Whatever you say, sir. Thy will be done."*—Montgomery Scott
 
 Scotty is a quantum computing platform for Scala developers. It comes with a quantum computer simulator that can be used for writing hybrid (classical and quantum) programs.
