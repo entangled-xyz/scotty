@@ -6,7 +6,7 @@ import scotty.quantum.StandardGate.{X, _}
 import scotty.quantum._
 import scotty.simulator.QuantumSimulator
 
-class ControlledGate extends FlatSpec {
+class ControlledGateSpec extends FlatSpec {
   val sim = QuantumSimulator()
 
   "Controlled gate" should "change target if control is 1" in {

@@ -6,7 +6,7 @@ import scotty.quantum.StandardGate._
 import scotty.quantum._
 import scotty.simulator.QuantumSimulator
 
-class QuantumSimulator extends FlatSpec {
+class QuantumSimulatorSpec extends FlatSpec {
   val sim = QuantumSimulator()
 
   "QuantumSimulator" should "run an empty circuit" in {

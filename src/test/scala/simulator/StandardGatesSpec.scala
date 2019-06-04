@@ -8,7 +8,7 @@ import scotty.quantum.math.Complex
 import scotty.simulator.QuantumSimulator
 import scotty.quantum.math.MathUtils._
 
-class StandardGates extends FlatSpec {
+class StandardGatesSpec extends FlatSpec {
   val sim = QuantumSimulator()
   val quarterTurn = Math.PI / 2
   val fiftyPercent = (Math.sqrt(2) / 2).rounded

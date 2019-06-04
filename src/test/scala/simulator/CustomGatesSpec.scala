@@ -6,7 +6,7 @@ import scotty.quantum._
 import scotty.quantum.math.Complex
 import scotty.simulator.QuantumSimulator
 
-class CustomGates extends FlatSpec {
+class CustomGatesSpec extends FlatSpec {
   val sim = QuantumSimulator()
 
   "Custom gate" should "negate a qubit" in {

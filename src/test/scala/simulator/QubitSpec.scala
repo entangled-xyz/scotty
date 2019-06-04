@@ -5,7 +5,7 @@ import scotty.quantum.QuantumContext.Qubit
 import scotty.quantum.math.Complex
 import scotty.simulator.QuantumSimulator
 
-class Qubit extends FlatSpec {
+class QubitSpec extends FlatSpec {
   val sim = QuantumSimulator()
 
   "Qubit" should "throw IllegalArgumentException if amplitudes are invalid" in {
