@@ -15,16 +15,14 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 
 publishTo := sonatypePublishTo.value
 
-sonatypeProfileName := "xyz.entangled"
-
 publishMavenStyle := true
 
 licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"))
 
-sonatypeProjectHosting := Some(GitHubHosting("entangled-xyz", "scotty", "des.elyon@gmail.com"))
+sonatypeProjectHosting := Some(GitHubHosting("entangled-xyz", "scotty", "vasinov@me.com"))
 
 developers := List(
-  Developer(id="vasinov", name="Vasily Vasinov", email="des.elyon@gmail.com", url=url("https://www.vasinov.com"))
+  Developer(id="vasinov", name="Vasily Vasinov", email="vasinov@me.com", url=url("https://www.vasinov.com"))
 )
 
 releaseCrossBuild := true
