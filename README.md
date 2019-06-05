@@ -4,7 +4,7 @@
 
 *"Whatever you say, sir. Thy will be done."*—Montgomery Scott
 
-Scotty is a quantum computing platform for Scala developers. It comes with a quantum computer simulator that can be used for writing hybrid (classical and quantum) programs.
+Scotty is a quantum computing framework for Scala developers. It comes with a quantum computer simulator that can be used for writing hybrid (classical and quantum) programs.
 
 Scotty was created with three goals in mind:
 
