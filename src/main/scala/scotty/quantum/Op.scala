@@ -3,24 +3,20 @@ package scotty.quantum
 import scotty.quantum.QuantumContext.Matrix
 
 sealed trait Op {
-  val qubitCount: Int
+  lazy val qubitCount = indexes.length
   val indexes: Seq[Int]
 }
 
 case class CircuitConnector(circuit: Circuit) extends Op {
-  val qubitCount = circuit.register.size
   val indexes = circuit.indexes
 }
 
 case class Measure(index: Int) extends Op {
-  val qubitCount = 1
   val indexes = Seq(index)
 }
 
 sealed trait Gate extends Op {
   val name = getClass.getSimpleName
-
-  lazy val qubitCount = indexes.length
 
   def isUnitary()(implicit ctx: QuantumContext): Boolean = ctx.isUnitary(this)
 

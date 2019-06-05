@@ -15,8 +15,6 @@ Scotty was created with three goals in mind:
 Here's an example of a quantum teleportation algorithm to give you an idea of how easy it is to write hybrid code with Scotty:
 
 ```scala
-implicit val random = new Random
-
 def bellPair(q1: Int, q2: Int) = Circuit(H(q1), CNOT(q1, q2))
 
 val msg = Qubit(Complex(0.8), Complex(0.6))
