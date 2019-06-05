@@ -37,4 +37,4 @@ Here we setup a quantum circuit with a custom register of qubits, ran it in a qu
 
 ## Getting Started
 
-To learn more about how to use Scotty please [check out the docs](http://www.entangled.xyz/scotty/).
+To learn more about how to use Scotty please [check out the docs](https://www.entangled.xyz/scotty/).
