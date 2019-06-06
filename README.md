@@ -9,10 +9,10 @@ Scotty is a quantum computing framework for Scala developers. It comes with a qu
 Scotty was created with three goals in mind:
 
 - **Write once, run anywhere**: experiment with quantum code and run it with Scotty. Compile it (coming soon) to Quil or OpenQASM and run it on other simulators or real quantum computers.
-- **Avoid stateful programs**: embrace type safety, immutability, and referential transparency.
+- **Expandability**: provide a high-level set of abstractions that can be expanded to different architectures.
 - **No PhD required**: it should be easy to get started and everything should work out-of-the-box.
 
-Here's an example of a quantum teleportation algorithm to give you an idea of how easy it is to write hybrid code with Scotty:
+Here is an example of a quantum teleportation algorithm to give you an idea of how easy it is to write hybrid code with Scotty:
 
 ```scala
 def bellPair(q1: Int, q2: Int) = Circuit(H(q1), CNOT(q1, q2))
@@ -31,8 +31,16 @@ QuantumSimulator().run(circuit) match {
 }
 ```
 
-Here we setup a quantum circuit with a custom register of qubits, ran it in a quantum simulator and then peeked at the initial state of the *message* qubit and one of the the *superposition* probabilities.
+Here we setup a quantum circuit with a custom register of qubits, run it on the quantum simulator, and then peek at the initial state of the *message* qubit and one of the *superposition* probabilities.
 
 ## Getting Started
 
-To learn more about how to use Scotty please [check out the docs](https://www.entangled.xyz/scotty/).
+To learn more about installing and using Scotty please [check out the official docs](https://www.entangled.xyz/scotty/).
+
+## Contributing
+
+Contributions are super welcome! Take a look at the current issues and if you'd like to help please submit a pull request with some tests covering your implementation.
+
+## License
+
+Scotty is available under the Apache 2 License.
