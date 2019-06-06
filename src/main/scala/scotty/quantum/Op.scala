@@ -18,7 +18,7 @@ case class Measure(index: Int) extends Op {
 sealed trait Gate extends Op {
   val name = getClass.getSimpleName
 
-  def isUnitary()(implicit ctx: QuantumContext): Boolean = ctx.isUnitary(this)
+  def isUnitary(implicit ctx: QuantumContext): Boolean = ctx.isUnitary(this)
 
   def matrix(implicit ctx: QuantumContext): Matrix = this match {
     case target: Target => targetMatrix.getOrElse(ctx.targetMatrix(target))
