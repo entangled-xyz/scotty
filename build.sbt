@@ -1,12 +1,10 @@
 import xerial.sbt.Sonatype._
 import ReleaseTransformations._
 
-inThisBuild(Seq(
-  name := "scotty",
-  organization := "xyz.entangled",
-  scalaVersion := "2.12.8",
-  crossScalaVersions := Seq("2.10.7", "2.11.12", "2.12.8")
-))
+ThisBuild / name := "scotty"
+ThisBuild / organization := "xyz.entangled"
+ThisBuild / scalaVersion := "2.12.8"
+ThisBuild / crossScalaVersions := Seq("2.10.7", "2.11.12", "2.12.8")
 
 libraryDependencies += "org.apache.commons" % "commons-math3" % "3.0"
 
