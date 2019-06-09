@@ -8,6 +8,8 @@ trait QuantumContext {
 
   def controlMatrix(gate: Control): Matrix
 
+  def swapMatrix(gate: QubitSwap): Matrix
+
   def par(gate1: Gate, gate2: Gate): Matrix
 
   def isUnitary(gate: Gate): Boolean
@@ -40,6 +42,8 @@ object QuantumContext {
     def fiftyFifty: Qubit = this(Complex(1 / Math.sqrt(2.0)), Complex(1 / Math.sqrt(2.0)))
 
     def areAmplitudesValid(q: Qubit): Boolean = MathUtils.isProbabilityValid(q.a.abs, q.b.abs)
+
+    def apply(as: Array[Complex]): Qubit = this(as(0), as(1))
   }
 
   sealed trait Register[T] {
