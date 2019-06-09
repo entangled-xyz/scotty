@@ -2,3 +2,7 @@
 /target
 /project
 !/project/plugins.sbt
+
+.vscode
+.bloop
+.metals
