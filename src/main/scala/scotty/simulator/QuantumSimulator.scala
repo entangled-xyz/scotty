@@ -3,6 +3,7 @@ package scotty.simulator
 import scotty.quantum._
 import scotty.quantum.QuantumContext._
 import scotty.quantum.StandardGate
+import scotty.quantum.StandardGate.CNOT
 import scotty.quantum.math.MathUtils
 import scotty.quantum.math.MathUtils._
 import scotty.simulator.math.RawGate
@@ -53,6 +54,23 @@ case class QuantumSimulator(implicit random: Random = new Random) extends Quantu
 
   def isUnitary(g: Gate): Boolean = RawGate(g)(this).isUnitaryMatrix
 
+  /**
+    * Generates a matrix based on the top-level control gate and nested control and target child gates.
+    *
+    * First, it generates an array of arrays. Each array is a binary representation of the decimal state vector index. For
+    * example, a vector of length 2 can be represented with the following matrix:
+    *
+    * Array(
+    *   Array(0, 0), Array(0, 1),
+    *   Array(1, 0), Array(1, 1)
+    * )
+    *
+    * For each top-level array we check if control bits are triggered and if they are then we apply the final
+    * target gate to the target qubits.
+    *
+    * @param gate control gate that this method generates a matrix for
+    * @return final matrix representing the control gate acting on all involved qubits
+    */
   def controlMatrix(gate: Control): Matrix = {
     val minIndex = gate.indexes.min
     val normalizedControlIndexes = gate.controlIndexes.map(i => i - minIndex)
@@ -60,6 +78,7 @@ case class QuantumSimulator(implicit random: Random = new Random) extends Quantu
     val gapQubitCount = (sortedControlIndexes.tail, sortedControlIndexes).zipped.map((a, b) => a - b - 1).sum
     val qubitCount = gate.qubitCount + gapQubitCount
     val normalizedTargetIndexes = gate.targetIndexes.map(_ - minIndex)
+    val isFinalTargetReversed = gate.finalTarget.isReversed
 
     (0 until Math.pow(2, qubitCount).toInt).map(index => {
       val binaries = MathUtils.toBinaryPadded(index, qubitCount).toArray
@@ -88,9 +107,9 @@ case class QuantumSimulator(implicit random: Random = new Random) extends Quantu
             if (filledNtis.contains(pair._2)) SimSuperposition(gateTargetProduct, Some("target"))
             else SimSuperposition(pair._1.toBasisState)
           })
-          .foldLeft(Seq[SimSuperposition]()) { (acc, item) =>
-            if (item.hasLabel("target") && acc.exists(_.hasLabel("target"))) acc
-            else acc :+ item
+          .foldLeft(Seq[SimSuperposition]()) {
+            case (acc, item) if item.hasLabel("target") && acc.exists(_.hasLabel("target")) => acc
+            case (acc, item) => if (isFinalTargetReversed) item +: acc else acc :+ item
           }
           .reduce((s1, s2) => s1 par s2)
           .rawVector

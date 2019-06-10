@@ -38,6 +38,8 @@ trait Target extends Gate {
 
   val params = Seq[Double]()
   val indexes = Seq(index1)
+
+  def isReversed: Boolean = false
 }
 
 trait Control extends Gate {
@@ -58,4 +60,6 @@ trait QubitSwap extends Target {
   val index2: Int
 
   override val indexes = Seq(index1, index2)
+
+  override def isReversed: Boolean = index1 > index2
 }
