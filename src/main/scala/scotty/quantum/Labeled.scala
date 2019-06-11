@@ -3,5 +3,5 @@ package scotty.quantum
 trait Labeled {
   val label: Option[String]
 
-  def hasLabel(l: String): Boolean = label.contains(l)
+  def hasLabel(l: String): Boolean = label.isDefined && label.get == l
 }
