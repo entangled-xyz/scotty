@@ -49,7 +49,7 @@ object QuantumContext {
   sealed trait Register[T] {
     val values: Seq[T]
 
-    def size = values.length
+    def size: Int = values.length
   }
 
   case class QuantumRegister(values: Qubit*) extends Register[Qubit]

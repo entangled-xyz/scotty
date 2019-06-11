@@ -1,4 +1,4 @@
-package simulator
+package scotty.simulator
 
 import org.scalatest.FlatSpec
 import scotty.quantum.QuantumContext.BinaryRegister
@@ -32,6 +32,7 @@ class StandardGatesSpec extends FlatSpec {
   "H" should "set superposition to 50/50" in {
     sim.run(Circuit(H(0))) match {
       case s: Superposition => assert(QubitProbabilityReader(s).read(0).probability.rounded == 0.5)
+      case _ =>
     }
   }
 
@@ -41,6 +42,7 @@ class StandardGatesSpec extends FlatSpec {
         assert(StateProbabilityReader(s).read(0).amplitude == Complex(1))
         assert(StateProbabilityReader(s).read(1).amplitude == Complex(0))
         assert(s.measure.toBinaryRegister == BinaryRegister(0))
+      case _ =>
     }
   }
 
@@ -50,6 +52,7 @@ class StandardGatesSpec extends FlatSpec {
         assert(StateProbabilityReader(s).read(0).amplitude == Complex(0))
         assert(StateProbabilityReader(s).read(1).amplitude == Complex(1))
         assert(s.measure.toBinaryRegister == BinaryRegister(1))
+      case _ =>
     }
   }
 
@@ -59,6 +62,7 @@ class StandardGatesSpec extends FlatSpec {
         assert(StateProbabilityReader(s).read(0).amplitude == Complex(0, 0))
         assert(StateProbabilityReader(s).read(1).amplitude == Complex(0, 1))
         assert(s.measure.toBinaryRegister == BinaryRegister(1))
+      case _ =>
     }
   }
 
@@ -68,6 +72,7 @@ class StandardGatesSpec extends FlatSpec {
         assert(StateProbabilityReader(s).read(0).amplitude == Complex(1, 0))
         assert(StateProbabilityReader(s).read(1).amplitude == Complex(0, 0))
         assert(s.measure.toBinaryRegister == BinaryRegister(0))
+      case _ =>
     }
   }
 
@@ -76,6 +81,7 @@ class StandardGatesSpec extends FlatSpec {
       case s: Superposition =>
         assert(StateProbabilityReader(s).read(0).amplitude.rounded == Complex(fiftyPercent, 0))
         assert(StateProbabilityReader(s).read(1).amplitude.rounded == Complex(0, -fiftyPercent))
+      case _ =>
     }
   }
 
@@ -84,6 +90,7 @@ class StandardGatesSpec extends FlatSpec {
       case s: Superposition =>
         assert(StateProbabilityReader(s).read(0).amplitude.rounded == Complex(fiftyPercent, 0))
         assert(StateProbabilityReader(s).read(1).amplitude.rounded == Complex(fiftyPercent, 0))
+      case _ =>
     }
   }
 
@@ -92,6 +99,7 @@ class StandardGatesSpec extends FlatSpec {
       case s: Superposition =>
         assert(StateProbabilityReader(s).read(0).amplitude.rounded == Complex(fiftyPercent, -fiftyPercent))
         assert(StateProbabilityReader(s).read(1).amplitude == Complex(0, 0))
+      case _ =>
     }
   }
 
@@ -122,6 +130,7 @@ class StandardGatesSpec extends FlatSpec {
         assert(StateProbabilityReader(s).read(1).amplitude.rounded == Complex(fiftyPercent, 0))
         assert(StateProbabilityReader(s).read(2).amplitude.rounded == Complex(0, 0))
         assert(StateProbabilityReader(s).read(3).amplitude.rounded == Complex(0, 0))
+      case _ =>
     }
 
     sim.run(Circuit(H(1), SWAP(0, 1))) match {
@@ -130,6 +139,7 @@ class StandardGatesSpec extends FlatSpec {
         assert(StateProbabilityReader(s).read(1).amplitude.rounded == Complex(0, 0))
         assert(StateProbabilityReader(s).read(2).amplitude.rounded == Complex(fiftyPercent, 0))
         assert(StateProbabilityReader(s).read(3).amplitude.rounded == Complex(0, 0))
+      case _ =>
     }
   }
 }
