@@ -92,7 +92,7 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
         val ntis = normalizedTargetIndexes
         val filledNtis = if (ntis.length > 1) ntis(0) to ntis.last else ntis
 
-        val targetRegister = QuantumRegister(filledNtis.map(i => Qubit(binaries(i).toBasisState)): _*)
+        val targetRegister = QuantumRegister(filledNtis.map(i => Qubit(binaries(i).toBasisState)))
 
         val gateTargetProduct = RawGate(gate.finalTarget)(this)
           .product(registerToSuperposition(targetRegister).vector).toArray

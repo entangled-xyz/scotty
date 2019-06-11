@@ -26,7 +26,7 @@ trait Superposition extends State {
 }
 
 case class Collapsed(qubitCount: Int, index: Int) extends State {
-  def toBinaryRegister: BinaryRegister = BinaryRegister(MathUtils.toBinaryPadded(index, qubitCount): _*)
+  def toBinaryRegister: BinaryRegister = BinaryRegister(MathUtils.toBinaryPadded(index, qubitCount))
 
   override def toString: String = toBinaryRegister.values.mkString("")
 }

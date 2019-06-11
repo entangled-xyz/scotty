@@ -17,7 +17,7 @@ class CustomGatesSpec extends FlatSpec {
       ))
     }
 
-    assert(sim.runAndMeasure(Circuit(CustomGate(0))).toBinaryRegister == BinaryRegister(1))
-    assert(sim.runAndMeasure(Circuit(CustomGate(0)).withRegister(Qubit.one)).toBinaryRegister == BinaryRegister(0))
+    assert(sim.runAndMeasure(Circuit(CustomGate(0))).toBinaryRegister.values == Seq(1))
+    assert(sim.runAndMeasure(Circuit(CustomGate(0)).withRegister(Qubit.one)).toBinaryRegister.values == Seq(0))
   }
 }

@@ -1,9 +1,10 @@
 package scotty.quantum
 
+import scotty.ErrorMessage
 import scotty.quantum.QuantumContext.{QuantumRegister, Qubit}
 
 case class Circuit(register: QuantumRegister, ops: Op*) {
-  val indexes = 0 until register.size
+  val indexes: Range = 0 until register.size
 
   def combine(newCircuit: Circuit): Circuit = Circuit(ops ++ newCircuit.ops: _*)
 
@@ -11,23 +12,23 @@ case class Circuit(register: QuantumRegister, ops: Op*) {
 
   def withRegister(newRegister: QuantumRegister): Circuit = Circuit(newRegister, ops: _*)
 
-  def withRegister(newQubits: Qubit*): Circuit = Circuit(QuantumRegister(newQubits: _*), ops: _*)
+  def withRegister(newQubits: Qubit*): Circuit = Circuit(QuantumRegister(newQubits.toSeq), ops: _*)
 
-  def isValid: Boolean = register.size >= Circuit.qubitCountFromOps(ops)
+  def isValid: Boolean = register.size >= Circuit.qubitCountFromOps(ops.toSeq)
 
-  require(isValid, "The number of qubits in the register has to be the same as the number of qubits used in all ops.")
+  require(isValid, ErrorMessage.QubitCountError)
 }
 
 object Circuit {
-  val defaultState = Qubit.zero
+  val defaultState: Qubit = Qubit.zero
 
-  def apply(ops: Op*): Circuit = this(generateRegister(ops), ops: _*)
+  def apply(ops: Op*): Circuit = this(generateRegister(ops.toSeq), ops: _*)
 
   def qubitCountFromOps(ops: Seq[Op]): Int = if (ops.isEmpty) 0 else ops.flatMap(op => op.indexes).distinct.max + 1
 
   def generateRegister(n: Int): QuantumRegister =
-    QuantumRegister(List.fill(n)(defaultState): _*)
+    QuantumRegister(List.fill(n)(defaultState))
 
   def generateRegister(ops: Seq[Op]): QuantumRegister =
-    QuantumRegister(List.fill(qubitCountFromOps(ops))(defaultState): _*)
+    QuantumRegister(List.fill(qubitCountFromOps(ops))(defaultState))
 }
