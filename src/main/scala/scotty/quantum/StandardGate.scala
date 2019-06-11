@@ -14,23 +14,23 @@ object StandardGate {
   case class Z(index1: Int) extends Target
 
   case class RX(theta: Double, index1: Int) extends Target {
-    override lazy val params = Seq(theta)
+    override val params: Seq[Double] = Seq(theta)
   }
 
   case class RY(theta: Double, index1: Int) extends Target {
-    override lazy val params = Seq(theta)
+    override val params: Seq[Double] = Seq(theta)
   }
 
   case class RZ(theta: Double, index1: Int) extends Target {
-    override lazy val params = Seq(theta)
+    override val params: Seq[Double] = Seq(theta)
   }
 
   case class CNOT(controlIndex: Int, targetIndex: Int) extends Control {
-    val target = X(targetIndex)
+    lazy val target = X(targetIndex)
   }
 
   case class CCNOT(controlIndex: Int, controlIndex2: Int, targetIndex: Int) extends Control {
-    val target = Controlled(controlIndex2, X(targetIndex))
+    lazy val target = Controlled(controlIndex2, X(targetIndex))
   }
 
   case class SWAP(index1: Int, index2: Int) extends QubitSwap

@@ -49,4 +49,10 @@ class ControlledGateSpec extends FlatSpec {
   it should "work with a two-qubit reversed SWAP gate while being part of the gap" in {
     assert(sim.runAndMeasure(Circuit(X(2), X(4), Controlled(2, SWAP(4, 1)))).toBinaryRegister.values == Seq(0, 1, 1, 0, 0))
   }
+
+  it should "throw IllegalArgumentException if indexes are not unique" in {
+    assertThrows[IllegalArgumentException] {
+      sim.runAndMeasure(Circuit(Controlled(1, X(1))))
+    }
+  }
 }
