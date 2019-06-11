@@ -3,12 +3,10 @@ package scotty.simulator
 import scotty.quantum._
 import scotty.quantum.QuantumContext._
 import scotty.quantum.StandardGate
-import scotty.quantum.StandardGate.CNOT
 import scotty.quantum.math.MathUtils
 import scotty.quantum.math.MathUtils._
 import scotty.simulator.math.RawGate
 import scotty.simulator.math.Implicits._
-
 import scala.util.Random
 import scotty.quantum.math.Complex
 
@@ -57,15 +55,15 @@ case class QuantumSimulator(implicit random: Random = new Random) extends Quantu
   /**
     * Generates a matrix based on the top-level control gate and nested control and target child gates.
     *
-    * First, it generates an array of arrays. Each array is a binary representation of the decimal state vector index. For
-    * example, a vector of length 2 can be represented with the following matrix:
+    * First, it generates an array of arrays. Each array is a binary representation of the decimal state vector index.
+    * For example, a vector of length 2 can be represented with the following matrix:
     *
     * Array(
     *   Array(0, 0), Array(0, 1),
     *   Array(1, 0), Array(1, 1)
     * )
     *
-    * For each top-level array we check if control bits are triggered and if they are then we apply the final
+    * Second, for each top-level array we check if control bits are triggered and if they are then we apply the final
     * target gate to the target qubits.
     *
     * @param gate control gate that this method generates a matrix for
@@ -78,10 +76,11 @@ case class QuantumSimulator(implicit random: Random = new Random) extends Quantu
     val gapQubitCount = (sortedControlIndexes.tail, sortedControlIndexes).zipped.map((a, b) => a - b - 1).sum
     val qubitCount = gate.qubitCount + gapQubitCount
     val normalizedTargetIndexes = gate.targetIndexes.map(_ - minIndex)
-    val isFinalTargetReversed = gate.finalTarget.isReversed
+    val stateCount = Math.pow(2, qubitCount).toInt
+    val finalMatrix = Array.ofDim[Vector](stateCount)
 
-    (0 until Math.pow(2, qubitCount).toInt).map(index => {
-      val binaries = MathUtils.toBinaryPadded(index, qubitCount).toArray
+    for (i <- 0 until stateCount) {
+      val binaries = MathUtils.toBinaryPadded(i, qubitCount).toArray
 
       val allControlsTrigger = binaries.zipWithIndex.forall(b => {
         if (normalizedControlIndexes.contains(b._2))
@@ -89,12 +88,9 @@ case class QuantumSimulator(implicit random: Random = new Random) extends Quantu
         else true
       })
 
-      if (allControlsTrigger) {
+      finalMatrix(i) = if (allControlsTrigger) {
         val ntis = normalizedTargetIndexes
-        val filledNtis = if (ntis.length > 1) {
-          if (ntis(0) < ntis.last) ntis(0) to ntis.last
-          else ntis(0) to ntis.last by -1
-        } else ntis
+        val filledNtis = if (ntis.length > 1) ntis(0) to ntis.last else ntis
 
         val targetRegister = QuantumRegister(filledNtis.map(i => Qubit(binaries(i).toBasisState)): _*)
 
@@ -103,20 +99,22 @@ case class QuantumSimulator(implicit random: Random = new Random) extends Quantu
 
         binaries
           .zipWithIndex
-          .map(pair => {
-            if (filledNtis.contains(pair._2)) SimSuperposition(gateTargetProduct, Some("target"))
-            else SimSuperposition(pair._1.toBasisState)
-          })
+          .map {
+            case (_, index) if filledNtis.contains(index) => SimSuperposition(gateTargetProduct, Some("target"))
+            case (binary, _) => SimSuperposition(binary.toBasisState)
+          }
           .foldLeft(Seq[SimSuperposition]()) {
             case (acc, item) if item.hasLabel("target") && acc.exists(_.hasLabel("target")) => acc
-            case (acc, item) => if (isFinalTargetReversed) item +: acc else acc :+ item
+            case (acc, item) => acc :+ item
           }
           .reduce((s1, s2) => s1 par s2)
           .rawVector
       } else {
         binaries.map(b => SimSuperposition(b.toBasisState)).reduce((s1, s2) => s1 par s2).rawVector
       }
-    }).toArray
+    }
+
+    finalMatrix
   }
 
   def targetMatrix(targetGate: Target): Matrix = gateGenerators(targetGate.name).apply(targetGate.params)

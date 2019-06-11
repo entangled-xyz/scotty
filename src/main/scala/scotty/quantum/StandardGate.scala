@@ -14,15 +14,15 @@ object StandardGate {
   case class Z(index1: Int) extends Target
 
   case class RX(theta: Double, index1: Int) extends Target {
-    override val params = Seq(theta)
+    override lazy val params = Seq(theta)
   }
 
   case class RY(theta: Double, index1: Int) extends Target {
-    override val params = Seq(theta)
+    override lazy val params = Seq(theta)
   }
 
   case class RZ(theta: Double, index1: Int) extends Target {
-    override val params = Seq(theta)
+    override lazy val params = Seq(theta)
   }
 
   case class CNOT(controlIndex: Int, targetIndex: Int) extends Control {

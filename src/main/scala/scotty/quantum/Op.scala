@@ -36,10 +36,12 @@ sealed trait Gate extends Op {
 trait Target extends Gate {
   val index1: Int
 
-  val params = Seq[Double]()
-  val indexes = Seq(index1)
+  lazy val params = Seq[Double]()
+  lazy val indexes = Seq(index1)
 
-  def isReversed: Boolean = false
+  def indexesAreAsc: Boolean = indexes.length <= 1 || (indexes, indexes.tail).zipped.forall(_ <= _)
+
+  require(indexesAreAsc, "Qubit indexes have to be ascending.")
 }
 
 trait Control extends Gate {
@@ -59,7 +61,5 @@ trait Control extends Gate {
 trait QubitSwap extends Target {
   val index2: Int
 
-  override val indexes = Seq(index1, index2)
-
-  override def isReversed: Boolean = index1 > index2
+  override lazy val indexes = if (index1 > index2) Seq(index2, index1) else Seq(index1, index2)
 }
