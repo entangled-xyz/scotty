@@ -1,15 +1,24 @@
 import xerial.sbt.Sonatype._
 import ReleaseTransformations._
 
+val defaultScalaVersion = "2.13.0"
+
 ThisBuild / name := "scotty"
 ThisBuild / organization := "xyz.entangled"
-ThisBuild / scalaVersion := "2.12.8"
-ThisBuild / crossScalaVersions := Seq("2.10.7", "2.11.12", "2.12.8")
+ThisBuild / scalaVersion := defaultScalaVersion
+ThisBuild / crossScalaVersions := Seq(
+  defaultScalaVersion,
+  "2.10.7",
+  "2.11.12",
+  "2.12.8",
+  )
+
+val scalaTestVersion = "3.0.8"
 
 libraryDependencies += "org.apache.commons" % "commons-math3" % "3.0"
 
-libraryDependencies += "org.scalactic" %% "scalactic" % "3.0.5" % "test"
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test"
+libraryDependencies += "org.scalactic" %% "scalactic" % scalaTestVersion % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % scalaTestVersion % "test"
 
 publishTo := sonatypePublishTo.value
 
