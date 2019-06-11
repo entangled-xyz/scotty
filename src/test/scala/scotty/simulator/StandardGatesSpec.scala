@@ -21,12 +21,24 @@ class StandardGatesSpec extends FlatSpec {
     assert(sim.runAndMeasure(Circuit(CNOT(0, 1))).toBinaryRegister.values == Seq(0, 0))
   }
 
+  it should "throw IllegalArgumentException if indexes are not unique" in {
+    assertThrows[IllegalArgumentException] {
+      sim.runAndMeasure(Circuit(CNOT(0, 0)))
+    }
+  }
+
   "CCNOT" should "change target qubit when both controls are 1" in {
     assert(sim.runAndMeasure(Circuit(X(0), X(2), CCNOT(0, 2, 4))).toBinaryRegister.values == Seq(1, 0, 1, 0 , 1))
   }
 
   it should "not change target qubit when one of the controls is 0" in {
     assert(sim.runAndMeasure(Circuit(X(2), CCNOT(0, 2, 4))).toBinaryRegister.values == Seq(0, 0, 1, 0, 0))
+  }
+
+  it should "throw IllegalArgumentException if indexes are not unique" in {
+    assertThrows[IllegalArgumentException] {
+      sim.runAndMeasure(Circuit(CCNOT(0, 1, 0)))
+    }
   }
 
   "H" should "set superposition to 50/50" in {
@@ -140,6 +152,12 @@ class StandardGatesSpec extends FlatSpec {
         assert(StateProbabilityReader(s).read(2).amplitude.rounded == Complex(fiftyPercent, 0))
         assert(StateProbabilityReader(s).read(3).amplitude.rounded == Complex(0, 0))
       case _ =>
+    }
+  }
+
+  it should "throw IllegalArgumentException if indexes are not unique" in {
+    assertThrows[IllegalArgumentException] {
+      sim.runAndMeasure(Circuit(SWAP(3, 3)))
     }
   }
 }

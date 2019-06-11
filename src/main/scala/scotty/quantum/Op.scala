@@ -32,17 +32,20 @@ sealed trait Gate extends Op {
   def par(gate: Gate)(implicit ctx: QuantumContext): Matrix = ctx.par(this, gate)
 
   def toString(implicit ctx: QuantumContext): String = matrix.toList.map(_.toList.mkString(" ")).mkString("\n")
+
+  def indexesAreUnique: Boolean = indexes.distinct.size == indexes.size
 }
 
 trait Target extends Gate {
   val index1: Int
 
-  lazy val params: Seq[Double] = Seq[Double]()
+  val params: Seq[Double] = Seq[Double]()
   lazy val indexes: Seq[Int] = Seq(index1)
 
   def indexesAreAsc: Boolean = indexes.length <= 1 || (indexes, indexes.tail).zipped.forall(_ <= _)
 
   require(indexesAreAsc, ErrorMessage.GateIndexOrderError)
+  require(indexesAreUnique, ErrorMessage.GateIndexesAreNotUniqueError)
 }
 
 trait Control extends Gate {
@@ -57,6 +60,8 @@ trait Control extends Gate {
   lazy val targetIndexes: Seq[Int] = finalTarget.indexes
   lazy val controlIndexes: Seq[Int] = indexes.filter(!targetIndexes.contains(_))
   lazy val isAsc: Boolean = controlIndex < target.indexes(0)
+
+  require(indexesAreUnique, ErrorMessage.GateIndexesAreNotUniqueError)
 }
 
 trait QubitSwap extends Target {
