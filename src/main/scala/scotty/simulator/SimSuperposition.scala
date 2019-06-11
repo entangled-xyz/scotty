@@ -1,5 +1,6 @@
 package scotty.simulator
 
+import scotty.Labeled
 import scotty.quantum.QuantumContext.{Qubit, Vector}
 import scotty.quantum._
 import scotty.simulator.math.LinearAlgebra.VectorTransformations

@@ -1,4 +1,4 @@
-package scotty.quantum
+package scotty
 
 trait Labeled {
   val label: Option[String]

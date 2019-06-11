@@ -1,5 +1,6 @@
 package scotty.quantum
 
+import scotty.ErrorMessage
 import scotty.quantum.math.{Complex, MathUtils}
 import scotty.quantum.QuantumContext._
 
@@ -31,7 +32,7 @@ object QuantumContext {
   case class QuantumException(message: String) extends Exception(message)
 
   case class Qubit(a: Complex, b: Complex) {
-    require(Qubit.areAmplitudesValid(this), "Amplitudes have to add up to 1")
+    require(Qubit.areAmplitudesValid(this), ErrorMessage.QubitAmplitudesError)
   }
 
   object Qubit {
@@ -52,7 +53,7 @@ object QuantumContext {
     def size: Int = values.length
   }
 
-  case class QuantumRegister(values: Qubit*) extends Register[Qubit]
+  case class QuantumRegister(values: Seq[Qubit]) extends Register[Qubit]
 
-  case class BinaryRegister(values: Int*) extends Register[Int]
+  case class BinaryRegister(values: Seq[Int]) extends Register[Int]
 }

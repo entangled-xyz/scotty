@@ -1,15 +1,16 @@
 package scotty.quantum.math
 
+import scotty.ErrorMessage
 import scotty.quantum.QuantumContext.QuantumException
 
 import scala.annotation.tailrec
 
 object MathUtils {
-  val PRECISION = 1e-8
+  val Precision = 1e-8
 
   implicit class DoubleHelpers(d: Double) {
     def rounded: Double = {
-      val precision = 1 / PRECISION
+      val precision = 1 / Precision
 
       Math.rint(d * precision) / precision
     }
@@ -23,7 +24,7 @@ object MathUtils {
     def toBasisState: Array[Complex] =
       if (i == 1) Array(Complex(0), Complex(1))
       else if (i == 0) Array(Complex(1), Complex(0))
-      else throw QuantumException("Only classical 1s and 0s can be converted to quantum basis state.")
+      else throw QuantumException(ErrorMessage.IntToBasisStateError)
   }
 
   implicit class ComplexHelpers(c: Complex) {
@@ -49,6 +50,6 @@ object MathUtils {
   def isProbabilityValid(a: Double, b: Double): Boolean = {
     val sumOfSquares = Math.pow(a, 2) + Math.pow(b, 2)
 
-    Math.abs(sumOfSquares - 1) < MathUtils.PRECISION
+    Math.abs(sumOfSquares - 1) < MathUtils.Precision
   }
 }
