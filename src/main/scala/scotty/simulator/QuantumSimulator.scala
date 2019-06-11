@@ -10,7 +10,7 @@ import scotty.simulator.math.Implicits._
 import scala.util.Random
 import scotty.quantum.math.Complex
 
-case class QuantumSimulator(implicit random: Random = new Random) extends QuantumContext {
+case class QuantumSimulator()(implicit random: Random = new Random) extends QuantumContext {
   val gateGenerators = QuantumSimulator.standardGates
 
   def run(circuit: Circuit): State = {
