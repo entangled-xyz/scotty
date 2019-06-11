@@ -7,7 +7,7 @@ import scotty.simulator.math.LinearAlgebra.MatrixTransformations
 case class RawGate(rawMatrix: Matrix) extends Target with MatrixTransformations {
   // Exact qubit indexes don't matter in this context because we only use this gate
   // for arbitrary matrix calculations.
-  val index = -1
+  val index1 = -1
 
   override lazy val qubitCount = Math.sqrt(rawMatrix.length).toInt
 

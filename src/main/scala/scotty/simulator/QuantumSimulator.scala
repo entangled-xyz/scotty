@@ -4,9 +4,9 @@ import scotty.quantum._
 import scotty.quantum.QuantumContext._
 import scotty.quantum.StandardGate
 import scotty.quantum.math.MathUtils
+import scotty.quantum.math.MathUtils._
 import scotty.simulator.math.RawGate
 import scotty.simulator.math.Implicits._
-
 import scala.util.Random
 import scotty.quantum.math.Complex
 
@@ -52,34 +52,90 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
 
   def isUnitary(g: Gate): Boolean = RawGate(g)(this).isUnitaryMatrix
 
+  /**
+    * Generates a matrix based on the top-level control gate and nested control and target child gates.
+    *
+    * First, it generates an array of arrays. Each array is a binary representation of the decimal state vector index.
+    * For example, a vector of length 2 can be represented with the following matrix:
+    *
+    * Array(
+    *   Array(0, 0), Array(0, 1),
+    *   Array(1, 0), Array(1, 1)
+    * )
+    *
+    * Second, for each top-level array we check if control bits are triggered and if they are then we apply the final
+    * target gate to the target qubits.
+    *
+    * @param gate control gate that this method generates a matrix for
+    * @return final matrix representing the control gate acting on all involved qubits
+    */
   def controlMatrix(gate: Control): Matrix = {
-    def toBasisState(n: Double): Array[Complex] =
-      if (n == 1) Array(Complex(0), Complex(1))
-      else Array(Complex(1), Complex(0))
-
     val minIndex = gate.indexes.min
     val normalizedControlIndexes = gate.controlIndexes.map(i => i - minIndex)
     val sortedControlIndexes = gate.indexes.sorted
-    val targetIndex = gate.finalTargetIndex - minIndex
     val gapQubitCount = (sortedControlIndexes.tail, sortedControlIndexes).zipped.map((a, b) => a - b - 1).sum
     val qubitCount = gate.qubitCount + gapQubitCount
+    val normalizedTargetIndexes = gate.targetIndexes.map(_ - minIndex)
+    val stateCount = Math.pow(2, qubitCount).toInt
+    val finalMatrix = Array.ofDim[Vector](stateCount)
 
-    (0 until Math.pow(2, qubitCount).toInt).map(index => {
-      val binaries = MathUtils.toBinaryPadded(index, qubitCount).map(toBasisState(_)).toArray
+    for (i <- 0 until stateCount) {
+      val binaries = MathUtils.toBinaryPadded(i, qubitCount).toArray
 
       val allControlsTrigger = binaries.zipWithIndex.forall(b => {
-        if (normalizedControlIndexes.contains(b._2)) if (b._1 sameElements toBasisState(1)) true else false
+        if (normalizedControlIndexes.contains(b._2))
+          if (b._1 == 1) true else false
         else true
       })
 
-      if (allControlsTrigger) binaries(targetIndex) =
-        RawGate(gate.finalTarget)(this).product(binaries(targetIndex)).getData
+      finalMatrix(i) = if (allControlsTrigger) {
+        val ntis = normalizedTargetIndexes
+        val filledNtis = if (ntis.length > 1) ntis(0) to ntis.last else ntis
+
+        val targetRegister = QuantumRegister(filledNtis.map(i => Qubit(binaries(i).toBasisState)): _*)
+
+        val gateTargetProduct = RawGate(gate.finalTarget)(this)
+          .product(registerToSuperposition(targetRegister).vector).toArray
+
+        binaries
+          .zipWithIndex
+          .map {
+            case (_, index) if filledNtis.contains(index) => SimSuperposition(gateTargetProduct, Some("target"))
+            case (binary, _) => SimSuperposition(binary.toBasisState)
+          }
+          .foldLeft(Seq[SimSuperposition]()) {
+            case (acc, item) if item.hasLabel("target") && acc.exists(_.hasLabel("target")) => acc
+            case (acc, item) => acc :+ item
+          }
+          .reduce((s1, s2) => s1 par s2)
+          .rawVector
+      } else {
+        binaries.map(b => SimSuperposition(b.toBasisState)).reduce((s1, s2) => s1 par s2).rawVector
+      }
+    }
+
+    finalMatrix
+  }
+
+  def targetMatrix(targetGate: Target): Matrix = gateGenerators(targetGate.name).apply(targetGate.params)
+
+  def swapMatrix(gate: QubitSwap): Matrix = {
+    val minIndex = gate.indexes.min
+    val i1 = gate.index1 - minIndex
+    val i2 = gate.index2 - minIndex
+
+    val qubitCount = gate.qubitCount + Math.abs(i1 - i2) - 1
+
+    (0 until Math.pow(2, qubitCount).toInt).map(index => {
+      val binaries = MathUtils.toBinaryPadded(index, qubitCount).map(_.toBasisState).toArray
+      val i1Val = binaries(i1)
+
+      binaries(i1) = binaries(i2)
+      binaries(i2) = i1Val
 
       binaries.map(b => SimSuperposition(b)).reduce((s1, s2) => s1 par s2).rawVector
     }).toArray
   }
-
-  def targetMatrix(targetGate: Target): Matrix = gateGenerators(targetGate.name).apply(targetGate.params)
 }
 
 object QuantumSimulator {

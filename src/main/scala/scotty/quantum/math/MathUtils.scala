@@ -1,5 +1,7 @@
 package scotty.quantum.math
 
+import scotty.quantum.QuantumContext.QuantumException
+
 import scala.annotation.tailrec
 
 object MathUtils {
@@ -17,6 +19,11 @@ object MathUtils {
 
   implicit class IntHelpers(i: Int) {
     def toBinary: Seq[Int] = toBinaryImpl(i)
+
+    def toBasisState: Array[Complex] =
+      if (i == 1) Array(Complex(0), Complex(1))
+      else if (i == 0) Array(Complex(1), Complex(0))
+      else throw QuantumException("Only classical 1s and 0s can be converted to quantum basis state.")
   }
 
   implicit class ComplexHelpers(c: Complex) {

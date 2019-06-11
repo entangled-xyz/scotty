@@ -9,8 +9,8 @@ import scotty.quantum.math.Complex
 
 import scala.util.Random
 
-case class SimSuperposition(vector: Vector)
-                           (implicit random: Random) extends Superposition with VectorTransformations {
+case class SimSuperposition(vector: Vector, label: Option[String] = None)
+                           (implicit random: Random) extends Superposition with VectorTransformations with Labeled {
   val rawVector = vector
 
   def par(state: Superposition): SimSuperposition = {

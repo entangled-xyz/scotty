@@ -10,7 +10,7 @@ class CustomGatesSpec extends FlatSpec {
   val sim = QuantumSimulator()
 
   "Custom gate" should "negate a qubit" in {
-    case class CustomGate(index: Int) extends Target {
+    case class CustomGate(index1: Int) extends Target {
       override def targetMatrix = Some(Array(
         Array(Complex(0), Complex(1)),
         Array(Complex(1), Complex(0))
