@@ -1,4 +1,4 @@
-package simulator
+package scotty.simulator
 
 import org.scalatest.FlatSpec
 import scotty.quantum.QuantumContext.{BinaryRegister, Matrix, Qubit}

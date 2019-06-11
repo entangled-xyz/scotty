@@ -1,4 +1,4 @@
-package simulator
+package scotty.simulator
 
 import org.scalatest.FlatSpec
 import scotty.quantum.QuantumContext.{BinaryRegister, Qubit}
@@ -12,12 +12,14 @@ class QuantumSimulatorSpec extends FlatSpec {
   "QuantumSimulator" should "run an empty circuit" in {
     sim.run(Circuit()) match {
       case s: Superposition => assert(s.qubitCount == 0)
+      case _ =>
     }
   }
 
   it should "run a circuit with one qubit" in {
     sim.run(Circuit().withRegister(Qubit.zero)) match {
       case s: Superposition => assert(s.qubitCount == 1)
+      case _ =>
     }
   }
 
@@ -49,12 +51,14 @@ class QuantumSimulatorSpec extends FlatSpec {
   it should "return a collapsed state after being measured" in {
     sim.run(Circuit(X(0)).withRegister(Qubit.zero)) match {
       case s: Superposition =>  assert(s.measure.toBinaryRegister == BinaryRegister(1))
+      case _ =>
     }
   }
 
   it should "automatically get measured if there's a Measure op" in {
     sim.run(Circuit(X(0), Measure(0)).withRegister(Qubit.zero)) match {
       case s: Collapsed => assert(s.toBinaryRegister == BinaryRegister(1))
+      case _ =>
     }
   }
 
@@ -67,6 +71,7 @@ class QuantumSimulatorSpec extends FlatSpec {
   it should "work if the number of custom qubits is greater than op qubits" in {
     sim.run(Circuit(X(0), Measure(0)).withRegister(Qubit.zero, Qubit.zero, Qubit.zero, Qubit.zero)) match {
       case s: Collapsed => assert(s.toBinaryRegister == BinaryRegister(1, 0, 0, 0))
+      case _ =>
     }
   }
 }

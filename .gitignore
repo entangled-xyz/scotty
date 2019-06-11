@@ -2,6 +2,8 @@
 /target
 /project
 !/project/plugins.sbt
+/out
+.ipr
 
 .vscode
 .bloop
