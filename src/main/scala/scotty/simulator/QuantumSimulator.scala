@@ -4,7 +4,6 @@ import scotty.quantum._
 import scotty.quantum.QuantumContext._
 import scotty.quantum.StandardGate
 import scotty.quantum.math.MathUtils
-import scotty.quantum.math.MathUtils._
 import scotty.simulator.math.RawGate
 import scotty.simulator.math.Implicits._
 import scala.util.Random
@@ -26,7 +25,7 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
   def registerToSuperposition(register: QuantumRegister): Superposition =
     register.values.foldLeft(SimSuperposition())((superposition, q) => superposition.par(SimSuperposition(q)))
 
-  def opToGate(op: Op, qubitCount: Int): Seq[Gate] = op match {
+  def opToGate(op: Op, qubitCount: Int): collection.Seq[Gate] = op match {
     case c: CircuitConnector => c.circuit.ops.flatMap(o => opToGate(o, qubitCount))
     case g: Gate => Seq(prepareGate(g, qubitCount))
     case m: Measure => Seq(prepareGate(StandardGate.I(m.index), qubitCount))
@@ -84,7 +83,7 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
 
       val allControlsTrigger = binaries.zipWithIndex.forall(b => {
         if (normalizedControlIndexes.contains(b._2))
-          if (b._1 == 1) true else false
+          if (b._1 == One) true else false
         else true
       })
 

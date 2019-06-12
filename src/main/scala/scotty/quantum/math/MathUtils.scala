@@ -1,7 +1,6 @@
 package scotty.quantum.math
 
-import scotty.ErrorMessage
-import scotty.quantum.QuantumContext.QuantumException
+import scotty.quantum.{Bit, Zero}
 
 import scala.annotation.tailrec
 
@@ -19,32 +18,27 @@ object MathUtils {
   }
 
   implicit class IntHelpers(i: Int) {
-    def toBinary: Seq[Int] = toBinaryImpl(i)
-
-    def toBasisState: Array[Complex] =
-      if (i == 1) Array(Complex(0), Complex(1))
-      else if (i == 0) Array(Complex(1), Complex(0))
-      else throw QuantumException(ErrorMessage.IntToBasisStateError)
+    def toBinary: Seq[Bit] = toBinaryImpl(i)
   }
 
   implicit class ComplexHelpers(c: Complex) {
     def rounded: Complex = Complex(c.r.rounded, c.i.rounded)
   }
 
-  def toBinaryImpl(n: Int): Seq[Int] = {
+  def toBinaryImpl(n: Int): Seq[Bit] = {
     @tailrec
-    def binary(acc: Seq[Int], n: Int): Seq[Int] = n match {
-      case 0 | 1 => n +: acc
-      case _ => binary((n % 2) +: acc, n / 2)
+    def binary(acc: Seq[Bit], n: Int): Seq[Bit] = n match {
+      case 0 | 1 => Bit.fromInt(n) +: acc
+      case _ => binary(Bit.fromInt(n % 2) +: acc, n / 2)
     }
 
     binary(Seq(), n)
   }
 
-  def toBinaryPadded(n: Int, qubitCount: Int): List[Int] = {
+  def toBinaryPadded(n: Int, qubitCount: Int): List[Bit] = {
     val bits = n.toBinary
 
-    List.fill(qubitCount - bits.length)(0) ++ bits
+    List.fill(qubitCount - bits.length)(Zero) ++ bits
   }
 
   def isProbabilityValid(a: Double, b: Double): Boolean = {

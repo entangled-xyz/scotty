@@ -1,7 +1,7 @@
 package scotty.quantum
 
 import scotty.quantum.QuantumContext.{BinaryRegister, Vector}
-import scotty.quantum.math.{Complex, MathUtils}
+import scotty.quantum.math.MathUtils
 import scotty.quantum.math.MathUtils._
 
 sealed trait State
