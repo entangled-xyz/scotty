@@ -26,7 +26,7 @@ case class StateProbabilityReader(state: Superposition) extends SuperpositionRea
 }
 
 object StateProbabilityReader {
-  case class StateResult(state: Seq[Int], amplitude: Complex, probability: Double)
+  case class StateResult(state: Seq[Bit], amplitude: Complex, probability: Double)
 }
 
 case class QubitProbabilityReader(state: Superposition) extends SuperpositionReader[QubitResult] {
@@ -34,7 +34,7 @@ case class QubitProbabilityReader(state: Superposition) extends SuperpositionRea
     val ps = StateProbabilityReader(state).read
 
     (0 until state.qubitCount).map(q => {
-      QubitResult(q, ps.foldLeft(0d)((sum, pair) => if (pair.state(q) == 1) sum + pair.probability else sum))
+      QubitResult(q, ps.foldLeft(0d)((sum, pair) => if (pair.state(q) == One) sum + pair.probability else sum))
     })
   }
 

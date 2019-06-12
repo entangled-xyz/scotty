@@ -47,6 +47,8 @@ object QuantumContext {
     def apply(as: Array[Complex]): Qubit = this(as(0), as(1))
   }
 
+
+
   sealed trait Register[T] {
     val values: Seq[T]
 
@@ -55,5 +57,5 @@ object QuantumContext {
 
   case class QuantumRegister(values: Seq[Qubit]) extends Register[Qubit]
 
-  case class BinaryRegister(values: Seq[Int]) extends Register[Int]
+  case class BinaryRegister(values: Seq[Bit]) extends Register[Bit]
 }

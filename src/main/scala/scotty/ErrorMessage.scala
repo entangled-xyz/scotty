@@ -9,5 +9,5 @@ object ErrorMessage {
 
   val QubitAmplitudesError = "Amplitudes have to add up to 1."
 
-  val IntToBasisStateError = "Only classical 1s and 0s can be converted to quantum basis state."
+  val IntToBitError = "Only integers 0 and 1 can be converted to Bit."
 }
