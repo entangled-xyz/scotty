@@ -1,7 +1,7 @@
 package scotty
 
-trait Labeled {
-  val label: Option[String]
+trait Labeled[T] {
+  val label: Option[T]
 
-  def hasLabel(l: String): Boolean = label.isDefined && label.get == l
+  def hasLabel(l: T): Boolean = label.isDefined && label.get == l
 }

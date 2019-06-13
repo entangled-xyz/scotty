@@ -11,8 +11,8 @@ import scotty.quantum.math.Complex
 import scala.util.Random
 
 case class SimSuperposition(vector: Vector, label: Option[String] = None)
-                           (implicit random: Random) extends Superposition with VectorTransformations with Labeled {
-  val rawVector = vector
+                           (implicit r: Random) extends Superposition with VectorTransformations with Labeled[String] {
+  val rawVector: Vector = vector
 
   def par(state: Superposition): SimSuperposition = {
     if (rawVector.length == 0) SimSuperposition(state.vector)
@@ -26,7 +26,7 @@ case class SimSuperposition(vector: Vector, label: Option[String] = None)
     val initialIterator = (0, 0d, None: Option[Int])
     val result = probabilities.foldLeft(initialIterator)((iterator, prob) => {
       val probSum = iterator._2 + prob
-      val tryCollapse = (c: Int) => if (prob > 0 && random.nextDouble() <= probSum) Some(c) else None
+      val tryCollapse = (c: Int) => if (prob > 0 && r.nextDouble() <= probSum) Some(c) else None
 
       iterator match {
         case (count, _, None) => (count + 1, probSum, tryCollapse(count))
