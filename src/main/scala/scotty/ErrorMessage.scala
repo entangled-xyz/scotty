@@ -10,4 +10,6 @@ object ErrorMessage {
   val QubitAmplitudesError = "Amplitudes have to add up to 1."
 
   val IntToBitError = "Only integers 0 and 1 can be converted to Bit."
+
+  val RegisterLabelsError = "Qubit and bit register labels have to be unique."
 }

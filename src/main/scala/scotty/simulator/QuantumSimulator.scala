@@ -6,11 +6,13 @@ import scotty.quantum.StandardGate
 import scotty.quantum.math.MathUtils
 import scotty.simulator.math.RawGate
 import scotty.simulator.math.Implicits._
+
 import scala.util.Random
 import scotty.quantum.math.Complex
+import scotty.simulator.QuantumSimulator.GateGen
 
 case class QuantumSimulator()(implicit random: Random = new Random) extends QuantumContext {
-  val gateGenerators = QuantumSimulator.standardGates
+  val gateGenerators: Map[String, GateGen] = QuantumSimulator.standardGates
 
   def run(circuit: Circuit): State = {
     val shouldMeasure = circuit.ops.exists(op => op.isInstanceOf[Measure])
@@ -18,11 +20,12 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
     val result = circuit.ops
       .flatMap(opToGate(_, circuit.register.size))
       .foldLeft(registerToSuperposition(circuit.register))((state, gate) => state.applyGate(gate)(this))
+      .withRegister(circuit.register)
 
     if (shouldMeasure) result.measure else result
   }
 
-  def registerToSuperposition(register: QuantumRegister): Superposition =
+  def registerToSuperposition(register: QubitRegister): SimSuperposition =
     register.values.foldLeft(SimSuperposition())((superposition, q) => superposition.par(SimSuperposition(q)))
 
   def opToGate(op: Op, qubitCount: Int): collection.Seq[Gate] = op match {
@@ -83,7 +86,7 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
 
       val allControlsTrigger = binaries.zipWithIndex.forall(b => {
         if (normalizedControlIndexes.contains(b._2))
-          if (b._1 == One) true else false
+          if (b._1 == One()) true else false
         else true
       })
 
@@ -91,7 +94,7 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
         val ntis = normalizedTargetIndexes
         val filledNtis = if (ntis.length > 1) ntis(0) to ntis.last else ntis
 
-        val targetRegister = QuantumRegister(filledNtis.map(i => Qubit(binaries(i).toBasisState)))
+        val targetRegister = QubitRegister(filledNtis.map(i => Qubit(binaries(i).toBasisState)))
 
         val gateTargetProduct = RawGate(gate.finalTarget)(this)
           .product(registerToSuperposition(targetRegister).vector).toArray

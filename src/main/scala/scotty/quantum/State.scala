@@ -4,7 +4,11 @@ import scotty.quantum.QuantumContext.Vector
 import scotty.quantum.math.MathUtils
 import scotty.quantum.math.MathUtils._
 
-sealed trait State
+sealed trait State {
+  val qubitRegister: QubitRegister
+
+  def findQubit(label: String): Option[Qubit] = qubitRegister.values.find(q => q.label.exists(_ == label))
+}
 
 trait Superposition extends State {
   val vector: Vector
@@ -25,8 +29,17 @@ trait Superposition extends State {
   override def toString: String = toString(true)
 }
 
-case class Collapsed(qubitCount: Int, index: Int) extends State {
-  def toBinaryRegister: BinaryRegister = BinaryRegister(MathUtils.toBinaryPadded(index, qubitCount))
+case class Collapsed(qubitRegister: QubitRegister, index: Int) extends State {
+  def toBinaryRegister: BinaryRegister = BinaryRegister(
+    MathUtils
+      .toBinaryPadded(index, qubitRegister.size)
+      .zipWithIndex.map(b => qubitRegister.values(b._2)
+      .label
+      .fold(b._1)(b._1.withLabel))
+  )
 
-  override def toString: String = toBinaryRegister.values.mkString("")
+  override def toString: String = toBinaryRegister.values
+    .zipWithIndex
+    .map(p => s"${p._1.label.getOrElse(s"bit_${p._2}")}: ${p._1.toInt}")
+    .mkString("\n")
 }

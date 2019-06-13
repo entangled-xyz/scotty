@@ -7,19 +7,18 @@ import scotty.simulator.math.LinearAlgebra.VectorTransformations
 import scotty.simulator.math.Implicits._
 import scotty.simulator.math.RawGate
 import scotty.quantum.math.Complex
-
 import scala.util.Random
 
-case class SimSuperposition(vector: Vector, label: Option[String] = None)
+case class SimSuperposition(qubitRegister: QubitRegister, vector: Vector, label: Option[String])
                            (implicit r: Random) extends Superposition with VectorTransformations with Labeled[String] {
   val rawVector: Vector = vector
 
   def par(state: Superposition): SimSuperposition = {
-    if (rawVector.length == 0) SimSuperposition(state.vector)
+    if (rawVector.length == 0) SimSuperposition(state)
     else SimSuperposition((this ⊗ SimSuperposition(state).fieldVector).getData)
   }
 
-  def applyGate(gate: Gate)(implicit ctx: QuantumContext): Superposition =
+  def applyGate(gate: Gate)(implicit ctx: QuantumContext): SimSuperposition =
     SimSuperposition(RawGate(gate).product(fieldVector).getData)
 
   def measure: Collapsed = {
@@ -34,13 +33,23 @@ case class SimSuperposition(vector: Vector, label: Option[String] = None)
       }
     })._3
 
-    Collapsed(qubitCount, result.get)
+    Collapsed(qubitRegister, result.get)
   }
+
+  def withRegister(register: QubitRegister): SimSuperposition = SimSuperposition(register, vector, label)
 }
 
 object SimSuperposition {
   def apply()(implicit random: Random): SimSuperposition = this(Array[Complex]())
+
   def apply(q: Qubit)(implicit random: Random): SimSuperposition = this(Array(q.a, q.b))
+
   def apply(a: Complex, b: Complex)(implicit random: Random): SimSuperposition = this(Array(a, b))
+
   def apply(state: Superposition)(implicit random: Random): SimSuperposition = this(state.vector)
+
+  // `SimSuperposition` is only used for vector computations, so we don't need a register reference here
+  def apply(vector: Vector)(implicit random: Random): SimSuperposition = this(null, vector, None)
+
+  def apply(vector: Vector, label: Option[String])(implicit random: Random): SimSuperposition = this(null, vector, label)
 }

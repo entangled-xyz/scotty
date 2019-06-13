@@ -8,21 +8,23 @@ case class Qubit(a: Complex, b: Complex, label: Option[String]) extends Labeled[
 }
 
 object Qubit {
-  def one(label: Option[String]): Qubit = Qubit(Complex(0), Complex(1), label)
+  def one(label: String): Qubit = Qubit(Complex(0), Complex(1), Some(label))
 
-  def one: Qubit = one(None)
+  def one: Qubit = Qubit(Complex(0), Complex(1), None)
 
-  def zero(label: Option[String]): Qubit = Qubit(Complex(1), Complex(0), label)
+  def zero(label: String): Qubit = Qubit(Complex(1), Complex(0), Some(label))
 
-  def zero: Qubit = zero(None)
+  def zero: Qubit = Qubit(Complex(1), Complex(0), None)
 
-  def fiftyFifty(label: Option[String]): Qubit = this(Complex(1 / Math.sqrt(2.0)), Complex(1 / Math.sqrt(2.0)))
+  def fiftyFifty(label: String): Qubit = this(Complex(1 / Math.sqrt(2.0)), Complex(1 / Math.sqrt(2.0)), Some(label))
 
-  def fiftyFifty: Qubit = fiftyFifty(None)
+  def fiftyFifty: Qubit = this(Complex(1 / Math.sqrt(2.0)), Complex(1 / Math.sqrt(2.0)), None)
 
   def areAmplitudesValid(q: Qubit): Boolean = MathUtils.isProbabilityValid(q.a.abs, q.b.abs)
 
   def apply(as: Array[Complex]): Qubit = this(as(0), as(1))
 
   def apply(a: Complex, b: Complex): Qubit = this(a, b, None)
+
+  def apply(a: Complex, b: Complex, label: String): Qubit = this(a, b, Some(label))
 }
