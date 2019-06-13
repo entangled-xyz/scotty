@@ -1,7 +1,7 @@
 package scotty.simulator
 
 import scotty.Labeled
-import scotty.quantum.QuantumContext.{Qubit, Vector}
+import scotty.quantum.QuantumContext.Vector
 import scotty.quantum._
 import scotty.simulator.math.LinearAlgebra.VectorTransformations
 import scotty.simulator.math.Implicits._

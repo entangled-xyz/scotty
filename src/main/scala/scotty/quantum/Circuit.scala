@@ -1,7 +1,6 @@
 package scotty.quantum
 
 import scotty.ErrorMessage
-import scotty.quantum.QuantumContext.{QuantumRegister, Qubit}
 
 case class Circuit(register: QuantumRegister, ops: Op*) {
   val indexes: Range = 0 until register.size

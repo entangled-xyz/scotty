@@ -1,10 +1,8 @@
 package scotty.simulator
 
 import org.scalatest.FlatSpec
-import scotty.quantum.QuantumContext.BinaryRegister
 import scotty.quantum.StandardGate.{X, _}
 import scotty.quantum._
-import scotty.simulator.QuantumSimulator
 
 class ControlledGateSpec extends FlatSpec {
   val sim = QuantumSimulator()

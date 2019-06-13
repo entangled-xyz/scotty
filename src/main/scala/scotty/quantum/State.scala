@@ -1,6 +1,6 @@
 package scotty.quantum
 
-import scotty.quantum.QuantumContext.{BinaryRegister, Vector}
+import scotty.quantum.QuantumContext.Vector
 import scotty.quantum.math.MathUtils
 import scotty.quantum.math.MathUtils._
 

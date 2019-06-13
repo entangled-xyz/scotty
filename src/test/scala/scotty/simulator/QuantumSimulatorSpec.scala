@@ -1,10 +1,8 @@
 package scotty.simulator
 
 import org.scalatest.FlatSpec
-import scotty.quantum.QuantumContext.{BinaryRegister, Qubit}
 import scotty.quantum.StandardGate._
 import scotty.quantum._
-import scotty.simulator.QuantumSimulator
 
 class QuantumSimulatorSpec extends FlatSpec {
   val sim = QuantumSimulator()

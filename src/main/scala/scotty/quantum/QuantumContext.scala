@@ -1,7 +1,6 @@
 package scotty.quantum
 
-import scotty.ErrorMessage
-import scotty.quantum.math.{Complex, MathUtils}
+import scotty.quantum.math.Complex
 import scotty.quantum.QuantumContext._
 
 trait QuantumContext {
@@ -30,32 +29,4 @@ object QuantumContext {
   type Matrix = Array[Array[Complex]]
 
   case class QuantumException(message: String) extends Exception(message)
-
-  case class Qubit(a: Complex, b: Complex) {
-    require(Qubit.areAmplitudesValid(this), ErrorMessage.QubitAmplitudesError)
-  }
-
-  object Qubit {
-    def one: Qubit = Qubit(Complex(0), Complex(1))
-
-    def zero: Qubit = Qubit(Complex(1), Complex(0))
-
-    def fiftyFifty: Qubit = this(Complex(1 / Math.sqrt(2.0)), Complex(1 / Math.sqrt(2.0)))
-
-    def areAmplitudesValid(q: Qubit): Boolean = MathUtils.isProbabilityValid(q.a.abs, q.b.abs)
-
-    def apply(as: Array[Complex]): Qubit = this(as(0), as(1))
-  }
-
-
-
-  sealed trait Register[T] {
-    val values: Seq[T]
-
-    def size: Int = values.length
-  }
-
-  case class QuantumRegister(values: Seq[Qubit]) extends Register[Qubit]
-
-  case class BinaryRegister(values: Seq[Bit]) extends Register[Bit]
 }

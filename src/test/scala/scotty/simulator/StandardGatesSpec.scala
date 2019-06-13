@@ -1,11 +1,9 @@
 package scotty.simulator
 
 import org.scalatest.FlatSpec
-import scotty.quantum.QuantumContext.BinaryRegister
 import scotty.quantum.StandardGate.{X, _}
 import scotty.quantum._
 import scotty.quantum.math.Complex
-import scotty.simulator.QuantumSimulator
 import scotty.quantum.math.MathUtils._
 
 class StandardGatesSpec extends FlatSpec {
