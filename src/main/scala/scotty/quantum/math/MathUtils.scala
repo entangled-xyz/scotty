@@ -38,7 +38,7 @@ object MathUtils {
   def toBinaryPadded(n: Int, qubitCount: Int): List[Bit] = {
     val bits = n.toBinary
 
-    List.fill(qubitCount - bits.length)(Zero) ++ bits
+    List.fill(qubitCount - bits.length)(Zero()) ++ bits
   }
 
   def isProbabilityValid(a: Double, b: Double): Boolean = {

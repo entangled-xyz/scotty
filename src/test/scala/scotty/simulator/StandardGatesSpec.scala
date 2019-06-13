@@ -1,11 +1,9 @@
 package scotty.simulator
 
 import org.scalatest.FlatSpec
-import scotty.quantum.QuantumContext.BinaryRegister
 import scotty.quantum.StandardGate.{X, _}
 import scotty.quantum._
 import scotty.quantum.math.Complex
-import scotty.simulator.QuantumSimulator
 import scotty.quantum.math.MathUtils._
 
 class StandardGatesSpec extends FlatSpec {
@@ -14,11 +12,11 @@ class StandardGatesSpec extends FlatSpec {
   val fiftyPercent = (Math.sqrt(2) / 2).rounded
 
   "CNOT" should "change target qubit when control is 1" in {
-    assert(sim.runAndMeasure(Circuit(X(0), CNOT(0, 1))).toBinaryRegister.values == Seq(One, One))
+    assert(sim.runAndMeasure(Circuit(X(0), CNOT(0, 1))).toBinaryRegister.values == Seq(One(), One()))
   }
 
   it should "not change target qubit when control is 0" in {
-    assert(sim.runAndMeasure(Circuit(CNOT(0, 1))).toBinaryRegister.values == Seq(Zero, Zero))
+    assert(sim.runAndMeasure(Circuit(CNOT(0, 1))).toBinaryRegister.values == Seq(Zero(), Zero()))
   }
 
   it should "throw IllegalArgumentException if indexes are not unique" in {
@@ -28,11 +26,13 @@ class StandardGatesSpec extends FlatSpec {
   }
 
   "CCNOT" should "change target qubit when both controls are 1" in {
-    assert(sim.runAndMeasure(Circuit(X(0), X(2), CCNOT(0, 2, 4))).toBinaryRegister.values == Seq(One, Zero, One, Zero, One))
+    assert(sim.runAndMeasure(Circuit(X(0), X(2), CCNOT(0, 2, 4))).toBinaryRegister.values ==
+      Seq(One(), Zero(), One(), Zero(), One()))
   }
 
   it should "not change target qubit when one of the controls is 0" in {
-    assert(sim.runAndMeasure(Circuit(X(2), CCNOT(0, 2, 4))).toBinaryRegister.values == Seq(Zero, Zero, One, Zero, Zero))
+    assert(sim.runAndMeasure(Circuit(X(2), CCNOT(0, 2, 4))).toBinaryRegister.values ==
+      Seq(Zero(), Zero(), One(), Zero(), Zero()))
   }
 
   it should "throw IllegalArgumentException if indexes are not unique" in {
@@ -53,7 +53,7 @@ class StandardGatesSpec extends FlatSpec {
       case s: Superposition =>
         assert(StateProbabilityReader(s).read(0).amplitude == Complex(1))
         assert(StateProbabilityReader(s).read(1).amplitude == Complex(0))
-        assert(s.measure.toBinaryRegister.values == Seq(Zero))
+        assert(s.measure.toBinaryRegister.values == Seq(Zero()))
       case _ =>
     }
   }
@@ -63,7 +63,7 @@ class StandardGatesSpec extends FlatSpec {
       case s: Superposition =>
         assert(StateProbabilityReader(s).read(0).amplitude == Complex(0))
         assert(StateProbabilityReader(s).read(1).amplitude == Complex(1))
-        assert(s.measure.toBinaryRegister.values == Seq(One))
+        assert(s.measure.toBinaryRegister.values == Seq(One()))
       case _ =>
     }
   }
@@ -73,7 +73,7 @@ class StandardGatesSpec extends FlatSpec {
       case s: Superposition =>
         assert(StateProbabilityReader(s).read(0).amplitude == Complex(0, 0))
         assert(StateProbabilityReader(s).read(1).amplitude == Complex(0, 1))
-        assert(s.measure.toBinaryRegister.values == Seq(One))
+        assert(s.measure.toBinaryRegister.values == Seq(One()))
       case _ =>
     }
   }
@@ -83,7 +83,7 @@ class StandardGatesSpec extends FlatSpec {
       case s: Superposition =>
         assert(StateProbabilityReader(s).read(0).amplitude == Complex(1, 0))
         assert(StateProbabilityReader(s).read(1).amplitude == Complex(0, 0))
-        assert(s.measure.toBinaryRegister.values == Seq(Zero))
+        assert(s.measure.toBinaryRegister.values == Seq(Zero()))
       case _ =>
     }
   }
@@ -116,23 +116,25 @@ class StandardGatesSpec extends FlatSpec {
   }
 
   "SWAP" should "swap two nearby qubits 1 and 0" in {
-    assert(sim.runAndMeasure(Circuit(X(0), SWAP(0, 1))).toBinaryRegister.values == Seq(Zero, One))
+    assert(sim.runAndMeasure(Circuit(X(0), SWAP(0, 1))).toBinaryRegister.values == Seq(Zero(), One()))
   }
 
   it should "swap two nearby qubits 0 and 1" in {
-    assert(sim.runAndMeasure(Circuit(X(1), SWAP(0, 1))).toBinaryRegister.values == Seq(One, Zero))
+    assert(sim.runAndMeasure(Circuit(X(1), SWAP(0, 1))).toBinaryRegister.values == Seq(One(), Zero()))
   }
 
   it should "swap two qubits with a gap of 1 qubit" in {
-    assert(sim.runAndMeasure(Circuit(X(0), SWAP(0, 2))).toBinaryRegister.values == Seq(Zero, Zero, One))
+    assert(sim.runAndMeasure(Circuit(X(0), SWAP(0, 2))).toBinaryRegister.values == Seq(Zero(), Zero(), One()))
   }
 
   it should "swap two qubits with a gap of 2 qubits" in {
-    assert(sim.runAndMeasure(Circuit(X(0), X(2), SWAP(0, 3))).toBinaryRegister.values == Seq(Zero, Zero, One, One))
+    assert(sim.runAndMeasure(Circuit(X(0), X(2), SWAP(0, 3))).toBinaryRegister.values ==
+      Seq(Zero(), Zero(), One(), One()))
   }
 
   it should "swap two qubits in reverse with a gap of 2 qubits" in {
-    assert(sim.runAndMeasure(Circuit(X(3), X(2), SWAP(3, 0))).toBinaryRegister.values == Seq(One, Zero, One, Zero))
+    assert(sim.runAndMeasure(Circuit(X(3), X(2), SWAP(3, 0))).toBinaryRegister.values ==
+      Seq(One(), Zero(), One(), Zero()))
   }
 
   it should "have correct amplitudes" in {

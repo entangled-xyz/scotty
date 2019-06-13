@@ -1,0 +1,30 @@
+package scotty.quantum
+
+import scotty.{ErrorMessage, Labeled}
+import scotty.quantum.math.{Complex, MathUtils}
+
+case class Qubit(a: Complex, b: Complex, label: Option[String]) extends Labeled[String] {
+  require(Qubit.areAmplitudesValid(this), ErrorMessage.QubitAmplitudesError)
+}
+
+object Qubit {
+  def one(label: String): Qubit = Qubit(Complex(0), Complex(1), Some(label))
+
+  def one: Qubit = Qubit(Complex(0), Complex(1), None)
+
+  def zero(label: String): Qubit = Qubit(Complex(1), Complex(0), Some(label))
+
+  def zero: Qubit = Qubit(Complex(1), Complex(0), None)
+
+  def fiftyFifty(label: String): Qubit = this(Complex(1 / Math.sqrt(2.0)), Complex(1 / Math.sqrt(2.0)), Some(label))
+
+  def fiftyFifty: Qubit = this(Complex(1 / Math.sqrt(2.0)), Complex(1 / Math.sqrt(2.0)), None)
+
+  def areAmplitudesValid(q: Qubit): Boolean = MathUtils.isProbabilityValid(q.a.abs, q.b.abs)
+
+  def apply(as: Array[Complex]): Qubit = this(as(0), as(1))
+
+  def apply(a: Complex, b: Complex): Qubit = this(a, b, None)
+
+  def apply(a: Complex, b: Complex, label: String): Qubit = this(a, b, Some(label))
+}

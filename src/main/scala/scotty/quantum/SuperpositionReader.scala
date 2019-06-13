@@ -34,17 +34,22 @@ case class QubitProbabilityReader(state: Superposition) extends SuperpositionRea
     val ps = StateProbabilityReader(state).read
 
     (0 until state.qubitCount).map(q => {
-      QubitResult(q, ps.foldLeft(0d)((sum, pair) => if (pair.state(q) == One) sum + pair.probability else sum))
+      QubitResult(
+        state.qubitRegister.values(q).label,
+        q,
+        ps.foldLeft(0d)((sum, pair) => if (pair.state(q) == One()) sum + pair.probability else sum))
     })
   }
 
-  override def toString: String = read
-    .map(p => s"qubit_${p.index}: " +
-      s"P(0) = ${(1 - p.probability).rounded.toPercent}% " +
-      s"P(1) = ${p.probability.rounded.toPercent}%")
-    .mkString("\n")
+  def read(label: String): Option[QubitResult] = read.find(q => q.label.exists(_ == label))
+
+  override def toString: String = read.map(_.toString).mkString("\n")
 }
 
 object QubitProbabilityReader {
-  case class QubitResult(index: Int, probability: Double)
+  case class QubitResult(label: Option[String], index: Int, probability: Double) {
+    override def toString: String = s"${label.getOrElse(s"qubit_$index")}: " +
+      s"P(0) = ${(1 - probability).rounded.toPercent}% " +
+      s"P(1) = ${probability.rounded.toPercent}%"
+  }
 }
