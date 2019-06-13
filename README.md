@@ -4,15 +4,17 @@
 
 *"Whatever you say, sir. Thy will be done."*—Montgomery Scott
 
-Scotty is a quantum computing framework for Scala developers. It comes with a quantum computer simulator that can be used for writing hybrid (classical and quantum) programs.
+Scotty is a quantum computing framework for Scala developers. It comes with a quantum computer simulator that can be used for writing hybrid programs.
 
-Scotty was created with three goals in mind:
+Most quantum frameworks and simulators are written either in quantum-specific languages or Python. Scotty is one of the first attempts to build a cross-platform quantum framework on top of the JVM.
+
+It was created with three principles in mind:
 
 - **Write once, run anywhere**: experiment with quantum code and run it with Scotty. Compile it (coming soon) to Quil or OpenQASM and run it on other simulators or real quantum computers.
 - **Expandability**: provide a high-level set of abstractions that can be expanded to different architectures.
 - **No PhD required**: it should be easy to get started and everything should work out-of-the-box.
 
-Here is an example of a quantum teleportation algorithm to give you an idea of how easy it is to write hybrid code with Scotty:
+Here is an example of a quantum teleportation algorithm written in Scotty to give you an idea of what a typical piece of code looks like:
 
 ```scala
 implicit val random = new Random()
@@ -32,7 +34,7 @@ QuantumSimulator().run(circuit) match {
 }
 ```
 
-Here we setup a quantum circuit with a custom register of qubits, run it on the quantum simulator, and then peek at the initial state of the *message* qubit and one of the *superposition* probabilities.
+Here we setup a quantum circuit with a custom register of qubits, run it on the quantum simulator, and then peek at the *superposition* probability of the "there" qubit.
 
 ## Getting Started
 
