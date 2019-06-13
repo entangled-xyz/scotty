@@ -1,6 +1,6 @@
 # Scotty: Quantum Computing in Scala
 
-[![Build Status](https://travis-ci.org/entangled-xyz/scotty.svg?branch=master)](https://travis-ci.org/entangled-xyz/scotty) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/xyz.entangled/scotty_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/xyz.entangled/scotty_2.12) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/gitbucket/gitbucket/blob/master/LICENSE)
+[![Build Status](https://travis-ci.org/entangled-xyz/scotty.svg?branch=master)](https://travis-ci.org/entangled-xyz/scotty) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/xyz.entangled/scotty_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/xyz.entangled/scotty_2.13) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/gitbucket/gitbucket/blob/master/LICENSE)
 
 *"Whatever you say, sir. Thy will be done."*—Montgomery Scott
 
