@@ -29,7 +29,7 @@ sealed trait Gate extends Op {
 
   def targetMatrix: Option[Matrix] = None
 
-  def par(gate: Gate)(implicit ctx: QuantumContext): Matrix = ctx.par(this, gate)
+  def par(gate: Gate)(implicit ctx: QuantumContext): Gate = ctx.par(this, gate)
 
   def toString(implicit ctx: QuantumContext): String = matrix.toList.map(_.toList.mkString(" ")).mkString("\n")
 

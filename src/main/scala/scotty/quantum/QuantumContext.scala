@@ -10,7 +10,7 @@ trait QuantumContext {
 
   def swapMatrix(gate: QubitSwap): Matrix
 
-  def par(gate1: Gate, gate2: Gate): Matrix
+  def par(gate1: Gate, gate2: Gate): Gate
 
   def isUnitary(gate: Gate): Boolean
 

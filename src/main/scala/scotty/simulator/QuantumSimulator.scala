@@ -47,10 +47,10 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
       (topPad :+ gate) ++ bottomPad
     }
 
-    pad().reduce((a, b) => RawGate(a.par(b)(this)))
+    pad().reduce((a, b) => RawGate(a.par(b)(this))(this))
   }
 
-  def par(g1: Gate, g2: Gate): Matrix = (RawGate(g1)(this) ⊗ RawGate(g2)(this).fieldMatrix).getData
+  def par(g1: Gate, g2: Gate): Gate = RawGate((RawGate(g1)(this) ⊗ RawGate(g2)(this).fieldMatrix).getData)
 
   def isUnitary(g: Gate): Boolean = RawGate(g)(this).isUnitaryMatrix
 
