@@ -10,11 +10,15 @@ trait QuantumContext {
 
   def swapMatrix(gate: QubitSwap): Matrix
 
-  def par(gate1: Gate, gate2: Gate): Gate
+  def targetMatrix(target: Gate): Matrix
+
+  def tensorProduct(gate1: Gate, gate2: Gate): Gate
+
+  def tensorProduct(sp1: Superposition, sp2: Superposition): Superposition
+
+  def product(gate: Gate, sp: Superposition): Superposition
 
   def isUnitary(gate: Gate): Boolean
-
-  def targetMatrix(target: Target): Matrix
 
   def runAndMeasure(circuit: Circuit): Collapsed = {
     run(circuit) match {

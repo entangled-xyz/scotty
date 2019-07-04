@@ -3,23 +3,18 @@ package scotty.simulator
 import scotty.Labeled
 import scotty.quantum.QuantumContext.Vector
 import scotty.quantum._
-import scotty.simulator.math.LinearAlgebra.VectorTransformations
-import scotty.simulator.math.Implicits._
-import scotty.simulator.math.RawGate
 import scotty.quantum.math.Complex
 import scala.util.Random
 
 case class SimSuperposition(qubitRegister: QubitRegister, vector: Vector, label: Option[String])
-                           (implicit r: Random) extends Superposition with VectorTransformations with Labeled[String] {
-  val rawVector: Vector = vector
+                           (implicit r: Random) extends Superposition with Labeled[String] {
 
-  def par(state: Superposition): SimSuperposition = {
-    if (rawVector.length == 0) SimSuperposition(state)
-    else SimSuperposition((this ⊗ SimSuperposition(state).fieldVector).getData)
+  def combine(state: Superposition)(implicit ctx: QuantumContext): Superposition = {
+    if (vector.length == 0) SimSuperposition(state)
+    else ctx.tensorProduct(this, SimSuperposition(state))
   }
 
-  def applyGate(gate: Gate)(implicit ctx: QuantumContext): SimSuperposition =
-    SimSuperposition(RawGate(gate).product(fieldVector).getData)
+  def applyGate(gate: Gate)(implicit ctx: QuantumContext): Superposition =  ctx.product(gate, this)
 
   def measure: Collapsed = {
     val initialIterator = (0, 0d, None: Option[Int])

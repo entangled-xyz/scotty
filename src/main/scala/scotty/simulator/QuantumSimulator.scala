@@ -4,12 +4,12 @@ import scotty.quantum._
 import scotty.quantum.QuantumContext._
 import scotty.quantum.StandardGate
 import scotty.quantum.math.MathUtils
-import scotty.simulator.math.RawGate
 import scotty.simulator.math.Implicits._
 
 import scala.util.Random
 import scotty.quantum.math.Complex
 import scotty.simulator.QuantumSimulator.GateGen
+import scotty.simulator.math.linearalgebra.{MatrixWrapper, VectorWrapper}
 
 case class QuantumSimulator()(implicit random: Random = new Random) extends QuantumContext {
   val gateGenerators: Map[String, GateGen] = QuantumSimulator.standardGates
@@ -19,14 +19,15 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
 
     val result = circuit.ops
       .flatMap(opToGate(_, circuit.register.size))
-      .foldLeft(registerToSuperposition(circuit.register))((state, gate) => state.applyGate(gate)(this))
+      .foldLeft[Superposition](registerToSuperposition(circuit.register))((state, gate) => state.applyGate(gate)(this))
       .withRegister(circuit.register)
 
     if (shouldMeasure) result.measure else result
   }
 
-  def registerToSuperposition(register: QubitRegister): SimSuperposition =
-    register.values.foldLeft(SimSuperposition())((superposition, q) => superposition.par(SimSuperposition(q)))
+  def registerToSuperposition(register: QubitRegister): Superposition =
+    register.values.foldLeft[Superposition](SimSuperposition())((superposition, q) =>
+      superposition.combine(SimSuperposition(q))(this))
 
   def opToGate(op: Op, qubitCount: Int): collection.Seq[Gate] = op match {
     case c: CircuitConnector => c.circuit.ops.flatMap(o => opToGate(o, qubitCount))
@@ -47,12 +48,22 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
       (topPad :+ gate) ++ bottomPad
     }
 
-    pad().reduce((a, b) => RawGate(a.par(b)(this))(this))
+    pad().reduce((a, b) => a.par(b)(this))
   }
 
-  def par(g1: Gate, g2: Gate): Gate = RawGate((RawGate(g1)(this) ⊗ RawGate(g2)(this).fieldMatrix).getData)
+  def tensorProduct(g1: Gate, g2: Gate): Gate = RawGate(
+    (MatrixWrapper(g1.matrix(this)) ⊗ MatrixWrapper.fieldMatrix(g2.matrix(this))).getData
+  )
 
-  def isUnitary(g: Gate): Boolean = RawGate(g)(this).isUnitaryMatrix
+  def tensorProduct(sp1: Superposition, sp2: Superposition): Superposition = SimSuperposition(
+    (VectorWrapper(sp1.vector) ⊗ VectorWrapper.fieldVector(sp2.vector)).getData
+  )
+
+  def product(gate: Gate, sp: Superposition): Superposition = SimSuperposition(
+    (MatrixWrapper(gate.matrix(this)) * VectorWrapper.fieldVector(sp.vector)).getData
+  )
+
+  def isUnitary(g: Gate): Boolean = MatrixWrapper(g.matrix(this)).isUnitaryMatrix
 
   /**
     * Generates a matrix based on the top-level control gate and nested control and target child gates.
@@ -96,8 +107,8 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
 
         val targetRegister = QubitRegister(filledNtis.map(i => Qubit(binaries(i).toBasisState)))
 
-        val gateTargetProduct = RawGate(gate.finalTarget)(this)
-          .product(registerToSuperposition(targetRegister).vector).toArray
+        val gateTargetProduct = (MatrixWrapper(gate.finalTarget.matrix(this)) *
+          VectorWrapper.fieldVector(registerToSuperposition(targetRegister).vector)).toArray
 
         binaries
           .zipWithIndex
@@ -109,17 +120,17 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
             case (acc, item) if item.hasLabel("target") && acc.exists(_.hasLabel("target")) => acc
             case (acc, item) => acc :+ item
           }
-          .reduce((s1, s2) => s1 par s2)
-          .rawVector
+          .reduce[Superposition]((s1, s2) => s1.combine(s2)(this))
+          .vector
       } else {
-        binaries.map(b => SimSuperposition(b.toBasisState)).reduce((s1, s2) => s1 par s2).rawVector
+        binaries.map(b => SimSuperposition(b.toBasisState)).reduce[Superposition]((s1, s2) => s1.combine(s2)(this)).vector
       }
     }
 
     finalMatrix
   }
 
-  def targetMatrix(targetGate: Target): Matrix = gateGenerators(targetGate.name).apply(targetGate.params)
+  def targetMatrix(targetGate: Gate): Matrix = gateGenerators(targetGate.name).apply(targetGate.params)
 
   def swapMatrix(gate: QubitSwap): Matrix = {
     val minIndex = gate.indexes.min
@@ -135,7 +146,7 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
       binaries(i1) = binaries(i2)
       binaries(i2) = i1Val
 
-      binaries.map(b => SimSuperposition(b)).reduce((s1, s2) => s1 par s2).rawVector
+      binaries.map(b => SimSuperposition(b)).reduce[Superposition]((s1, s2) => s1.combine(s2)(this)).vector
     }).toArray
   }
 }

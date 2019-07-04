@@ -19,9 +19,11 @@ trait Superposition extends State {
 
   def probabilities: Seq[Double] = vector.map(s => Math.pow(s.abs.rounded, 2))
 
-  def par(state: Superposition): Superposition
+  def combine(state: Superposition)(implicit ctx: QuantumContext): Superposition
 
   def measure: Collapsed
+
+  def withRegister(register: QubitRegister): Superposition
 
   def toString(fullState: Boolean): String =
     if (fullState) StateProbabilityReader(this).toString else QubitProbabilityReader(this).toString
