@@ -15,7 +15,7 @@ case class Circuit(register: QubitRegister, ops: Op*) {
 
   def isValid: Boolean = register.size >= Circuit.qubitCountFromOps(ops.toSeq)
 
-  require(isValid, ErrorMessage.QubitCountError)
+  require(isValid, ErrorMessage.QubitCountMismatch)
 }
 
 object Circuit {

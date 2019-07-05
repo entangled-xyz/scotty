@@ -13,7 +13,7 @@ sealed trait Register[T <: Labeled[String]] {
     labels.distinct.size == labels.size
   }
 
-  require(areLabelsUnique, ErrorMessage.RegisterLabelsError)
+  require(areLabelsUnique, ErrorMessage.RegisterLabelsNotUnique)
 }
 
 case class QubitRegister(values: Seq[Qubit]) extends Register[Qubit]

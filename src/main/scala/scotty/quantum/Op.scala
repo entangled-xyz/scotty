@@ -45,8 +45,8 @@ trait Target extends Gate {
 
   def indexesAreAsc: Boolean = indexes.length <= 1 || (indexes, indexes.tail).zipped.forall(_ <= _)
 
-  require(indexesAreAsc, ErrorMessage.GateIndexOrderError)
-  require(indexesAreUnique, ErrorMessage.GateIndexesAreNotUniqueError)
+  require(indexesAreAsc, ErrorMessage.TargetGateIndexOrder)
+  require(indexesAreUnique, ErrorMessage.GateIndexesAreNotUnique)
 }
 
 trait Control extends Gate {
@@ -62,7 +62,7 @@ trait Control extends Gate {
   lazy val controlIndexes: Seq[Int] = indexes.filter(!targetIndexes.contains(_))
   lazy val isAsc: Boolean = controlIndex < target.indexes(0)
 
-  require(indexesAreUnique, ErrorMessage.GateIndexesAreNotUniqueError)
+  require(indexesAreUnique, ErrorMessage.GateIndexesAreNotUnique)
 }
 
 trait QubitSwap extends Target {
