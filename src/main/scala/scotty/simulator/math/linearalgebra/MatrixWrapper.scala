@@ -6,7 +6,7 @@ import scotty.quantum.QuantumContext.Matrix
 import scotty.quantum.math.Complex
 import scotty.quantum.math.MathUtils._
 import scotty.simulator.math.Implicits._
-import scotty.simulator.math.LinearAlgebra.{ApacheMatrix, ApacheVector}
+import Types.{ApacheMatrix, ApacheVector}
 
 case class MatrixWrapper(matrix: Array[Array[Complex]]) {
   lazy val fieldMatrix: Array2DRowFieldMatrix[ApacheComplex] = MatrixWrapper.fieldMatrix(matrix)

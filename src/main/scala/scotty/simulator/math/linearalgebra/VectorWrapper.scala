@@ -5,7 +5,7 @@ import org.apache.commons.math3.linear.ArrayFieldVector
 import scotty.quantum.QuantumContext.Vector
 import scotty.quantum.math.Complex
 import scotty.simulator.math.Implicits._
-import scotty.simulator.math.LinearAlgebra.ApacheVector
+import Types.ApacheVector
 
 case class VectorWrapper(vector: Array[Complex]) {
   lazy val fieldVector: ArrayFieldVector[ApacheComplex] = VectorWrapper.fieldVector(vector)
