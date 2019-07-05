@@ -1,17 +1,11 @@
 package scotty.quantum
 
-import scotty.Labeled
 import scotty.quantum.QuantumContext.Vector
 import scotty.quantum.math.{Complex, MathUtils}
 import scotty.quantum.math.MathUtils._
-
 import scala.util.Random
 
-sealed trait State {
-//  val register: QubitRegister
-//
-//  def findQubit(label: String): Option[Qubit] = register.values.find(q => q.label.exists(_ == label))
-}
+sealed trait State
 
 case class Superposition(vector: Vector) extends State {
   lazy val qubitCount: Int = if (vector.length == 0) 0 else (Math.log10(vector.length) / Math.log10(2)).toInt
