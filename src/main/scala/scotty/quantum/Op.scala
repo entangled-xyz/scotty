@@ -31,8 +31,6 @@ trait Gate extends Op {
 
   def targetMatrix: Option[Matrix] = None
 
-  def par(gate: Gate)(implicit ctx: QuantumContext): Gate = ctx.tensorProduct(this, gate)
-
   def toString(implicit ctx: QuantumContext): String = matrix.toList.map(_.toList.mkString(" ")).mkString("\n")
 
   def indexesAreUnique: Boolean = indexes.distinct.size == indexes.size

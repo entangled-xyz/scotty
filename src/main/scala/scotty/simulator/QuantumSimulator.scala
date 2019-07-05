@@ -5,14 +5,22 @@ import scotty.quantum.QuantumContext._
 import scotty.quantum.StandardGate
 import scotty.quantum.math.MathUtils
 import scotty.simulator.math.Implicits._
+
 import scala.util.Random
 import scotty.quantum.math.Complex
 import scotty.simulator.QuantumSimulator.GateGen
-import scotty.simulator.math.linearalgebra.Types.ApacheVector
+import scotty.simulator.math.linearalgebra.Types.{ApacheMatrix, ApacheVector}
 import scotty.simulator.math.linearalgebra.{MatrixWrapper, VectorWrapper}
 
 case class QuantumSimulator()(implicit random: Random = new Random) extends QuantumContext {
   val gateGenerators: Map[String, GateGen] = QuantumSimulator.standardGates
+
+  val identityMatrix: ApacheMatrix = MatrixWrapper.fieldMatrix(
+    Array(
+      Array(Complex(1), Complex(0)),
+      Array(Complex(0), Complex(1))
+    )
+  )
 
   def measure(register: QubitRegister, sp: Superposition): Collapsed = {
     val initialIterator = (0, 0d, None: Option[Int])
@@ -50,19 +58,18 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
   }
 
   def prepareGate(gate: Gate, qubitCount: Int): Gate = {
-    def pad(): Seq[Gate] = {
-      val identityGate = RawGate(Array(
-        Array(Complex(1), Complex(0)),
-        Array(Complex(0), Complex(1))
-      ))
+    val gateFieldMatrix = MatrixWrapper.fieldMatrix(gate.matrix(this))
 
-      def topPad = (0 until gate.indexes.sortWith(_ < _)(0)).map(_ => identityGate)
-      def bottomPad = (gate.indexes.sortWith(_ > _)(0) until qubitCount - 1).map(_ => identityGate)
+    def pad(): Seq[ApacheMatrix] = {
+      def topPad = (0 until gate.indexes.sortWith(_ < _)(0)).map(_ => identityMatrix)
+      def bottomPad = (gate.indexes.sortWith(_ > _)(0) until qubitCount - 1).map(_ => identityMatrix)
 
-      (topPad :+ gate) ++ bottomPad
+      (topPad :+ gateFieldMatrix) ++ bottomPad
     }
 
-    pad().reduce((a, b) => a.par(b)(this))
+    RawGate(
+      pad().reduce((a, b) => MatrixWrapper(a.getData).tensorProduct(b)).getData
+    )
   }
 
   def tensorProduct(g1: Gate, g2: Gate): Gate = RawGate(
