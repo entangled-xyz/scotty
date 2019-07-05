@@ -8,6 +8,7 @@ import scotty.simulator.math.Implicits._
 import scala.util.Random
 import scotty.quantum.math.Complex
 import scotty.simulator.QuantumSimulator.GateGen
+import scotty.simulator.math.linearalgebra.Types.ApacheVector
 import scotty.simulator.math.linearalgebra.{MatrixWrapper, VectorWrapper}
 
 case class QuantumSimulator()(implicit random: Random = new Random) extends QuantumContext {
@@ -120,21 +121,23 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
 
         val targetRegister = QubitRegister(filledNtis.map(i => Qubit(binaries(i).toBasisState)))
 
-        val gateTargetProduct = (MatrixWrapper(gate.finalTarget.matrix(this)) *
-          VectorWrapper.fieldVector(registerToSuperposition(targetRegister).vector)).toArray
+        val gateTargetProduct = MatrixWrapper(gate.finalTarget.matrix(this)) *
+          VectorWrapper.fieldVector(registerToSuperposition(targetRegister).vector)
+
+        type LabeledVector = (ApacheVector, Option[String])
 
         binaries
           .zipWithIndex
           .map {
-            case (_, index) if filledNtis.contains(index) => Superposition(gateTargetProduct, Some("target"))
-            case (binary, _) => Superposition(binary.toBasisState)
+            case (_, index) if filledNtis.contains(index) => gateTargetProduct -> Some("target")
+            case (binary, _) => VectorWrapper.fieldVector(binary.toBasisState) -> None
           }
-          .foldLeft(Seq[Superposition]()) {
-            case (acc, item) if item.hasLabel("target") && acc.exists(_.hasLabel("target")) => acc
+          .foldLeft(Seq[LabeledVector]()) {
+            case (acc, item) if item._2.contains("target") && acc.exists(_._2.contains("target")) => acc
             case (acc, item) => acc :+ item
           }
-          .reduce((s1, s2) => s1.combine(s2)(this))
-          .vector
+          .map(_._1)
+          .reduce((s1, s2) => VectorWrapper(s1.getData).tensorProduct(s2)).getData
       } else {
         binaries.map(b => Superposition(b.toBasisState)).reduce((s1, s2) => s1.combine(s2)(this)).vector
       }

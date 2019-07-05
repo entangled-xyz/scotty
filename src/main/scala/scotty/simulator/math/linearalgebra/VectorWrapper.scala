@@ -8,7 +8,7 @@ import scotty.simulator.math.Implicits._
 import Types.ApacheVector
 
 case class VectorWrapper(vector: Array[Complex]) {
-  lazy val fieldVector: ArrayFieldVector[ApacheComplex] = VectorWrapper.fieldVector(vector)
+  lazy val fieldVector: ApacheVector = VectorWrapper.fieldVector(vector)
 
   def map(f: ApacheComplex => ApacheComplex): ApacheVector = {
     val resultVector = new ArrayFieldVector(ComplexField.getInstance, fieldVector.getDimension)
@@ -45,5 +45,5 @@ case class VectorWrapper(vector: Array[Complex]) {
 }
 
 object VectorWrapper {
-  def fieldVector(vector: Vector) = new ArrayFieldVector[ApacheComplex](vector, false)
+  def fieldVector(vector: Vector): ApacheVector = new ArrayFieldVector[ApacheComplex](vector, false)
 }

@@ -9,7 +9,7 @@ import scotty.simulator.math.Implicits._
 import Types.{ApacheMatrix, ApacheVector}
 
 case class MatrixWrapper(matrix: Array[Array[Complex]]) {
-  lazy val fieldMatrix: Array2DRowFieldMatrix[ApacheComplex] = MatrixWrapper.fieldMatrix(matrix)
+  lazy val fieldMatrix: ApacheMatrix = MatrixWrapper.fieldMatrix(matrix)
   lazy val rowCount: Int = fieldMatrix.getRowDimension
   lazy val columnCount: Int = fieldMatrix.getColumnDimension
 
@@ -102,5 +102,5 @@ case class MatrixWrapper(matrix: Array[Array[Complex]]) {
 }
 
 object MatrixWrapper {
-  def fieldMatrix(matrix: Matrix) = new Array2DRowFieldMatrix[ApacheComplex](matrix, false)
+  def fieldMatrix(matrix: Matrix): ApacheMatrix = new Array2DRowFieldMatrix[ApacheComplex](matrix, false)
 }

@@ -13,7 +13,7 @@ sealed trait State {
 //  def findQubit(label: String): Option[Qubit] = register.values.find(q => q.label.exists(_ == label))
 }
 
-case class Superposition(vector: Vector, label: Option[String]) extends State with Labeled[String] {
+case class Superposition(vector: Vector) extends State {
   lazy val qubitCount: Int = if (vector.length == 0) 0 else (Math.log10(vector.length) / Math.log10(2)).toInt
 
   def applyGate(gate: Gate)(implicit ctx: QuantumContext): Superposition =
@@ -40,8 +40,6 @@ object Superposition {
   def apply(a: Complex, b: Complex)(implicit random: Random): Superposition = this(Array(a, b))
 
   def apply(state: Superposition)(implicit random: Random): Superposition = this(state.vector)
-
-  def apply(vector: Vector)(implicit random: Random): Superposition = this(vector, None)
 }
 
 case class Collapsed(register: QubitRegister, index: Int) extends State {
