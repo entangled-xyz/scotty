@@ -24,7 +24,7 @@ class QuantumSimulatorSpec extends FlatSpec {
   it should "run and measure a circuit with 2 qubits" in {
     val result = sim.runAndMeasure(Circuit().withRegister(Qubit.one, Qubit.zero))
 
-    assert(result.qubitRegister.size == 2)
+    assert(result.register.size == 2)
     assert(result.toBinaryRegister.values == Seq(One(), Zero()))
   }
 
@@ -47,10 +47,9 @@ class QuantumSimulatorSpec extends FlatSpec {
   }
 
   it should "return a collapsed state after being measured" in {
-    sim.run(Circuit(X(0)).withRegister(Qubit.zero)) match {
-      case s: Superposition =>  assert(s.measure.toBinaryRegister.values == Seq(One()))
-      case _ =>
-    }
+    assert(
+      sim.runAndMeasure(Circuit(X(0)).withRegister(Qubit.zero)).toBinaryRegister.values == Seq(One())
+    )
   }
 
   it should "automatically get measured if there's a Measure op" in {

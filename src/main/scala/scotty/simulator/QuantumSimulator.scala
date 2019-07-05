@@ -5,7 +5,6 @@ import scotty.quantum.QuantumContext._
 import scotty.quantum.StandardGate
 import scotty.quantum.math.MathUtils
 import scotty.simulator.math.Implicits._
-
 import scala.util.Random
 import scotty.quantum.math.Complex
 import scotty.simulator.QuantumSimulator.GateGen
@@ -14,20 +13,34 @@ import scotty.simulator.math.linearalgebra.{MatrixWrapper, VectorWrapper}
 case class QuantumSimulator()(implicit random: Random = new Random) extends QuantumContext {
   val gateGenerators: Map[String, GateGen] = QuantumSimulator.standardGates
 
+  def measure(register: QubitRegister, sp: Superposition): Collapsed = {
+    val initialIterator = (0, 0d, None: Option[Int])
+    val result = sp.probabilities.foldLeft(initialIterator)((iterator, prob) => {
+      val probSum = iterator._2 + prob
+      val tryCollapse = (c: Int) => if (prob > 0 && random.nextDouble() <= probSum) Some(c) else None
+
+      iterator match {
+        case (count, _, None) => (count + 1, probSum, tryCollapse(count))
+        case (count, _, valueOp) => (count + 1, probSum, valueOp)
+      }
+    })._3
+
+    Collapsed(register, result.get)
+  }
+
   def run(circuit: Circuit): State = {
     val shouldMeasure = circuit.ops.exists(op => op.isInstanceOf[Measure])
 
     val result = circuit.ops
       .flatMap(opToGate(_, circuit.register.size))
-      .foldLeft[Superposition](registerToSuperposition(circuit.register))((state, gate) => state.applyGate(gate)(this))
-      .withRegister(circuit.register)
+      .foldLeft(registerToSuperposition(circuit.register))((state, gate) => state.applyGate(gate)(this))
 
-    if (shouldMeasure) result.measure else result
+    if (shouldMeasure) measure(circuit.register, result) else result
   }
 
   def registerToSuperposition(register: QubitRegister): Superposition =
-    register.values.foldLeft[Superposition](SimSuperposition())((superposition, q) =>
-      superposition.combine(SimSuperposition(q))(this))
+    register.values.foldLeft(Superposition())((superposition, q) =>
+      superposition.combine(Superposition(q))(this))
 
   def opToGate(op: Op, qubitCount: Int): collection.Seq[Gate] = op match {
     case c: CircuitConnector => c.circuit.ops.flatMap(o => opToGate(o, qubitCount))
@@ -55,11 +68,11 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
     (MatrixWrapper(g1.matrix(this)) ⊗ MatrixWrapper.fieldMatrix(g2.matrix(this))).getData
   )
 
-  def tensorProduct(sp1: Superposition, sp2: Superposition): Superposition = SimSuperposition(
+  def tensorProduct(sp1: Superposition, sp2: Superposition): Superposition = Superposition(
     (VectorWrapper(sp1.vector) ⊗ VectorWrapper.fieldVector(sp2.vector)).getData
   )
 
-  def product(gate: Gate, sp: Superposition): Superposition = SimSuperposition(
+  def product(gate: Gate, sp: Superposition): Superposition = Superposition(
     (MatrixWrapper(gate.matrix(this)) * VectorWrapper.fieldVector(sp.vector)).getData
   )
 
@@ -113,17 +126,17 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
         binaries
           .zipWithIndex
           .map {
-            case (_, index) if filledNtis.contains(index) => SimSuperposition(gateTargetProduct, Some("target"))
-            case (binary, _) => SimSuperposition(binary.toBasisState)
+            case (_, index) if filledNtis.contains(index) => Superposition(gateTargetProduct, Some("target"))
+            case (binary, _) => Superposition(binary.toBasisState)
           }
-          .foldLeft(Seq[SimSuperposition]()) {
+          .foldLeft(Seq[Superposition]()) {
             case (acc, item) if item.hasLabel("target") && acc.exists(_.hasLabel("target")) => acc
             case (acc, item) => acc :+ item
           }
-          .reduce[Superposition]((s1, s2) => s1.combine(s2)(this))
+          .reduce((s1, s2) => s1.combine(s2)(this))
           .vector
       } else {
-        binaries.map(b => SimSuperposition(b.toBasisState)).reduce[Superposition]((s1, s2) => s1.combine(s2)(this)).vector
+        binaries.map(b => Superposition(b.toBasisState)).reduce((s1, s2) => s1.combine(s2)(this)).vector
       }
     }
 
@@ -146,7 +159,7 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
       binaries(i1) = binaries(i2)
       binaries(i2) = i1Val
 
-      binaries.map(b => SimSuperposition(b)).reduce[Superposition]((s1, s2) => s1.combine(s2)(this)).vector
+      binaries.map(b => Superposition(b)).reduce((s1, s2) => s1.combine(s2)(this)).vector
     }).toArray
   }
 }

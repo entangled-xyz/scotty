@@ -1,29 +1,30 @@
 package scotty.quantum
 
+import scotty.Labeled
 import scotty.quantum.QuantumContext.Vector
-import scotty.quantum.math.MathUtils
+import scotty.quantum.math.{Complex, MathUtils}
 import scotty.quantum.math.MathUtils._
 
-sealed trait State {
-  val qubitRegister: QubitRegister
+import scala.util.Random
 
-  def findQubit(label: String): Option[Qubit] = qubitRegister.values.find(q => q.label.exists(_ == label))
+sealed trait State {
+//  val register: QubitRegister
+//
+//  def findQubit(label: String): Option[Qubit] = register.values.find(q => q.label.exists(_ == label))
 }
 
-trait Superposition extends State {
-  val vector: Vector
-
+case class Superposition(vector: Vector, label: Option[String]) extends State with Labeled[String] {
   lazy val qubitCount: Int = if (vector.length == 0) 0 else (Math.log10(vector.length) / Math.log10(2)).toInt
 
-  def applyGate(gate: Gate)(implicit ctx: QuantumContext): Superposition
+  def applyGate(gate: Gate)(implicit ctx: QuantumContext): Superposition =
+    if (vector.length == 0) this
+    else ctx.product(gate, this)
 
   def probabilities: Seq[Double] = vector.map(s => Math.pow(s.abs.rounded, 2))
 
-  def combine(state: Superposition)(implicit ctx: QuantumContext): Superposition
-
-  def measure: Collapsed
-
-  def withRegister(register: QubitRegister): Superposition
+  def combine(sp: Superposition)(implicit ctx: QuantumContext): Superposition =
+    if (vector.length == 0) sp
+    else ctx.tensorProduct(this, sp)
 
   def toString(fullState: Boolean): String =
     if (fullState) StateProbabilityReader(this).toString else QubitProbabilityReader(this).toString
@@ -31,11 +32,23 @@ trait Superposition extends State {
   override def toString: String = toString(true)
 }
 
-case class Collapsed(qubitRegister: QubitRegister, index: Int) extends State {
+object Superposition {
+  def apply()(implicit random: Random): Superposition = this(Array[Complex]())
+
+  def apply(q: Qubit)(implicit random: Random): Superposition = this(Array(q.a, q.b))
+
+  def apply(a: Complex, b: Complex)(implicit random: Random): Superposition = this(Array(a, b))
+
+  def apply(state: Superposition)(implicit random: Random): Superposition = this(state.vector)
+
+  def apply(vector: Vector)(implicit random: Random): Superposition = this(vector, None)
+}
+
+case class Collapsed(register: QubitRegister, index: Int) extends State {
   def toBinaryRegister: BinaryRegister = BinaryRegister(
     MathUtils
-      .toBinaryPadded(index, qubitRegister.size)
-      .zipWithIndex.map(b => qubitRegister.values(b._2)
+      .toBinaryPadded(index, register.size)
+      .zipWithIndex.map(b => register.values(b._2)
       .label
       .fold(b._1)(b._1.withLabel))
   )

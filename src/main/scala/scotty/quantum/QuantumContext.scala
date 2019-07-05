@@ -20,9 +20,11 @@ trait QuantumContext {
 
   def isUnitary(gate: Gate): Boolean
 
+  def measure(register: QubitRegister, sp: Superposition): Collapsed
+
   def runAndMeasure(circuit: Circuit): Collapsed = {
     run(circuit) match {
-      case s: Superposition => s.measure
+      case s: Superposition => measure(circuit.register, s)
       case s: Collapsed => s
     }
   }

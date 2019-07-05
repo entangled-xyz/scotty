@@ -49,41 +49,49 @@ class StandardGatesSpec extends FlatSpec {
   }
 
   "I" should "do nothing" in {
-    sim.run(Circuit(I(0))) match {
+    val circuit = Circuit(I(0))
+
+    sim.run(circuit) match {
       case s: Superposition =>
         assert(StateProbabilityReader(s).read(0).amplitude == Complex(1))
         assert(StateProbabilityReader(s).read(1).amplitude == Complex(0))
-        assert(s.measure.toBinaryRegister.values == Seq(Zero()))
+        assert(sim.measure(circuit.register, s).toBinaryRegister.values == Seq(Zero()))
       case _ =>
     }
   }
 
   "X" should "negate qubit" in {
-    sim.run(Circuit(X(0))) match {
+    val circuit = Circuit(X(0))
+
+    sim.run(circuit) match {
       case s: Superposition =>
         assert(StateProbabilityReader(s).read(0).amplitude == Complex(0))
         assert(StateProbabilityReader(s).read(1).amplitude == Complex(1))
-        assert(s.measure.toBinaryRegister.values == Seq(One()))
+        assert(sim.measure(circuit.register, s).toBinaryRegister.values == Seq(One()))
       case _ =>
     }
   }
 
   "Y" should "negate qubit" in {
-    sim.run(Circuit(Y(0))) match {
+    val circuit = Circuit(Y(0))
+
+    sim.run(circuit) match {
       case s: Superposition =>
         assert(StateProbabilityReader(s).read(0).amplitude == Complex(0, 0))
         assert(StateProbabilityReader(s).read(1).amplitude == Complex(0, 1))
-        assert(s.measure.toBinaryRegister.values == Seq(One()))
+        assert(sim.measure(circuit.register, s).toBinaryRegister.values == Seq(One()))
       case _ =>
     }
   }
 
   "Z" should "change phase" in {
-    sim.run(Circuit(Z(0))) match {
+    val circuit = Circuit(Z(0))
+
+    sim.run(circuit) match {
       case s: Superposition =>
         assert(StateProbabilityReader(s).read(0).amplitude == Complex(1, 0))
         assert(StateProbabilityReader(s).read(1).amplitude == Complex(0, 0))
-        assert(s.measure.toBinaryRegister.values == Seq(Zero()))
+        assert(sim.measure(circuit.register, s).toBinaryRegister.values == Seq(Zero()))
       case _ =>
     }
   }
