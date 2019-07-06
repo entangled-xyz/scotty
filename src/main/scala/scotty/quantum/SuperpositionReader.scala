@@ -42,7 +42,7 @@ case class QubitProbabilityReader(register: Option[QubitRegister],
     })
   }
 
-  def read(label: String): Option[QubitResult] = read.find(q => q.label.exists(_ == label))
+  def read(label: String): Option[QubitResult] = read.find(q => q.label.contains(label))
 
   override def toString: String = read.map(_.toString).mkString("\n")
 }

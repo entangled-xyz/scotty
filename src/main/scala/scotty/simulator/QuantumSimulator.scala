@@ -5,7 +5,6 @@ import scotty.quantum.QuantumContext._
 import scotty.quantum.StandardGate
 import scotty.quantum.math.MathUtils
 import scotty.simulator.math.Implicits._
-
 import scala.util.Random
 import scotty.quantum.math.Complex
 import scotty.simulator.QuantumSimulator.GateGen
@@ -38,7 +37,7 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
   }
 
   def run(circuit: Circuit): State = {
-    val shouldMeasure = circuit.ops.exists(op => op.isInstanceOf[Measure])
+    val shouldMeasure = circuit.ops.exists(_.isInstanceOf[Measure])
 
     val result = circuit.ops
       .flatMap(opToGate(_, circuit.register.size))
