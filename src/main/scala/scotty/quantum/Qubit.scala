@@ -4,7 +4,7 @@ import scotty.{ErrorMessage, Labeled}
 import scotty.quantum.math.{Complex, MathUtils}
 
 case class Qubit(a: Complex, b: Complex, label: Option[String]) extends Labeled[String] {
-  require(Qubit.areAmplitudesValid(this), ErrorMessage.QubitAmplitudesError)
+  require(Qubit.areAmplitudesValid(this), ErrorMessage.IncorrectQubitAmplitudes)
 }
 
 object Qubit {

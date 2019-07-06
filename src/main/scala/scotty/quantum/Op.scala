@@ -16,20 +16,20 @@ case class Measure(index: Int) extends Op {
   val indexes: Seq[Int] = Seq(index)
 }
 
-sealed trait Gate extends Op {
+trait Gate extends Op {
   val name: String = getClass.getSimpleName
+
+  val params: Seq[Double] = Seq[Double]()
 
   def isUnitary(implicit ctx: QuantumContext): Boolean = ctx.isUnitary(this)
 
   def matrix(implicit ctx: QuantumContext): Matrix = this match {
     case swap: QubitSwap => ctx.swapMatrix(swap)
     case control: Control => ctx.controlMatrix(control)
-    case target: Target => targetMatrix.getOrElse(ctx.targetMatrix(target))
+    case gate: Gate => gate.targetMatrix.getOrElse(ctx.targetMatrix(gate))
   }
 
   def targetMatrix: Option[Matrix] = None
-
-  def par(gate: Gate)(implicit ctx: QuantumContext): Matrix = ctx.par(this, gate)
 
   def toString(implicit ctx: QuantumContext): String = matrix.toList.map(_.toList.mkString(" ")).mkString("\n")
 
@@ -39,13 +39,12 @@ sealed trait Gate extends Op {
 trait Target extends Gate {
   val index1: Int
 
-  val params: Seq[Double] = Seq[Double]()
   lazy val indexes: Seq[Int] = Seq(index1)
 
   def indexesAreAsc: Boolean = indexes.length <= 1 || (indexes, indexes.tail).zipped.forall(_ <= _)
 
-  require(indexesAreAsc, ErrorMessage.GateIndexOrderError)
-  require(indexesAreUnique, ErrorMessage.GateIndexesAreNotUniqueError)
+  require(indexesAreAsc, ErrorMessage.TargetGateIndexOrder)
+  require(indexesAreUnique, ErrorMessage.GateIndexesAreNotUnique)
 }
 
 trait Control extends Gate {
@@ -61,11 +60,19 @@ trait Control extends Gate {
   lazy val controlIndexes: Seq[Int] = indexes.filter(!targetIndexes.contains(_))
   lazy val isAsc: Boolean = controlIndex < target.indexes(0)
 
-  require(indexesAreUnique, ErrorMessage.GateIndexesAreNotUniqueError)
+  require(indexesAreUnique, ErrorMessage.GateIndexesAreNotUnique)
 }
 
 trait QubitSwap extends Target {
   val index2: Int
 
   override lazy val indexes: Seq[Int] = if (index1 > index2) Seq(index2, index1) else Seq(index1, index2)
+}
+
+case class RawGate(matrix: Matrix) extends Gate {
+  val indexes: Seq[Int] = Seq.empty
+
+  override lazy val qubitCount: Int = Math.sqrt(matrix.length).toInt
+
+  override def targetMatrix = Some(matrix)
 }

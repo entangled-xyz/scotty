@@ -27,7 +27,7 @@ object Bit {
   def fromInt(value: Int): Bit = value match {
     case 0 => Zero(None)
     case 1 => One(None)
-    case _ => throw new IllegalArgumentException(ErrorMessage.IntToBitError)
+    case _ => throw new IllegalArgumentException(ErrorMessage.IntToBit)
   }
 }
 
