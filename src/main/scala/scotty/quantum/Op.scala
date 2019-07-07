@@ -30,26 +30,26 @@ sealed trait Gate extends Op {
   def tensorProduct(gate: Gate)(implicit ctx: QuantumContext): TargetGate = ctx.tensorProduct(this, gate)
 
   def indexesAreUnique: Boolean = indexes.distinct.size == indexes.size
+
+  def indexesAreAsc: Boolean = indexes.length <= 1 || (indexes, indexes.tail).zipped.forall(_ <= _)
 }
 
 trait TargetGate extends Gate {
   val customMatrix: Option[Matrix] = None
-
-  def indexesAreAsc: Boolean = indexes.length <= 1 || (indexes, indexes.tail).zipped.forall(_ <= _)
 }
 
 trait ControlGate extends Gate {
   val controlIndex: Int
   val target: Gate
-
   lazy val indexes: Seq[Int] = controlIndex +: target.indexes
+
   lazy val finalTarget: TargetGate = target match {
     case t: TargetGate => t
     case c: ControlGate => c.finalTarget
   }
+
   lazy val targetIndexes: Seq[Int] = finalTarget.indexes
   lazy val controlIndexes: Seq[Int] = indexes.filter(!targetIndexes.contains(_))
-  lazy val isAsc: Boolean = controlIndex < target.indexes(0)
 
   require(indexesAreUnique, ErrorMessage.GateIndexesNotUnique)
 }
@@ -67,7 +67,20 @@ trait SwapGate extends TargetGate {
   require(indexesAreUnique, ErrorMessage.GateIndexesNotUnique)
 }
 
-class CustomGate(matrix: Matrix, customIndexes: Int*) extends TargetGate {
-  val indexes: Seq[Int] = customIndexes.toSeq
+case class CustomGate(matrix: Matrix, override val params: Seq[Double], indexes: Seq[Int]) extends TargetGate {
   override val customMatrix: Option[Matrix] = Some(matrix)
+
+  def indexesMatchMatrixDimensions: Boolean = {
+    val lengthWithGaps =
+      if (indexes.length <= 1) indexes.length
+      else 1 + indexes.max - indexes.min
+
+    Math.pow(2, lengthWithGaps) == matrix.length && matrix.forall(r => r.length == matrix.length)
+  }
+
+  require(indexesMatchMatrixDimensions, ErrorMessage.GateMatrixDoesntMatchIndexes)
+}
+
+object CustomGate {
+  def apply(matrix: Matrix, indexes: Int*): CustomGate = this(matrix, Seq(), indexes)
 }
