@@ -6,13 +6,9 @@ import scotty.quantum.QuantumContext._
 trait QuantumContext {
   def run(circuit: Circuit): State
 
-  def controlMatrix(gate: Control): Matrix
+  def gateMatrix(gate: Gate): Matrix
 
-  def swapMatrix(gate: QubitSwap): Matrix
-
-  def targetMatrix(target: Gate): Matrix
-
-  def tensorProduct(gate1: Gate, gate2: Gate): Gate
+  def tensorProduct(gate1: Gate, gate2: Gate): TargetGate
 
   def tensorProduct(sp1: Superposition, sp2: Superposition): Superposition
 

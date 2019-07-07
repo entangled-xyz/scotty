@@ -5,9 +5,10 @@ import scotty.quantum.QuantumContext._
 import scotty.quantum.StandardGate
 import scotty.quantum.math.MathUtils
 import scotty.simulator.math.Implicits._
+
 import scala.util.Random
 import scotty.quantum.math.Complex
-import scotty.simulator.QuantumSimulator.GateGen
+import scotty.simulator.QuantumSimulator.{GateGen, RawGate}
 import scotty.simulator.math.linearalgebra.Types.{ApacheMatrix, ApacheVector}
 import scotty.simulator.math.linearalgebra.{MatrixWrapper, VectorWrapper}
 
@@ -71,7 +72,7 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
     )
   }
 
-  def tensorProduct(g1: Gate, g2: Gate): Gate = RawGate(
+  def tensorProduct(g1: Gate, g2: Gate): TargetGate = RawGate(
     (MatrixWrapper(g1.matrix(this)) ⊗ MatrixWrapper.fieldMatrix(g2.matrix(this))).getData
   )
 
@@ -84,6 +85,12 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
   )
 
   def isUnitary(g: Gate): Boolean = MatrixWrapper(g.matrix(this)).isUnitaryMatrix
+
+  def gateMatrix(gate: Gate): Matrix = gate match {
+    case swap: SwapGate => swapMatrix(swap)
+    case control: ControlGate => controlMatrix(control)
+    case target: TargetGate => target.customMatrix.getOrElse(targetMatrix(target))
+  }
 
   /**
     * Generates a matrix based on the top-level control gate and nested control and target child gates.
@@ -102,7 +109,7 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
     * @param gate control gate that this method generates a matrix for
     * @return final matrix representing the control gate acting on all involved qubits
     */
-  def controlMatrix(gate: Control): Matrix = {
+  def controlMatrix(gate: ControlGate): Matrix = {
     val minIndex = gate.indexes.min
     val normalizedControlIndexes = gate.controlIndexes.map(i => i - minIndex)
     val sortedControlIndexes = gate.indexes.sorted
@@ -154,7 +161,7 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
 
   def targetMatrix(targetGate: Gate): Matrix = gateGenerators(targetGate.name).apply(targetGate.params)
 
-  def swapMatrix(gate: QubitSwap): Matrix = {
+  def swapMatrix(gate: SwapGate): Matrix = {
     val minIndex = gate.indexes.min
     val i1 = gate.index1 - minIndex
     val i2 = gate.index2 - minIndex
@@ -175,6 +182,14 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
 
 object QuantumSimulator {
   import scotty.simulator.gate._
+
+  case class RawGate(matrix: Matrix) extends TargetGate {
+    val indexes: Seq[Int] = Seq.empty
+
+    override lazy val qubitCount: Int = Math.sqrt(matrix.length).toInt
+
+    override val customMatrix: Option[Matrix] = Some(matrix)
+  }
 
   type GateGen = Seq[Double] => Matrix
 

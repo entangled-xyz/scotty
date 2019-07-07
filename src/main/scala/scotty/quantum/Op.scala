@@ -16,63 +16,77 @@ case class Measure(index: Int) extends Op {
   val indexes: Seq[Int] = Seq(index)
 }
 
-trait Gate extends Op {
+sealed trait Gate extends Op {
   val name: String = getClass.getSimpleName
 
   val params: Seq[Double] = Seq[Double]()
 
   def isUnitary(implicit ctx: QuantumContext): Boolean = ctx.isUnitary(this)
 
-  def matrix(implicit ctx: QuantumContext): Matrix = this match {
-    case swap: QubitSwap => ctx.swapMatrix(swap)
-    case control: Control => ctx.controlMatrix(control)
-    case gate: Gate => gate.targetMatrix.getOrElse(ctx.targetMatrix(gate))
-  }
-
-  def targetMatrix: Option[Matrix] = None
+  def matrix(implicit ctx: QuantumContext): Matrix = ctx.gateMatrix(this)
 
   def toString(implicit ctx: QuantumContext): String = matrix.toList.map(_.toList.mkString(" ")).mkString("\n")
 
+  def tensorProduct(gate: Gate)(implicit ctx: QuantumContext): TargetGate = ctx.tensorProduct(this, gate)
+
   def indexesAreUnique: Boolean = indexes.distinct.size == indexes.size
-}
-
-trait Target extends Gate {
-  val index1: Int
-
-  lazy val indexes: Seq[Int] = Seq(index1)
 
   def indexesAreAsc: Boolean = indexes.length <= 1 || (indexes, indexes.tail).zipped.forall(_ <= _)
-
-  require(indexesAreAsc, ErrorMessage.TargetGateIndexOrder)
-  require(indexesAreUnique, ErrorMessage.GateIndexesAreNotUnique)
 }
 
-trait Control extends Gate {
+trait TargetGate extends Gate {
+  val customMatrix: Option[Matrix] = None
+}
+
+trait ControlGate extends Gate {
   val controlIndex: Int
   val target: Gate
-
   lazy val indexes: Seq[Int] = controlIndex +: target.indexes
-  lazy val finalTarget: Target = target match {
-    case t: Target => t
-    case c: Control => c.finalTarget
+
+  lazy val finalTarget: TargetGate = target match {
+    case t: TargetGate => t
+    case c: ControlGate => c.finalTarget
   }
+
   lazy val targetIndexes: Seq[Int] = finalTarget.indexes
   lazy val controlIndexes: Seq[Int] = indexes.filter(!targetIndexes.contains(_))
-  lazy val isAsc: Boolean = controlIndex < target.indexes(0)
 
-  require(indexesAreUnique, ErrorMessage.GateIndexesAreNotUnique)
+  require(indexesAreUnique, ErrorMessage.GateIndexesNotUnique)
 }
 
-trait QubitSwap extends Target {
+trait SwapGate extends TargetGate {
+  val index1: Int
   val index2: Int
 
-  override lazy val indexes: Seq[Int] = if (index1 > index2) Seq(index2, index1) else Seq(index1, index2)
+  override lazy val indexes: Seq[Int] = {
+    if (index1 > index2) Seq(index2, index1) else Seq(index1, index2)
+  }
+
+  require(indexes.size == 2, ErrorMessage.SwapGateIndexCountNotTwo)
+  require(indexesAreAsc, ErrorMessage.GateIndexesNotAsc)
+  require(indexesAreUnique, ErrorMessage.GateIndexesNotUnique)
 }
 
-case class RawGate(matrix: Matrix) extends Gate {
-  val indexes: Seq[Int] = Seq.empty
+case class CustomGate(matrixGen: Seq[Double] => Matrix,
+                      override val params: Seq[Double],
+                      indexes: Seq[Int]) extends TargetGate {
+  val matrix: Matrix = matrixGen.apply(params)
+  override val customMatrix: Option[Matrix] = Some(matrix)
 
-  override lazy val qubitCount: Int = Math.sqrt(matrix.length).toInt
+  def indexesMatchMatrixDimensions: Boolean = {
+    val lengthWithGaps =
+      if (indexes.length <= 1) indexes.length
+      else 1 + indexes.max - indexes.min
 
-  override def targetMatrix = Some(matrix)
+    Math.pow(2, lengthWithGaps) == matrix.length && matrix.forall(r => r.length == matrix.length)
+  }
+
+  require(indexesMatchMatrixDimensions, ErrorMessage.GateMatrixDoesntMatchIndexes)
+}
+
+object CustomGate {
+  def apply(matrix: Matrix, indexes: Int*): CustomGate = this((_: Seq[Double]) => matrix, Seq(), indexes)
+
+  def apply(matrixGen: Seq[Double] => Matrix, param: Double, indexes: Int*): CustomGate =
+    this(matrixGen, Seq(param), indexes)
 }
