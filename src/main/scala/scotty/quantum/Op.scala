@@ -67,7 +67,10 @@ trait SwapGate extends TargetGate {
   require(indexesAreUnique, ErrorMessage.GateIndexesNotUnique)
 }
 
-case class CustomGate(matrix: Matrix, override val params: Seq[Double], indexes: Seq[Int]) extends TargetGate {
+case class CustomGate(matrixGen: Seq[Double] => Matrix,
+                      override val params: Seq[Double],
+                      indexes: Seq[Int]) extends TargetGate {
+  val matrix: Matrix = matrixGen.apply(params)
   override val customMatrix: Option[Matrix] = Some(matrix)
 
   def indexesMatchMatrixDimensions: Boolean = {
@@ -82,5 +85,8 @@ case class CustomGate(matrix: Matrix, override val params: Seq[Double], indexes:
 }
 
 object CustomGate {
-  def apply(matrix: Matrix, indexes: Int*): CustomGate = this(matrix, Seq(), indexes)
+  def apply(matrix: Matrix, indexes: Int*): CustomGate = this((_: Seq[Double]) => matrix, Seq(), indexes)
+
+  def apply(matrixGen: Seq[Double] => Matrix, param: Double, indexes: Int*): CustomGate =
+    this(matrixGen, Seq(param), indexes)
 }
