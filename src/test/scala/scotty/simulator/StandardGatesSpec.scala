@@ -96,6 +96,18 @@ class StandardGatesSpec extends FlatSpec {
     }
   }
 
+  "S" should "change phase" in {
+    val circuit = Circuit(S(0))
+
+    sim.run(circuit) match {
+      case s: Superposition =>
+        assert(StateProbabilityReader(s).read(0).amplitude == Complex(1, 0))
+        assert(StateProbabilityReader(s).read(1).amplitude == Complex(0, 0))
+        assert(sim.measure(circuit.register, s).toBinaryRegister.values == Seq(Zero()))
+      case _ =>
+    }
+  }
+
   "RX" should "rotate qubit around X" in {
     sim.run(Circuit(RX(quarterTurn, 0))) match {
       case s: Superposition =>

@@ -199,6 +199,7 @@ object QuantumSimulator {
     "Y" -> Y.matrix,
     "Z" -> Z.matrix,
     "I" -> I.matrix,
+    "S" -> S.matrix,
     "RX" -> RX.matrix,
     "RY" -> RY.matrix,
     "RZ" -> RZ.matrix
