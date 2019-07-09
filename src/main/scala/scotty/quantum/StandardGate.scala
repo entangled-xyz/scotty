@@ -59,5 +59,13 @@ object StandardGate {
     lazy val target = Controlled(controlIndex2, X(targetIndex))
   }
 
+  case class CZ(controlIndex: Int, targetIndex: Int) extends ControlGate {
+    lazy val target = Z(targetIndex)
+  }
+
   case class SWAP(index1: Int, index2: Int) extends SwapGate
+
+  case class CSWAP(controlIndex: Int, index1: Int, index2: Int) extends ControlGate {
+    lazy val target = SWAP(index1, index2)
+  }
 }

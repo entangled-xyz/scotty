@@ -96,6 +96,34 @@ class StandardGatesSpec extends FlatSpec {
     }
   }
 
+  "CZ" should "change phase if control is 1" in {
+    val circuit = Circuit(X(1), CZ(1, 0))
+
+    sim.run(circuit) match {
+      case s: Superposition =>
+        assert(StateProbabilityReader(s).read(0).amplitude == Complex(0, 0))
+        assert(StateProbabilityReader(s).read(1).amplitude == Complex(1, 0))
+        assert(StateProbabilityReader(s).read(2).amplitude == Complex(0, 0))
+        assert(StateProbabilityReader(s).read(3).amplitude == Complex(0, 0))
+        assert(sim.measure(circuit.register, s).toBinaryRegister.values == Seq(Zero(), One()))
+      case _ =>
+    }
+  }
+
+  it should "not change phase if control is 0" in {
+    val circuit = Circuit(CZ(1, 0))
+
+    sim.run(circuit) match {
+      case s: Superposition =>
+        assert(StateProbabilityReader(s).read(0).amplitude == Complex(1, 0))
+        assert(StateProbabilityReader(s).read(1).amplitude == Complex(0, 0))
+        assert(StateProbabilityReader(s).read(2).amplitude == Complex(0, 0))
+        assert(StateProbabilityReader(s).read(3).amplitude == Complex(0, 0))
+        assert(sim.measure(circuit.register, s).toBinaryRegister.values == Seq(Zero(), Zero()))
+      case _ =>
+    }
+  }
+
   "S" should "change phase" in {
     val circuit = Circuit(S(0)).withRegister(Qubit.one)
 
@@ -205,5 +233,13 @@ class StandardGatesSpec extends FlatSpec {
     assertThrows[IllegalArgumentException] {
       sim.runAndMeasure(Circuit(SWAP(3, 3)))
     }
+  }
+
+  "CSWAP" should "swap two qubits when control is 1" in {
+    assert(sim.runAndMeasure(Circuit(X(1), X(2), CSWAP(1, 0, 2))).toBinaryRegister.values == Seq(One(), One(), Zero()))
+  }
+
+  it should "not swap two qubits when control is 0" in {
+    assert(sim.runAndMeasure(Circuit(X(2), CSWAP(1, 0, 2))).toBinaryRegister.values == Seq(Zero(), Zero(), One()))
   }
 }
