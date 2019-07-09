@@ -27,6 +27,10 @@ object StandardGate {
     val indexes: Seq[Int] = Seq(index)
   }
 
+  case class T(index: Int) extends TargetGate {
+    val indexes: Seq[Int] = Seq(index)
+  }
+
   case class RX(theta: Double, index: Int) extends TargetGate {
     val indexes: Seq[Int] = Seq(index)
     override val params: Seq[Double] = Seq(theta)
