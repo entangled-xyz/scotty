@@ -4,6 +4,7 @@ import org.scalatest.FlatSpec
 import scotty.quantum._
 import scotty.quantum.math.Complex
 import scotty.quantum.math.MathUtils._
+import scotty.simulator.math.Implicits._
 
 class CustomGatesSpec extends FlatSpec {
   val sim = QuantumSimulator()
@@ -12,15 +13,15 @@ class CustomGatesSpec extends FlatSpec {
   val fiftyPercent = (Math.sqrt(2) / 2).rounded
 
   val twoByTwoMatrix = Array(
-    Array(Complex(0), Complex(1)),
-    Array(Complex(1), Complex(0))
+    Array(0, 1),
+    Array(1, 0)
   )
 
   val fourByFourMatrix = Array(
-    Array(Complex(1), Complex(0), Complex(0), Complex(0)),
-    Array(Complex(0), Complex(1), Complex(0), Complex(0)),
-    Array(Complex(0), Complex(0), Complex(1), Complex(0)),
-    Array(Complex(0), Complex(0), Complex(0), Complex(1))
+    Array(1, 0, 0, 0),
+    Array(0, 1, 0, 0),
+    Array(0, 0, 1, 0),
+    Array(0, 0, 0, 1)
   )
 
   val rxMatrix = (params: Seq[Double]) => {

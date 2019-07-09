@@ -23,6 +23,19 @@ object StandardGate {
     val indexes: Seq[Int] = Seq(index)
   }
 
+  case class S(index: Int) extends TargetGate {
+    val indexes: Seq[Int] = Seq(index)
+  }
+
+  case class T(index: Int) extends TargetGate {
+    val indexes: Seq[Int] = Seq(index)
+  }
+
+  case class PHASE(phi: Double, index: Int) extends TargetGate {
+    val indexes: Seq[Int] = Seq(index)
+    override val params: Seq[Double] = Seq(phi)
+  }
+
   case class RX(theta: Double, index: Int) extends TargetGate {
     val indexes: Seq[Int] = Seq(index)
     override val params: Seq[Double] = Seq(theta)
@@ -46,5 +59,13 @@ object StandardGate {
     lazy val target = Controlled(controlIndex2, X(targetIndex))
   }
 
+  case class CZ(controlIndex: Int, targetIndex: Int) extends ControlGate {
+    lazy val target = Z(targetIndex)
+  }
+
   case class SWAP(index1: Int, index2: Int) extends SwapGate
+
+  case class CSWAP(controlIndex: Int, index1: Int, index2: Int) extends ControlGate {
+    lazy val target = SWAP(index1, index2)
+  }
 }

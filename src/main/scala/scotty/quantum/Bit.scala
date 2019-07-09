@@ -18,6 +18,11 @@ sealed trait Bit extends Labeled[String] {
     case _: One => One(label)
     case _: Zero => Zero(label)
   }
+
+  override def toString: String = this match {
+    case _: One => label.fold("One")(l => s"One($l)")
+    case _: Zero => label.fold("Zero")(l => s"Zero($l)")
+  }
 }
 
 case class Zero(label: Option[String]) extends Bit

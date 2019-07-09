@@ -19,7 +19,7 @@ case class StateProbabilityReader(state: Superposition) extends SuperpositionRea
   )).toSeq
 
   override def toString: String = read
-    .map(p => s"|${p.state.mkString("")}>: " +
+    .map(p => s"${p.state.mkString("")}: " +
       s"Amplitude: ${p.amplitude}, " +
       s"P: ${p.probability.rounded.toPercent}%")
     .mkString("\n")
