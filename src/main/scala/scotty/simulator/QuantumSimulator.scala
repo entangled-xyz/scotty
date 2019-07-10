@@ -2,13 +2,14 @@ package scotty.simulator
 
 import scotty.quantum._
 import scotty.quantum.QuantumContext._
-import scotty.quantum.StandardGate
+import scotty.quantum.gate.{ControlGate, Dagger, Gate, StandardGate, SwapGate, TargetGate}
+import scotty.quantum.gate.Gate.GateGen
 import scotty.quantum.math.MathUtils
 import scotty.simulator.math.Implicits._
 
 import scala.util.Random
 import scotty.quantum.math.Complex
-import scotty.simulator.QuantumSimulator.{GateGen, RawGate}
+import scotty.simulator.QuantumSimulator.RawGate
 import scotty.simulator.math.linearalgebra.Types.{ApacheMatrix, ApacheVector}
 import scotty.simulator.math.linearalgebra.{MatrixWrapper, VectorWrapper}
 
@@ -90,6 +91,7 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
     case swap: SwapGate => swapMatrix(swap)
     case control: ControlGate => controlMatrix(control)
     case target: TargetGate => target.customMatrix.getOrElse(targetMatrix(target))
+    case dagger: Dagger => MatrixWrapper(dagger.target.matrix(this)).conjugateTranspose.getData
   }
 
   /**
@@ -190,8 +192,6 @@ object QuantumSimulator {
 
     override val customMatrix: Option[Matrix] = Some(matrix)
   }
-
-  type GateGen = Seq[Double] => Matrix
 
   def standardGates: Map[String, GateGen] = Map(
     "H" -> H.matrix,
