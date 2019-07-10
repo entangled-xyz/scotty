@@ -2,6 +2,7 @@ package scotty.quantum
 
 import scotty.quantum.math.Complex
 import scotty.quantum.QuantumContext._
+import scotty.quantum.gate.{Gate, TargetGate}
 
 trait QuantumContext {
   def run(circuit: Circuit): State

@@ -1,7 +1,7 @@
 package scotty.simulator
 
 import org.scalatest.FlatSpec
-import scotty.quantum.StandardGate.{X, _}
+import scotty.quantum.gate.StandardGate.{X, _}
 import scotty.quantum._
 import scotty.quantum.math.Complex
 import scotty.quantum.math.MathUtils._

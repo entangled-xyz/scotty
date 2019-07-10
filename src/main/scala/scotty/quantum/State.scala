@@ -1,6 +1,7 @@
 package scotty.quantum
 
 import scotty.quantum.QuantumContext.Vector
+import scotty.quantum.gate.Gate
 import scotty.quantum.math.{Complex, MathUtils}
 import scotty.quantum.math.MathUtils._
 import scala.util.Random

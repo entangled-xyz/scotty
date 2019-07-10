@@ -1,8 +1,6 @@
-package scotty.quantum
+package scotty.quantum.gate
 
 object StandardGate {
-  case class Controlled(controlIndex: Int, target: Gate) extends ControlGate
-
   // Single qubit gates
 
   case class H(index: Int) extends TargetGate {

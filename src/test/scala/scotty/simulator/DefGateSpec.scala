@@ -2,11 +2,12 @@ package scotty.simulator
 
 import org.scalatest.FlatSpec
 import scotty.quantum._
+import scotty.quantum.gate.DefGate
 import scotty.quantum.math.Complex
 import scotty.quantum.math.MathUtils._
 import scotty.simulator.math.Implicits._
 
-class DefGatesSpec extends FlatSpec {
+class DefGateSpec extends FlatSpec {
   val sim = QuantumSimulator()
 
   val quarterTurn = Math.PI / 2

@@ -1,7 +1,7 @@
 package scotty.simulator
 
 import org.scalatest.FlatSpec
-import scotty.quantum.StandardGate._
+import scotty.quantum.gate.StandardGate._
 import scotty.quantum._
 
 class QuantumSimulatorSpec extends FlatSpec {
