@@ -3,6 +3,8 @@ package scotty.quantum
 object StandardGate {
   case class Controlled(controlIndex: Int, target: Gate) extends ControlGate
 
+  // Single qubit gates
+
   case class H(index: Int) extends TargetGate {
     val indexes: Seq[Int] = Seq(index)
   }
@@ -50,6 +52,8 @@ object StandardGate {
     val indexes: Seq[Int] = Seq(index)
     override val params: Seq[Double] = Seq(theta)
   }
+
+  // Multi qubit gates
 
   case class CNOT(controlIndex: Int, targetIndex: Int) extends ControlGate {
     lazy val target = X(targetIndex)

@@ -1,5 +1,6 @@
 package scotty.simulator
 
+import scotty.quantum.Gate.GateGen
 import scotty.quantum._
 import scotty.quantum.QuantumContext._
 import scotty.quantum.StandardGate
@@ -8,7 +9,7 @@ import scotty.simulator.math.Implicits._
 
 import scala.util.Random
 import scotty.quantum.math.Complex
-import scotty.simulator.QuantumSimulator.{GateGen, RawGate}
+import scotty.simulator.QuantumSimulator.RawGate
 import scotty.simulator.math.linearalgebra.Types.{ApacheMatrix, ApacheVector}
 import scotty.simulator.math.linearalgebra.{MatrixWrapper, VectorWrapper}
 
@@ -190,8 +191,6 @@ object QuantumSimulator {
 
     override val customMatrix: Option[Matrix] = Some(matrix)
   }
-
-  type GateGen = Seq[Double] => Matrix
 
   def standardGates: Map[String, GateGen] = Map(
     "H" -> H.matrix,

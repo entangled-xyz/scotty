@@ -1,6 +1,7 @@
 package scotty.quantum
 
 import scotty.ErrorMessage
+import scotty.quantum.Gate.GateGen
 import scotty.quantum.QuantumContext.Matrix
 
 sealed trait Op {
@@ -32,6 +33,10 @@ sealed trait Gate extends Op {
   def indexesAreUnique: Boolean = indexes.distinct.size == indexes.size
 
   def indexesAreAsc: Boolean = indexes.length <= 1 || (indexes, indexes.tail).zipped.forall(_ <= _)
+}
+
+object Gate {
+  type GateGen = Seq[Double] => Matrix
 }
 
 trait TargetGate extends Gate {
@@ -67,10 +72,9 @@ trait SwapGate extends TargetGate {
   require(indexesAreUnique, ErrorMessage.GateIndexesNotUnique)
 }
 
-case class CustomGate(matrixGen: Seq[Double] => Matrix,
-                      override val params: Seq[Double],
-                      indexes: Seq[Int]) extends TargetGate {
+case class DefGate(matrixGen: GateGen, override val params: Seq[Double], indexes: Seq[Int]) extends TargetGate {
   val matrix: Matrix = matrixGen.apply(params)
+
   override val customMatrix: Option[Matrix] = Some(matrix)
 
   def indexesMatchMatrixDimensions: Boolean = {
@@ -84,9 +88,9 @@ case class CustomGate(matrixGen: Seq[Double] => Matrix,
   require(indexesMatchMatrixDimensions, ErrorMessage.GateMatrixDoesntMatchIndexes)
 }
 
-object CustomGate {
-  def apply(matrix: Matrix, indexes: Int*): CustomGate = this((_: Seq[Double]) => matrix, Seq(), indexes)
+object DefGate {
+  def apply(matrix: Matrix, indexes: Int*): DefGate = this((_: Seq[Double]) => matrix, Seq(), indexes)
 
-  def apply(matrixGen: Seq[Double] => Matrix, param: Double, indexes: Int*): CustomGate =
+  def apply(matrixGen: GateGen, param: Double, indexes: Int*): DefGate =
     this(matrixGen, Seq(param), indexes)
 }
