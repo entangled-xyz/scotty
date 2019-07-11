@@ -48,6 +48,7 @@ case class QubitProbabilityReader(register: Option[QubitRegister],
 }
 
 object QubitProbabilityReader {
+  def apply(register: QubitRegister, state: Superposition): QubitProbabilityReader = this(Some(register), state)
   def apply(state: Superposition): QubitProbabilityReader = this(None, state)
 
   case class QubitResult(label: Option[String], index: Int, probability: Double) {
