@@ -20,8 +20,8 @@ sealed trait Bit extends Labeled[String] {
   }
 
   override def toString: String = this match {
-    case _: One => label.fold("One")(l => s"One($l)")
-    case _: Zero => label.fold("Zero")(l => s"Zero($l)")
+    case _: One => label.fold("1")(l => s"One($l)")
+    case _: Zero => label.fold("0")(l => s"Zero($l)")
   }
 }
 
