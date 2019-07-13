@@ -35,9 +35,9 @@ trait ControlGate extends Gate {
   val target: Gate
   lazy val indexes: Seq[Int] = controlIndex +: target.indexes
 
-  lazy val finalTarget: TargetGate = target match {
-    case t: TargetGate => t
+  lazy val finalTarget: Gate = target match {
     case c: ControlGate => c.finalTarget
+    case t: TargetGate => t
   }
 
   lazy val targetIndexes: Seq[Int] = finalTarget.indexes
@@ -61,6 +61,6 @@ trait SwapGate extends TargetGate {
 
 case class Controlled(controlIndex: Int, target: Gate) extends ControlGate
 
-case class Dagger(target: Gate) extends Gate {
+case class Dagger(target: Gate) extends TargetGate {
   val indexes: Seq[Int] = target.indexes
 }

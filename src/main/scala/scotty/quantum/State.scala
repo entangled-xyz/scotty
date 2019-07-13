@@ -41,9 +41,7 @@ case class Collapsed(register: QubitRegister, index: Int) extends State {
   def toBinaryRegister: BinaryRegister = BinaryRegister(
     MathUtils
       .toBinaryPadded(index, register.size)
-      .zipWithIndex.map(b => register.values(b._2)
-      .label
-      .fold(b._1)(b._1.withLabel))
+      .zipWithIndex.map(b => register.values(b._2).label.fold(b._1)(b._1.withLabel)): _*
   )
 
   override def toString: String = toBinaryRegister.values

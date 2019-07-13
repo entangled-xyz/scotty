@@ -11,7 +11,7 @@ case class Circuit(register: QubitRegister, ops: Op*) {
 
   def withRegister(newRegister: QubitRegister): Circuit = Circuit(newRegister, ops: _*)
 
-  def withRegister(newQubits: Qubit*): Circuit = Circuit(QubitRegister(newQubits.toSeq), ops: _*)
+  def withRegister(newQubits: Qubit*): Circuit = Circuit(QubitRegister(newQubits: _*), ops: _*)
 
   def isValid: Boolean = register.size >= Circuit.qubitCountFromOps(ops.toSeq)
 
@@ -26,8 +26,8 @@ object Circuit {
   def qubitCountFromOps(ops: Seq[Op]): Int = if (ops.isEmpty) 0 else ops.flatMap(op => op.indexes).distinct.max + 1
 
   def generateRegister(n: Int): QubitRegister =
-    QubitRegister(List.fill(n)(defaultState))
+    QubitRegister(List.fill(n)(defaultState): _*)
 
   def generateRegister(ops: Seq[Op]): QubitRegister =
-    QubitRegister(List.fill(qubitCountFromOps(ops))(defaultState))
+    QubitRegister(List.fill(qubitCountFromOps(ops))(defaultState): _*)
 }
