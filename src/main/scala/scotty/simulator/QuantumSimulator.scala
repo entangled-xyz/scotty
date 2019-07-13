@@ -6,7 +6,6 @@ import scotty.quantum.gate.{ControlGate, Dagger, Gate, StandardGate, SwapGate, T
 import scotty.quantum.gate.Gate.GateGen
 import scotty.quantum.math.MathUtils
 import scotty.simulator.math.Implicits._
-
 import scala.util.Random
 import scotty.quantum.math.Complex
 import scotty.simulator.QuantumSimulator.RawGate
@@ -90,8 +89,8 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
   def gateMatrix(gate: Gate): Matrix = gate match {
     case swap: SwapGate => swapMatrix(swap)
     case control: ControlGate => controlMatrix(control)
-    case target: TargetGate => target.customMatrix.getOrElse(targetMatrix(target))
     case dagger: Dagger => MatrixWrapper(dagger.target.matrix(this)).conjugateTranspose.getData
+    case target: TargetGate => target.customMatrix.getOrElse(targetMatrix(target))
   }
 
   /**
@@ -134,7 +133,7 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
         val ntis = normalizedTargetIndexes
         val filledNtis = if (ntis.length > 1) ntis(0) to ntis.last else ntis
 
-        val targetRegister = QubitRegister(filledNtis.map(i => Qubit(binaries(i).toBasisState)))
+        val targetRegister = QubitRegister(filledNtis.map(i => Qubit(binaries(i).toBasisState)): _*)
 
         val gateTargetProduct = MatrixWrapper(gate.finalTarget.matrix(this)) *
           VectorWrapper.fieldVector(registerToSuperposition(targetRegister).vector)

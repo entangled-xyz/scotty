@@ -16,6 +16,6 @@ sealed trait Register[T <: Labeled[String]] {
   require(areLabelsUnique, ErrorMessage.RegisterLabelsNotUnique)
 }
 
-case class QubitRegister(values: Seq[Qubit]) extends Register[Qubit]
+case class QubitRegister(values: Qubit*) extends Register[Qubit]
 
-case class BinaryRegister(values: Seq[Bit]) extends Register[Bit]
+case class BinaryRegister(values: Bit*) extends Register[Bit]
