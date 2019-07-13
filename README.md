@@ -4,26 +4,24 @@
 
 *"Whatever you say, sir. Thy will be done."*—Montgomery Scott
 
-Scotty is a quantum computing framework for Scala developers. It comes with a quantum computer simulator that can be used for writing hybrid programs.
+Scotty is a quantum computing framework for Scala developers. It comes with a quantum computer simulator that can be used for writing hybrid programs out-of-the-box.
 
-Most quantum frameworks and simulators are written either in quantum-specific languages or Python. Scotty is one of the first attempts to build a cross-platform quantum framework on top of the JVM.
+Most quantum frameworks and simulators are written either in quantum-specific languages (like Q# and QISKit) or Python. Scotty is one of the first attempts at building a cross-platform quantum framework on top of the JVM.
 
-It was created with three principles in mind:
+It was built with three principles in mind:
 
-- **Write once, run anywhere**: experiment with quantum code and run it with Scotty. Compile it (coming soon) to Quil or OpenQASM and run it on other simulators or real quantum computers.
-- **Expandability**: provide a high-level set of abstractions that can be expanded to different architectures.
-- **No PhD required**: it should be easy to get started and everything should work out-of-the-box.
+- **Write once, run anywhere**: experiment with quantum code and run it with Scotty. Export Scotty circuits (coming soon) to Quil or OpenQASM and run it on other simulators or real quantum computers.
+- **Expandability**: provide a high-level set of abstractions that can be expanded on different architectures.
+- **No PhD required**: it should be easy to get started and everything should work intuitively out-of-the-box.
 
 Here is an example of a quantum teleportation algorithm written in Scotty to give you an idea of what a typical piece of code looks like:
 
 ```scala
-implicit val random = new Random()
-
-def bellPair(q1: Int, q2: Int) = Circuit(H(q1), CNOT(q1, q2))
+def entangle(q1: Int, q2: Int) = Circuit(H(q1), CNOT(q1, q2))
 
 val msg = Qubit(Complex(0.8), Complex(0.6))
 
-val circuit = bellPair(1, 2)
+val circuit = entangle(1, 2)
   .combine(Circuit(CNOT(0, 1), H(0)))
   .combine(CNOT(1, 2), Controlled(0, Z(2)))
   .withRegister(msg, Qubit.zero("here"), Qubit.zero("there"))
@@ -34,7 +32,7 @@ QuantumSimulator().run(circuit) match {
 }
 ```
 
-Here we setup a quantum circuit with a custom register of qubits, run it on the quantum simulator, and then peek at the *superposition* probability of the "there" qubit.
+Here we just setup a quantum circuit with a custom register of qubits, ran it in the quantum simulator, and then peeked at the *superposition* probability of a "there" qubit.
 
 ## Getting Started
 
@@ -46,4 +44,4 @@ Contributions are super welcome! Take a look at the current issues and if you'd 
 
 ## License
 
-Scotty is available under the Apache 2 License.
+Scotty is available under the Apache 2.0 License.
