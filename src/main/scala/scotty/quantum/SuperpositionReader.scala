@@ -1,7 +1,7 @@
 package scotty.quantum
 
-import scotty.quantum.QubitProbabilityReader.QubitResult
-import scotty.quantum.StateProbabilityReader.StateResult
+import scotty.quantum.QubitProbabilityReader.QubitData
+import scotty.quantum.StateProbabilityReader.StateData
 import scotty.quantum.math.{Complex, MathUtils}
 import scotty.quantum.math.MathUtils._
 
@@ -11,8 +11,8 @@ sealed trait SuperpositionReader[T] {
   def read: Seq[T]
 }
 
-case class StateProbabilityReader(state: Superposition) extends SuperpositionReader[StateResult] {
-  def read: Seq[StateResult] = state.vector.zipWithIndex.map(pair => StateResult(
+case class StateProbabilityReader(state: Superposition) extends SuperpositionReader[StateData] {
+  def read: Seq[StateData] = state.vector.zipWithIndex.map(pair => StateData(
     MathUtils.toBinaryPadded(pair._2, state.qubitCount),
     pair._1,
     Math.pow(pair._1.abs.rounded, 2)
@@ -26,23 +26,23 @@ case class StateProbabilityReader(state: Superposition) extends SuperpositionRea
 }
 
 object StateProbabilityReader {
-  case class StateResult(state: Seq[Bit], amplitude: Complex, probability: Double)
+  case class StateData(state: Seq[Bit], amplitude: Complex, probability: Double)
 }
 
 case class QubitProbabilityReader(register: Option[QubitRegister],
-                                  state: Superposition) extends SuperpositionReader[QubitResult] {
-  def read: Seq[QubitResult] = {
-    val ps = StateProbabilityReader(state).read
+                                  state: Superposition) extends SuperpositionReader[QubitData] {
+  def read: Seq[QubitData] = {
+    val stateData = StateProbabilityReader(state).read
 
-    (0 until state.qubitCount).map(q => {
-      QubitResult(
-        register.flatMap(_.values(q).label),
-        q,
-        ps.foldLeft(0d)((sum, pair) => if (pair.state(q) == One()) sum + pair.probability else sum))
+    (0 until state.qubitCount).map(index => {
+      QubitData(
+        register.flatMap(_.values(index).label),
+        index,
+        stateData.foldLeft(0d)((sum, data) => if (data.state(index) == One()) sum + data.probability else sum))
     })
   }
 
-  def read(label: String): Option[QubitResult] = read.find(q => q.label.contains(label))
+  def read(label: String): Option[QubitData] = read.find(q => q.label.contains(label))
 
   override def toString: String = read.map(_.toString).mkString("\n")
 }
@@ -51,7 +51,7 @@ object QubitProbabilityReader {
   def apply(register: QubitRegister, state: Superposition): QubitProbabilityReader = this(Some(register), state)
   def apply(state: Superposition): QubitProbabilityReader = this(None, state)
 
-  case class QubitResult(label: Option[String], index: Int, probability: Double) {
+  case class QubitData(label: Option[String], index: Int, probability: Double) {
     override def toString: String = s"${label.getOrElse(s"qubit_$index")}: " +
       s"P(0) = ${(1 - probability).rounded.toPercent}% " +
       s"P(1) = ${probability.rounded.toPercent}%"
