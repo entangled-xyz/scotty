@@ -5,14 +5,12 @@ import scotty.quantum.{Bit, Zero}
 import scala.annotation.tailrec
 
 object MathUtils {
-  val Precision = 1e-8
+  val Precision = 1e8
 
   implicit class DoubleHelpers(d: Double) {
-    def rounded: Double = {
-      val precision = 1 / Precision
+    def rounded: Double = rounded(Precision)
 
-      Math.rint(d * precision) / precision
-    }
+    def rounded(precision: Double): Double = Math.rint(d * precision) / precision
 
     def toPercent: Double = d * 100
   }
@@ -44,6 +42,6 @@ object MathUtils {
   def isProbabilityValid(a: Double, b: Double): Boolean = {
     val sumOfSquares = Math.pow(a, 2) + Math.pow(b, 2)
 
-    Math.abs(sumOfSquares - 1) < MathUtils.Precision
+    Math.abs(sumOfSquares - 1) < 1 / MathUtils.Precision
   }
 }

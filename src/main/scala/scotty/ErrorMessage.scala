@@ -16,4 +16,6 @@ object ErrorMessage {
   val RegisterLabelsNotUnique = "Qubit and bit register labels have to be unique."
 
   val SwapGateIndexCountNotTwo = "Swap gate should only have two qubit indexes."
+
+  val BlochSphereQubitCountNotOne = "BlochSphereReader only works with the superposition of a single qubit."
 }
