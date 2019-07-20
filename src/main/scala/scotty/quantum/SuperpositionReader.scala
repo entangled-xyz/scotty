@@ -69,18 +69,19 @@ case class BlochSphereReader(state: Superposition) extends SuperpositionReader[B
     val a = new ApacheComplex(state.vector(0).r, state.vector(0).i)
     val b = new ApacheComplex(state.vector(1).r, state.vector(1).i)
 
-    val theta = 2 * a.acos.abs
-//    val theta = 4 * Math.acos(a.abs)
-    val phi = b.divide(Math.sin(theta / 2)).log.abs
+    val densityMatrix = Array(
+      Array(a.multiply(a.conjugate), a.multiply(b.conjugate)),
+      Array(b.multiply(a.conjugate), b.multiply(b.conjugate))
+    )
 
-    Seq(BlochSphereData(phi.rounded, theta.rounded, coordinates(theta, phi)))
+    val x = 2 * densityMatrix(0)(1).getReal
+    val y = 2 * densityMatrix(1)(0).getImaginary
+    val z = densityMatrix(0)(0).subtract(densityMatrix(1)(1)).abs
+    val theta = Math.acos(z)
+    val phi = Math.acos(x / Math.sin(theta))
+
+    Seq(BlochSphereData(phi.rounded, theta.rounded, Coordinates(x, y, z)))
   }
-
-  def coordinates(theta: Double, phi: Double): Coordinates = Coordinates(
-    Math.cos(phi) * Math.sin(theta),
-    Math.sin(theta) * Math.sin(phi),
-    Math.cos(theta)
-  )
 
   override def toString: String = {
     val state = read(0)
