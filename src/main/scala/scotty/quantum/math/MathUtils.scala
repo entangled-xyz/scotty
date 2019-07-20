@@ -1,7 +1,7 @@
 package scotty.quantum.math
 
+import scotty.quantum.math.Complex.Complex
 import scotty.quantum.{Bit, Zero}
-
 import scala.annotation.tailrec
 
 object MathUtils {
@@ -20,7 +20,7 @@ object MathUtils {
   }
 
   implicit class ComplexHelpers(c: Complex) {
-    def rounded: Complex = Complex(c.r.rounded, c.i.rounded)
+    def rounded: Complex = Complex(c.getReal.rounded, c.getImaginary.rounded)
   }
 
   def toBinaryImpl(n: Int): Seq[Bit] = {

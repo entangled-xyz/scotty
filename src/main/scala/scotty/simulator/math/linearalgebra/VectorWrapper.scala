@@ -1,16 +1,15 @@
 package scotty.simulator.math.linearalgebra
 
-import org.apache.commons.math3.complex.{ComplexField, Complex => ApacheComplex}
+import org.apache.commons.math3.complex.{ComplexField, Complex}
 import org.apache.commons.math3.linear.ArrayFieldVector
 import scotty.quantum.QuantumContext.Vector
-import scotty.quantum.math.Complex
 import scotty.simulator.math.Implicits._
 import Types.ApacheVector
 
 case class VectorWrapper(vector: Array[Complex]) {
   lazy val fieldVector: ApacheVector = VectorWrapper.fieldVector(vector)
 
-  def map(f: ApacheComplex => ApacheComplex): ApacheVector = {
+  def map(f: Complex => Complex): ApacheVector = {
     val resultVector = new ArrayFieldVector(ComplexField.getInstance, fieldVector.getDimension)
 
     for (index <- 0 until fieldVector.getDimension) {
@@ -45,5 +44,5 @@ case class VectorWrapper(vector: Array[Complex]) {
 }
 
 object VectorWrapper {
-  def fieldVector(vector: Vector): ApacheVector = new ArrayFieldVector[ApacheComplex](vector, false)
+  def fieldVector(vector: Vector): ApacheVector = new ArrayFieldVector[Complex](vector, false)
 }

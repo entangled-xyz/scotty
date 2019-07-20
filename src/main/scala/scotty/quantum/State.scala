@@ -1,8 +1,9 @@
 package scotty.quantum
 
+import org.apache.commons.math3.complex.Complex
 import scotty.quantum.QuantumContext.Vector
 import scotty.quantum.gate.Gate
-import scotty.quantum.math.{Complex, MathUtils}
+import scotty.quantum.math.MathUtils
 import scotty.quantum.math.MathUtils._
 import scala.util.Random
 

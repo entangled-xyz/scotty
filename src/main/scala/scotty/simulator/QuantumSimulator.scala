@@ -5,7 +5,6 @@ import scotty.quantum.QuantumContext._
 import scotty.quantum.gate.{ControlGate, Dagger, Gate, StandardGate, SwapGate, TargetGate}
 import scotty.quantum.gate.Gate.GateGen
 import scotty.quantum.math.MathUtils
-import scotty.simulator.math.Implicits._
 import scala.util.Random
 import scotty.quantum.math.Complex
 import scotty.simulator.QuantumSimulator.RawGate

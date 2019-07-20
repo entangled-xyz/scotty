@@ -1,10 +1,11 @@
 package scotty.quantum
 
+import org.apache.commons.math3.complex.Complex
 import scotty.ErrorMessage
 import scotty.quantum.BlochSphereReader.{BlochSphereData, Coordinates}
 import scotty.quantum.QubitProbabilityReader.QubitData
 import scotty.quantum.StateProbabilityReader.StateData
-import scotty.quantum.math.{Complex, MathUtils}
+import scotty.quantum.math.MathUtils
 import scotty.quantum.math.MathUtils._
 
 sealed trait SuperpositionReader[T] {
@@ -64,10 +65,8 @@ case class BlochSphereReader(state: Superposition) extends SuperpositionReader[B
   require(state.qubitCount == 1, ErrorMessage.BlochSphereQubitCountNotOne)
 
   def read: Seq[BlochSphereData] = {
-    import org.apache.commons.math3.complex.{Complex => ApacheComplex}
-
-    val a = new ApacheComplex(state.vector(0).r, state.vector(0).i)
-    val b = new ApacheComplex(state.vector(1).r, state.vector(1).i)
+    val a = state.vector(0)
+    val b = state.vector(1)
 
     val densityMatrix = Array(
       Array(a.multiply(a.conjugate), a.multiply(b.conjugate)),

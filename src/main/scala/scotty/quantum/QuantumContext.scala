@@ -1,6 +1,6 @@
 package scotty.quantum
 
-import scotty.quantum.math.Complex
+import org.apache.commons.math3.complex.Complex
 import scotty.quantum.QuantumContext._
 import scotty.quantum.gate.{Gate, TargetGate}
 
