@@ -75,8 +75,7 @@ case class BlochSphereReader(state: Superposition) extends SuperpositionReader[B
   require(state.qubitCount == 1, ErrorMessage.BlochSphereQubitCountNotOne)
 
   def read: Seq[BlochSphereData] = {
-    val densityMatrix =
-      QuantumSimulator().outerProduct(state, Superposition(VectorWrapper.conjugate(state.vector).getData))
+    val densityMatrix = QuantumSimulator().densityMatrix(Qubit(state.vector(0), state.vector(1)))
 
     val x = 2 * densityMatrix(0)(1).getReal
     val y = 2 * densityMatrix(1)(0).getImaginary
