@@ -1,12 +1,14 @@
 package scotty.quantum
 
-import org.apache.commons.math3.complex.Complex
 import scotty.ErrorMessage
 import scotty.quantum.BlochSphereReader.{BlochSphereData, Coordinates}
 import scotty.quantum.QubitProbabilityReader.QubitData
 import scotty.quantum.StateProbabilityReader.StateData
-import scotty.quantum.math.MathUtils
+import scotty.quantum.math.Complex.Complex
+import scotty.quantum.math.{Complex, MathUtils}
 import scotty.quantum.math.MathUtils._
+import scotty.simulator.QuantumSimulator
+import scotty.simulator.math.linearalgebra.VectorWrapper
 
 sealed trait SuperpositionReader[T] {
   val state: Superposition
@@ -25,7 +27,7 @@ case class StateProbabilityReader(state: Superposition) extends SuperpositionRea
     .map(p => {
       val prob = p.probability.toPercent
       s"${p.state.mkString("")}: " +
-        s"Amplitude: ${p.amplitude}, " +
+        s"Amplitude: ${Complex.toString(p.amplitude)}, " +
         f"P: $prob%1.2f%%"
     })
     .mkString("\n")
@@ -73,17 +75,13 @@ case class BlochSphereReader(state: Superposition) extends SuperpositionReader[B
   require(state.qubitCount == 1, ErrorMessage.BlochSphereQubitCountNotOne)
 
   def read: Seq[BlochSphereData] = {
-    val a = state.vector(0)
-    val b = state.vector(1)
-
-    val densityMatrix = Array(
-      Array(a.multiply(a.conjugate), a.multiply(b.conjugate)),
-      Array(b.multiply(a.conjugate), b.multiply(b.conjugate))
-    )
+    val densityMatrix =
+      QuantumSimulator().outerProduct(state, Superposition(VectorWrapper.conjugate(state.vector).getData))
 
     val x = 2 * densityMatrix(0)(1).getReal
     val y = 2 * densityMatrix(1)(0).getImaginary
     val z = densityMatrix(0)(0).subtract(densityMatrix(1)(1)).abs
+
     val theta = Math.acos(z)
     val phi = Math.acos(x / Math.sin(theta))
 

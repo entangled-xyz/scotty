@@ -15,6 +15,8 @@ trait QuantumContext {
 
   def product(gate: Gate, sp: Superposition): Superposition
 
+  def outerProduct(sp1: Superposition, sp2: Superposition): Matrix
+
   def isUnitary(gate: Gate): Boolean
 
   def measure(register: QubitRegister, sp: Superposition): Collapsed

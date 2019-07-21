@@ -83,6 +83,10 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
     (MatrixWrapper(gate.matrix(this)) * VectorWrapper.fieldVector(sp.vector)).getData
   )
 
+  def outerProduct(sp1: Superposition, sp2: Superposition): Matrix = {
+    VectorWrapper.fieldVector(sp1.vector).outerProduct(VectorWrapper.fieldVector(sp2.vector)).getData
+  }
+
   def isUnitary(g: Gate): Boolean = MatrixWrapper(g.matrix(this)).isUnitaryMatrix
 
   def gateMatrix(gate: Gate): Matrix = gate match {

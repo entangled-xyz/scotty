@@ -4,7 +4,6 @@ import org.apache.commons.math3.complex.Complex
 import scotty.quantum.QuantumContext.Vector
 import scotty.quantum.gate.Gate
 import scotty.quantum.math.MathUtils
-import scala.util.Random
 
 sealed trait State
 
@@ -28,13 +27,13 @@ case class Superposition(vector: Vector) extends State {
 }
 
 object Superposition {
-  def apply()(implicit random: Random): Superposition = this(Array[Complex]())
+  def apply(): Superposition = this(Array[Complex]())
 
-  def apply(q: Qubit)(implicit random: Random): Superposition = this(Array(q.a, q.b))
+  def apply(q: Qubit): Superposition = this(Array(q.a, q.b))
 
-  def apply(a: Complex, b: Complex)(implicit random: Random): Superposition = this(Array(a, b))
+  def apply(a: Complex, b: Complex): Superposition = this(Array(a, b))
 
-  def apply(state: Superposition)(implicit random: Random): Superposition = this(state.vector)
+  def apply(state: Superposition): Superposition = this(state.vector)
 }
 
 case class Collapsed(register: QubitRegister, index: Int) extends State {

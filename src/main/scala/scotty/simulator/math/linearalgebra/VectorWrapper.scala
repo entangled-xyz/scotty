@@ -45,4 +45,6 @@ case class VectorWrapper(vector: Array[Complex]) {
 
 object VectorWrapper {
   def fieldVector(vector: Vector): ApacheVector = new ArrayFieldVector[Complex](vector, false)
+
+  def conjugate(vector: Vector): ApacheVector = new ApacheVector(vector.map(c => c.conjugate()), false)
 }
