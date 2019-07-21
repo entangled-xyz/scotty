@@ -8,7 +8,6 @@ import scotty.quantum.math.Complex.Complex
 import scotty.quantum.math.{Complex, MathUtils}
 import scotty.quantum.math.MathUtils._
 import scotty.simulator.QuantumSimulator
-import scotty.simulator.math.linearalgebra.VectorWrapper
 
 sealed trait SuperpositionReader[T] {
   val state: Superposition
