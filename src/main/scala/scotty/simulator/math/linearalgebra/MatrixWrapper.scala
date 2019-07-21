@@ -4,7 +4,6 @@ import org.apache.commons.math3.complex.{Complex, ComplexField}
 import org.apache.commons.math3.linear.{Array2DRowFieldMatrix, ArrayFieldVector, MatrixUtils}
 import scotty.quantum.QuantumContext.Matrix
 import Types.{ApacheMatrix, ApacheVector}
-import scotty.quantum.math.MathUtils._
 
 case class MatrixWrapper(matrix: Array[Array[Complex]]) {
   lazy val fieldMatrix: ApacheMatrix = MatrixWrapper.fieldMatrix(matrix)
@@ -33,10 +32,7 @@ case class MatrixWrapper(matrix: Array[Array[Complex]]) {
 
   def T: ApacheMatrix = conjugateTranspose
 
-  def isUnitaryMatrix: Boolean = equals(roundValues(product(T, fieldMatrix)), identity)
-
-  def roundValues(m: ApacheMatrix): ApacheMatrix =
-    map(m, entry => new Complex(entry.getReal.rounded, entry.getImaginary.rounded))
+  def isUnitaryMatrix: Boolean = equals(product(T, fieldMatrix), identity)
 
   def conjugateTranspose: ApacheMatrix =
     new ApacheMatrix(fieldMatrix.transpose().getData.map(c => c.map(v => v.conjugate())), false)

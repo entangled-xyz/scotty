@@ -1,18 +1,13 @@
 package scotty.simulator
 
 import org.scalatest.FlatSpec
+import scotty.TestHelpers
 import scotty.quantum._
 import scotty.quantum.gate.DefGate
 import scotty.quantum.math.Complex
-import scotty.quantum.math.MathUtils._
 import scotty.simulator.math.Implicits._
 
-class DefGateSpec extends FlatSpec {
-  val sim = QuantumSimulator()
-
-  val quarterTurn = Math.PI / 2
-  val fiftyPercent = (Math.sqrt(2) / 2).rounded
-
+class DefGateSpec extends FlatSpec with TestHelpers {
   val twoByTwoMatrix = Array(
     Array(0, 1),
     Array(1, 0)
@@ -46,8 +41,8 @@ class DefGateSpec extends FlatSpec {
 
     sim.run(Circuit(myGate(quarterTurn, 0))) match {
       case s: Superposition =>
-        assert(StateProbabilityReader(s).read(0).amplitude.rounded == Complex(fiftyPercent, 0))
-        assert(StateProbabilityReader(s).read(1).amplitude.rounded == Complex(0, -fiftyPercent))
+        assert(StateProbabilityReader(s).read(0).amplitude === Complex(fiftyPercent, 0))
+        assert(StateProbabilityReader(s).read(1).amplitude === Complex(0, -fiftyPercent))
       case _ =>
     }
   }
@@ -57,8 +52,8 @@ class DefGateSpec extends FlatSpec {
 
     sim.run(Circuit(myGate(quarterTurn, 0))) match {
       case s: Superposition =>
-        assert(StateProbabilityReader(s).read(0).amplitude.rounded == Complex(fiftyPercent, 0))
-        assert(StateProbabilityReader(s).read(1).amplitude.rounded == Complex(0, -fiftyPercent))
+        assert(StateProbabilityReader(s).read(0).amplitude === Complex(fiftyPercent, 0))
+        assert(StateProbabilityReader(s).read(1).amplitude === Complex(0, -fiftyPercent))
       case _ =>
     }
   }

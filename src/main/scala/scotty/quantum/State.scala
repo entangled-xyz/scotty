@@ -4,7 +4,6 @@ import org.apache.commons.math3.complex.Complex
 import scotty.quantum.QuantumContext.Vector
 import scotty.quantum.gate.Gate
 import scotty.quantum.math.MathUtils
-import scotty.quantum.math.MathUtils._
 import scala.util.Random
 
 sealed trait State
@@ -16,7 +15,7 @@ case class Superposition(vector: Vector) extends State {
     if (vector.length == 0) this
     else ctx.product(gate, this)
 
-  def probabilities: Seq[Double] = vector.map(s => Math.pow(s.abs.rounded, 2))
+  def probabilities: Seq[Double] = vector.map(s => Math.pow(s.abs, 2))
 
   def combine(sp: Superposition)(implicit ctx: QuantumContext): Superposition =
     if (vector.length == 0) sp

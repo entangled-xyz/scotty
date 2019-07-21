@@ -1,6 +1,5 @@
 package scotty.quantum.math
 
-import scotty.quantum.math.Complex.Complex
 import scotty.quantum.{Bit, Zero}
 import scala.annotation.tailrec
 
@@ -8,19 +7,11 @@ object MathUtils {
   val Precision = 1e8
 
   implicit class DoubleHelpers(d: Double) {
-    def rounded: Double = rounded(Precision)
-
-    def rounded(precision: Double): Double = Math.rint(d * precision) / precision
-
     def toPercent: Double = d * 100
   }
 
   implicit class IntHelpers(i: Int) {
     def toBinary: Seq[Bit] = toBinaryImpl(i)
-  }
-
-  implicit class ComplexHelpers(c: Complex) {
-    def rounded: Complex = Complex(c.getReal.rounded, c.getImaginary.rounded)
   }
 
   def toBinaryImpl(n: Int): Seq[Bit] = {
