@@ -5,7 +5,6 @@ import scotty.quantum.QuantumContext._
 import scotty.quantum.gate.{ControlGate, Dagger, Gate, StandardGate, SwapGate, TargetGate}
 import scotty.quantum.gate.Gate.GateGen
 import scotty.quantum.math.MathUtils
-import scotty.simulator.math.Implicits._
 import scala.util.Random
 import scotty.quantum.math.Complex
 import scotty.simulator.QuantumSimulator.RawGate
@@ -83,6 +82,16 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
   def product(gate: Gate, sp: Superposition): Superposition = Superposition(
     (MatrixWrapper(gate.matrix(this)) * VectorWrapper.fieldVector(sp.vector)).getData
   )
+
+  def outerProduct(sp1: Superposition, sp2: Superposition): Matrix = {
+    VectorWrapper.fieldVector(sp1.vector).outerProduct(VectorWrapper.fieldVector(sp2.vector)).getData
+  }
+
+  def densityMatrix(qubit: Qubit): Matrix = {
+    val state = Superposition(qubit)
+
+    outerProduct(state, Superposition(VectorWrapper.conjugate(state.vector).getData))
+  }
 
   def isUnitary(g: Gate): Boolean = MatrixWrapper(g.matrix(this)).isUnitaryMatrix
 

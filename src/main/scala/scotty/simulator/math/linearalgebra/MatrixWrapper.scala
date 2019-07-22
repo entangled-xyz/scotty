@@ -1,11 +1,8 @@
 package scotty.simulator.math.linearalgebra
 
-import org.apache.commons.math3.complex.{ComplexField, Complex => ApacheComplex}
+import org.apache.commons.math3.complex.{Complex, ComplexField}
 import org.apache.commons.math3.linear.{Array2DRowFieldMatrix, ArrayFieldVector, MatrixUtils}
 import scotty.quantum.QuantumContext.Matrix
-import scotty.quantum.math.Complex
-import scotty.quantum.math.MathUtils._
-import scotty.simulator.math.Implicits._
 import Types.{ApacheMatrix, ApacheVector}
 
 case class MatrixWrapper(matrix: Array[Array[Complex]]) {
@@ -13,7 +10,7 @@ case class MatrixWrapper(matrix: Array[Array[Complex]]) {
   lazy val rowCount: Int = fieldMatrix.getRowDimension
   lazy val columnCount: Int = fieldMatrix.getColumnDimension
 
-  def map(m: ApacheMatrix, f: ApacheComplex => ApacheComplex): ApacheMatrix = {
+  def map(m: ApacheMatrix, f: Complex => Complex): ApacheMatrix = {
     val resultMatrix = new Array2DRowFieldMatrix(ComplexField.getInstance, m.getRowDimension, m.getColumnDimension)
 
     for (rowIndex <- 0 until m.getRowDimension) {
@@ -35,12 +32,7 @@ case class MatrixWrapper(matrix: Array[Array[Complex]]) {
 
   def T: ApacheMatrix = conjugateTranspose
 
-  def isUnitaryMatrix: Boolean = equals(roundValues(product(T, fieldMatrix)), identity)
-
-  def roundValues(m: ApacheMatrix): ApacheMatrix =
-    map(m, entry => Complex(entry.getReal.rounded, entry.getImaginary.rounded))
-
-  def round: ApacheMatrix = roundValues(fieldMatrix)
+  def isUnitaryMatrix: Boolean = equals(product(T, fieldMatrix), identity)
 
   def conjugateTranspose: ApacheMatrix =
     new ApacheMatrix(fieldMatrix.transpose().getData.map(c => c.map(v => v.conjugate())), false)
@@ -61,14 +53,14 @@ case class MatrixWrapper(matrix: Array[Array[Complex]]) {
   def product(q: (Complex, Complex)): ApacheVector = product(Array(q._1, q._2))
 
   def product(vs: Array[Complex]): ApacheVector = product(
-    new ArrayFieldVector[ApacheComplex](vs, false)
+    new ArrayFieldVector[Complex](vs, false)
   )
 
   def product(v: ApacheVector): ApacheVector = {
     val resultVector = new ApacheVector(ComplexField.getInstance, v.getDimension)
 
     for (rowIndex <- 0 until rowCount) {
-      var sum = Complex(0)
+      var sum = new Complex(0)
 
       for (columnIndex <- 0 until columnCount) {
         sum = sum.add(fieldMatrix.getEntry(rowIndex, columnIndex).multiply(v.getEntry(columnIndex)))
@@ -102,5 +94,5 @@ case class MatrixWrapper(matrix: Array[Array[Complex]]) {
 }
 
 object MatrixWrapper {
-  def fieldMatrix(matrix: Matrix): ApacheMatrix = new Array2DRowFieldMatrix[ApacheComplex](matrix, false)
+  def fieldMatrix(matrix: Matrix): ApacheMatrix = new Array2DRowFieldMatrix[Complex](matrix, false)
 }

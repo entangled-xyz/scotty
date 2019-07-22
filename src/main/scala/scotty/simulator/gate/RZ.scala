@@ -8,7 +8,7 @@ object RZ {
     val theta = params(0)
 
     Array(
-      Array(Complex(Math.cos(theta / 2), -Math.sin(theta / 2)), Complex(0)),
+      Array(Complex(Math.cos(theta / 2), Math.sin(-theta / 2)), Complex(0)),
       Array(Complex(0), Complex(Math.cos(theta / 2), Math.sin(theta / 2)))
     )
   }

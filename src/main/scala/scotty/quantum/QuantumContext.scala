@@ -1,6 +1,6 @@
 package scotty.quantum
 
-import scotty.quantum.math.Complex
+import org.apache.commons.math3.complex.Complex
 import scotty.quantum.QuantumContext._
 import scotty.quantum.gate.{Gate, TargetGate}
 
@@ -14,6 +14,10 @@ trait QuantumContext {
   def tensorProduct(sp1: Superposition, sp2: Superposition): Superposition
 
   def product(gate: Gate, sp: Superposition): Superposition
+
+  def outerProduct(sp1: Superposition, sp2: Superposition): Matrix
+
+  def densityMatrix(qubit: Qubit): Matrix
 
   def isUnitary(gate: Gate): Boolean
 
