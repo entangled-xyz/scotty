@@ -1,11 +1,14 @@
 package scotty.quantum
 
+import scotty.quantum.QuantumContext.Vector
 import scotty.quantum.math.Complex.Complex
 import scotty.quantum.math.{Complex, MathUtils}
 import scotty.{ErrorMessage, Labeled}
 
 case class Qubit(a: Complex, b: Complex, label: Option[String]) extends Labeled[String] {
   require(Qubit.areAmplitudesValid(this), ErrorMessage.IncorrectQubitAmplitudes)
+
+  def vector: Vector = Array(a, b)
 }
 
 object Qubit {
