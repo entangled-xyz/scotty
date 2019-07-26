@@ -12,8 +12,6 @@ import scotty.simulator.math.linearalgebra.Types.{ApacheMatrix, ApacheVector}
 import scotty.simulator.math.linearalgebra.{MatrixWrapper, VectorWrapper}
 
 case class QuantumSimulator()(implicit random: Random = new Random) extends QuantumContext {
-  val gateGenerators: Map[String, GateGen] = QuantumSimulator.standardGates
-
   val identityMatrix: ApacheMatrix = MatrixWrapper.fieldMatrix(
     Array(
       Array(Complex(1), Complex(0)),
@@ -169,7 +167,8 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
     finalMatrix
   }
 
-  def targetMatrix(targetGate: Gate): Matrix = gateGenerators(targetGate.name).apply(targetGate.params)
+  def targetMatrix(targetGate: Gate): Matrix =
+    QuantumSimulator.singleQubitGateGens(targetGate.name).apply(targetGate.params)
 
   def swapMatrix(gate: SwapGate): Matrix = {
     val minIndex = gate.indexes.min
@@ -201,7 +200,7 @@ object QuantumSimulator {
     override val customMatrix: Option[Matrix] = Some(matrix)
   }
 
-  def standardGates: Map[String, GateGen] = Map(
+  val singleQubitGateGens: Map[String, GateGen] = Map(
     "H" -> H.matrix,
     "X" -> X.matrix,
     "Y" -> Y.matrix,
