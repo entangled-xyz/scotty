@@ -238,4 +238,18 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
   it should "not swap two qubits when control is 0" in {
     assert(sim.runAndMeasure(Circuit(X(2), CSWAP(1, 0, 2))).toBinaryRegister.values == Seq(Zero(), Zero(), One()))
   }
+
+  "ISWAP" should "swap two gates and apply i to q1 when it's |1> and i to q2 if it's |0>" in {
+    val s = sim.run(Circuit(H(0), ISWAP(2, 0))).asInstanceOf[Superposition]
+
+    assert(StateProbabilityReader(s).read(0).amplitude === Complex(fiftyPercent, 0))
+    assert(StateProbabilityReader(s).read(1).amplitude === Complex(0, fiftyPercent))
+  }
+
+  "PSWAP" should "swap two gates and apply phase phi to q1 when it's |1> and phase phi to q2 if it's |0>" in {
+    val s = sim.run(Circuit(X(0), PSWAP(thirdTurn, 2, 0))).asInstanceOf[Superposition]
+
+    assert(StateProbabilityReader(s).read(0).amplitude === Complex(0, 0))
+    assert(StateProbabilityReader(s).read(1).amplitude === Complex(-0.5, 0.86))
+  }
 }

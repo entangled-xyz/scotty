@@ -203,8 +203,6 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
       binaries.map(b => Superposition(b)).reduce((s1, s2) => s1.combine(s2)(this)).vector
     }).toArray
 
-    println(result.toList.map(_.toList).mkString("\n"))
-
     result
   }
 }
