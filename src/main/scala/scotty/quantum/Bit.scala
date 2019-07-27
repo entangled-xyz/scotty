@@ -30,11 +30,16 @@ case class Zero(label: Option[String]) extends Bit
 case class One(label: Option[String]) extends Bit
 
 object Bit {
-  def fromInt(value: Int): Bit = value match {
+  def apply(value: Int): Bit = value match {
     case 0 => Zero(None)
     case 1 => One(None)
     case _ => throw new IllegalArgumentException(ErrorMessage.IntToBit)
   }
+
+  def apply(value: Array[Complex]): Bit =
+    if (value.toSeq == Seq(Complex(1), Complex(0))) Zero()
+    else if (value.toSeq == Seq(Complex(0), Complex(1))) One()
+    else throw new IllegalArgumentException(ErrorMessage.VectorToBit)
 }
 
 object One {

@@ -17,8 +17,8 @@ object MathUtils {
   def toBinaryImpl(n: Int): Seq[Bit] = {
     @tailrec
     def binary(acc: Seq[Bit], n: Int): Seq[Bit] = n match {
-      case 0 | 1 => Bit.fromInt(n) +: acc
-      case _ => binary(Bit.fromInt(n % 2) +: acc, n / 2)
+      case 0 | 1 => Bit(n) +: acc
+      case _ => binary(Bit(n % 2) +: acc, n / 2)
     }
 
     binary(Seq(), n)

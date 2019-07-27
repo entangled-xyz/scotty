@@ -1,12 +1,15 @@
 package scotty.simulator
 
-import scotty.quantum._
+import scotty.quantum.{Superposition, _}
 import scotty.quantum.QuantumContext._
 import scotty.quantum.gate.{ControlGate, Dagger, Gate, StandardGate, SwapGate, TargetGate}
 import scotty.quantum.gate.Gate.GateGen
+import scotty.quantum.gate.StandardGate.{ISWAP, PSWAP}
 import scotty.quantum.math.MathUtils
+
 import scala.util.Random
 import scotty.quantum.math.Complex
+import scotty.quantum.math.Complex.Complex
 import scotty.simulator.QuantumSimulator.RawGate
 import scotty.simulator.math.linearalgebra.Types.{ApacheMatrix, ApacheVector}
 import scotty.simulator.math.linearalgebra.{MatrixWrapper, VectorWrapper}
@@ -171,21 +174,38 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
     QuantumSimulator.singleQubitGateGens(targetGate.name).apply(targetGate.params)
 
   def swapMatrix(gate: SwapGate): Matrix = {
+    def phase(s: Bit) = {
+      if (s == One()) gate match {
+        case _: ISWAP => Superposition(Complex(0), Complex(0, 1))
+        case g: PSWAP => Superposition(Complex(0), Complex(Math.cos(g.phi), Math.sin(g.phi)))
+        case _ => Superposition(s.toBasisState)
+      } else Superposition(s.toBasisState)
+    }.vector
+
     val minIndex = gate.indexes.min
     val i1 = gate.index1 - minIndex
     val i2 = gate.index2 - minIndex
 
     val qubitCount = gate.qubitCount + Math.abs(i1 - i2) - 1
 
-    (0 until Math.pow(2, qubitCount).toInt).map(index => {
-      val binaries = MathUtils.toBinaryPadded(index, qubitCount).map(_.toBasisState).toArray
-      val i1Val = binaries(i1)
+    val result = (0 until Math.pow(2, qubitCount).toInt).map(stateIndex => {
+      val binaries = MathUtils.toBinaryPadded(stateIndex, qubitCount).map(_.toBasisState).toArray
+      val s1 = Bit(binaries(i1))
+      val s2 = Bit(binaries(i2))
 
-      binaries(i1) = binaries(i2)
-      binaries(i2) = i1Val
+      if (s1 != s2 || s1 != Zero() && s2 != One()) {
+        val i1Val = phase(s1)
+
+        binaries(i1) = phase(s2)
+        binaries(i2) = i1Val
+      }
 
       binaries.map(b => Superposition(b)).reduce((s1, s2) => s1.combine(s2)(this)).vector
     }).toArray
+
+    println(result.toList.map(_.toList).mkString("\n"))
+
+    result
   }
 }
 
