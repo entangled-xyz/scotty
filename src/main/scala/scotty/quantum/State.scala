@@ -1,9 +1,9 @@
 package scotty.quantum
 
-import org.apache.commons.math3.complex.Complex
 import scotty.quantum.QuantumContext.Vector
 import scotty.quantum.gate.Gate
-import scotty.quantum.math.MathUtils
+import scotty.quantum.math.Complex.Complex
+import scotty.quantum.math.{Complex, MathUtils}
 
 sealed trait State
 
@@ -24,6 +24,11 @@ case class Superposition(vector: Vector) extends State {
     if (fullState) StateProbabilityReader(this).toString else QubitProbabilityReader(this).toString
 
   override def toString: String = toString(true)
+
+  override def equals(obj: Any): Boolean = obj match {
+    case s: Superposition => vector.toSeq == s.vector.toSeq
+    case _ => super.equals(obj)
+  }
 }
 
 object Superposition {
@@ -31,9 +36,15 @@ object Superposition {
 
   def apply(q: Qubit): Superposition = this(Array(q.a, q.b))
 
+  def apply(bit: Bit): Superposition = this(bit.toBasisState)
+
   def apply(a: Complex, b: Complex): Superposition = this(Array(a, b))
 
   def apply(state: Superposition): Superposition = this(state.vector)
+
+  def one: Superposition = this(Complex(0), Complex(1))
+
+  def zero: Superposition = this(Complex(1), Complex(0))
 }
 
 case class Collapsed(register: QubitRegister, index: Int) extends State {

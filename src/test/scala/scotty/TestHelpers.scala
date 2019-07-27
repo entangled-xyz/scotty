@@ -7,6 +7,7 @@ import scotty.simulator.QuantumSimulator
 trait TestHelpers {
   val sim = QuantumSimulator()
   val quarterTurn = Math.PI / 2
+  val thirdTurn = 2 * Math.PI / 3
   val fiftyPercent = Math.sqrt(2) / 2
   val Precision = 1e8
   implicit val doubleEquality = TolerantNumerics.tolerantDoubleEquality(0.01)

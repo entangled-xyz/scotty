@@ -67,6 +67,10 @@ object StandardGate {
 
   case class SWAP(index1: Int, index2: Int) extends SwapGate
 
+  case class ISWAP(index1: Int, index2: Int) extends SwapGate
+
+  case class PSWAP(phi: Double, index1: Int, index2: Int) extends SwapGate
+
   case class CSWAP(controlIndex: Int, index1: Int, index2: Int) extends ControlGate {
     lazy val target = SWAP(index1, index2)
   }

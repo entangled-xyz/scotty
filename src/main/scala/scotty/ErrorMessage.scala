@@ -13,6 +13,8 @@ object ErrorMessage {
 
   val IntToBit = "Only integers 0 and 1 can be converted to Bit."
 
+  val VectorToBit = "Only vectors (0, 1) and (1, 0) can be converted to Bit."
+
   val RegisterLabelsNotUnique = "Qubit and bit register labels have to be unique."
 
   val SwapGateIndexCountNotTwo = "Swap gate should only have two qubit indexes."

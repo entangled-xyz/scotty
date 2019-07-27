@@ -6,11 +6,19 @@ import scotty.quantum.{Bit, One, Zero}
 
 class BitSpec extends FlatSpec {
   "Bit" should "be equal to Zero() when int is 0" in {
-    assert(Bit.fromInt(0) == Zero())
+    assert(Bit(0) == Zero())
   }
 
   it should "be equal to One() when int is 1" in {
-    assert(Bit.fromInt(1) == One())
+    assert(Bit(1) == One())
+  }
+
+  it should "be equal to One() when vector is (0, 1)" in {
+    assert(Bit(Array(Complex(0), Complex(1))) == One())
+  }
+
+  it should "be equal to Zero() when vector is (1, 0)" in {
+    assert(Bit(Array(Complex(1), Complex(0))) == Zero())
   }
 
   it should "convert to basis state [0, 1] for One()" in {
@@ -23,7 +31,13 @@ class BitSpec extends FlatSpec {
 
   it should "throw IllegalArgumentException if ints are neither zero or one" in {
     assertThrows[IllegalArgumentException] {
-      Bit.fromInt(2)
+      Bit(2)
+    }
+  }
+
+  it should "throw IllegalArgumentException if vector is not zero or one" in {
+    assertThrows[IllegalArgumentException] {
+      Bit(Array(Complex(2), Complex(0)))
     }
   }
 }
