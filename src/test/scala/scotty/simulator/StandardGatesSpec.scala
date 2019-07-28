@@ -126,7 +126,7 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
     sim.run(circuit) match {
       case s: Superposition =>
         assert(StateProbabilityReader(s).read(0).amplitude == Complex(0, 0))
-        assert(StateProbabilityReader(s).read(1).amplitude == Complex(0, 1))
+        assert(StateProbabilityReader(s).read(1).amplitude === Complex(0, 1))
         assert(sim.measure(circuit.register, s).toBinaryRegister.values == Seq(One()))
       case _ =>
     }
