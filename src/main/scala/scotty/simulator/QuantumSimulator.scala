@@ -122,12 +122,17 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
     */
   def controlMatrix(gate: ControlGate): Matrix = {
     val minIndex = gate.indexes.min
-    val normalizedControlIndexes = gate.controlIndexes.map(i => i - minIndex)
+
+    val normalizedControlIndexes = gate.controlIndexes.map(_ - minIndex)
+    val normalizedTargetIndexes = gate.targetIndexes.map(_ - minIndex)
+
     val sortedControlIndexes = gate.indexes.sorted
+
     val gapQubitCount = (sortedControlIndexes.tail, sortedControlIndexes).zipped.map((a, b) => a - b - 1).sum
     val qubitCount = gate.qubitCount + gapQubitCount
-    val normalizedTargetIndexes = gate.targetIndexes.map(_ - minIndex)
+
     val stateCount = Math.pow(2, qubitCount).toInt
+
     val finalMatrix = Array.ofDim[Vector](stateCount)
 
     for (i <- 0 until stateCount) {
@@ -227,6 +232,7 @@ object QuantumSimulator {
     "S" -> S.matrix,
     "T" -> T.matrix,
     "PHASE" -> PHASE.matrix,
+    "PHASE0" -> PHASE0.matrix,
     "RX" -> RX.matrix,
     "RY" -> RY.matrix,
     "RZ" -> RZ.matrix
