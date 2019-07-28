@@ -74,4 +74,8 @@ object StandardGate {
   case class CSWAP(controlIndex: Int, index1: Int, index2: Int) extends ControlGate {
     lazy val target = SWAP(index1, index2)
   }
+
+  case class CPHASE(phi: Double, controlIndex: Int, index1: Int) extends ControlGate {
+    lazy val target = PHASE(phi, index1)
+  }
 }

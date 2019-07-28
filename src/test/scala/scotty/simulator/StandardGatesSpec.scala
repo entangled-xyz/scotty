@@ -252,4 +252,29 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
     assert(StateProbabilityReader(s).read(0).amplitude === Complex(0, 0))
     assert(StateProbabilityReader(s).read(1).amplitude === Complex(-0.5, 0.86))
   }
+
+  "PHASE" should "apply phase phi to state" in {
+    val s = sim.run(Circuit(H(0), PHASE(thirdTurn, 0))).asInstanceOf[Superposition]
+
+    assert(StateProbabilityReader(s).read(0).amplitude === Complex(0.7, 0))
+    assert(StateProbabilityReader(s).read(1).amplitude === Complex(-0.35, 0.61))
+  }
+
+  "CPHASE" should "apply phase phi to state when control qubit is |1>" in {
+    val s = sim.run(Circuit(X(0), H(1), CPHASE(thirdTurn, 0, 1))).asInstanceOf[Superposition]
+
+    assert(StateProbabilityReader(s).read(0).amplitude === Complex(0, 0))
+    assert(StateProbabilityReader(s).read(1).amplitude === Complex(0, 0))
+    assert(StateProbabilityReader(s).read(2).amplitude === Complex(0.7, 0))
+    assert(StateProbabilityReader(s).read(3).amplitude === Complex(-0.35, 0.61))
+  }
+
+  it should "not apply phase phi to state when control qubit is |0>" in {
+    val s = sim.run(Circuit(H(1), CPHASE(thirdTurn, 0, 1))).asInstanceOf[Superposition]
+
+    assert(StateProbabilityReader(s).read(0).amplitude === Complex(0.7, 0))
+    assert(StateProbabilityReader(s).read(1).amplitude === Complex(0.7, 0))
+    assert(StateProbabilityReader(s).read(2).amplitude === Complex(0, 0))
+    assert(StateProbabilityReader(s).read(3).amplitude === Complex(0, 0))
+  }
 }
