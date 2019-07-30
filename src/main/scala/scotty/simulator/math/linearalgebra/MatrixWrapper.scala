@@ -37,8 +37,7 @@ case class MatrixWrapper(matrix: Array[Array[Complex]]) {
   def conjugateTranspose: ApacheMatrix =
     new ApacheMatrix(fieldMatrix.transpose().getData.map(c => c.map(v => v.conjugate())), false)
 
-  def identity: ApacheMatrix =
-    new ApacheMatrix(MatrixUtils.createFieldIdentityMatrix(ComplexField.getInstance, rowCount).getData, false)
+  def identity: ApacheMatrix = MatrixWrapper.identity(rowCount)
 
   def product(m: ApacheMatrix): ApacheMatrix = product(fieldMatrix, m)
 
@@ -95,4 +94,7 @@ case class MatrixWrapper(matrix: Array[Array[Complex]]) {
 
 object MatrixWrapper {
   def fieldMatrix(matrix: Matrix): ApacheMatrix = new Array2DRowFieldMatrix[Complex](matrix, false)
+
+  def identity(dimension: Int): ApacheMatrix =
+    new ApacheMatrix(MatrixUtils.createFieldIdentityMatrix(ComplexField.getInstance, dimension).getData, false)
 }
