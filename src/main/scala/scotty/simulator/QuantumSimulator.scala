@@ -4,24 +4,15 @@ import scotty.quantum.{Superposition, _}
 import scotty.quantum.QuantumContext._
 import scotty.quantum.gate.{ControlGate, Dagger, Gate, StandardGate, SwapGate, TargetGate}
 import scotty.quantum.gate.Gate.GateGen
-import scotty.quantum.gate.StandardGate.{ISWAP, PSWAP}
+import scotty.quantum.gate.StandardGate.{CPHASE00, CPHASE01, ISWAP, PSWAP}
 import scotty.quantum.math.MathUtils
-
 import scala.util.Random
 import scotty.quantum.math.Complex
-import scotty.quantum.math.Complex.Complex
 import scotty.simulator.QuantumSimulator.RawGate
 import scotty.simulator.math.linearalgebra.Types.{ApacheMatrix, ApacheVector}
 import scotty.simulator.math.linearalgebra.{MatrixWrapper, VectorWrapper}
 
 case class QuantumSimulator()(implicit random: Random = new Random) extends QuantumContext {
-  val identityMatrix: ApacheMatrix = MatrixWrapper.fieldMatrix(
-    Array(
-      Array(Complex(1), Complex(0)),
-      Array(Complex(0), Complex(1))
-    )
-  )
-
   def measure(register: QubitRegister, sp: Superposition): Collapsed = {
     val initialIterator = (0, 0d, None: Option[Int])
     val result = sp.probabilities.foldLeft(initialIterator)((iterator, prob) => {
@@ -61,8 +52,8 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
     val gateFieldMatrix = MatrixWrapper.fieldMatrix(gate.matrix(this))
 
     def pad(): Seq[ApacheMatrix] = {
-      def topPad = (0 until gate.indexes.sortWith(_ < _)(0)).map(_ => identityMatrix)
-      def bottomPad = (gate.indexes.sortWith(_ > _)(0) until qubitCount - 1).map(_ => identityMatrix)
+      def topPad = (0 until gate.indexes.sortWith(_ < _)(0)).map(_ => MatrixWrapper.identity(2))
+      def bottomPad = (gate.indexes.sortWith(_ > _)(0) until qubitCount - 1).map(_ => MatrixWrapper.identity(2))
 
       (topPad :+ gateFieldMatrix) ++ bottomPad
     }
@@ -98,9 +89,45 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
 
   def gateMatrix(gate: Gate): Matrix = gate match {
     case swap: SwapGate => swapMatrix(swap)
+    case g: CPHASE00 => cphase0Matrix(g, g.phi, Zero())
+    case g: CPHASE01 => cphase0Matrix(g, g.phi, One())
     case control: ControlGate => controlMatrix(control)
     case dagger: Dagger => MatrixWrapper(dagger.target.matrix(this)).conjugateTranspose.getData
     case target: TargetGate => target.customMatrix.getOrElse(targetMatrix(target))
+  }
+
+  def cphase0Matrix(gate: ControlGate, phi: Double, targetBit: Bit): Matrix = {
+    val minIndex = gate.indexes.min
+    val controlIndex = gate.controlIndex - minIndex
+    val targetIndex = gate.targetIndexes(0) - minIndex
+
+    val qubitCount = totalQubitCount(gate)
+    val stateCount = Math.pow(2, qubitCount).toInt
+
+    val finalMatrix = MatrixWrapper.identity(stateCount)
+
+    for (r <- 0 until finalMatrix.getRowDimension) {
+      val rowBinaries = MathUtils.toBinaryPadded(r, qubitCount).toArray
+
+      for (c <- 0 until finalMatrix.getColumnDimension) {
+        val columnBinaries = MathUtils.toBinaryPadded(c, qubitCount).toArray
+        val controlIsValid = columnBinaries(controlIndex) == Zero() && rowBinaries(controlIndex) == Zero()
+        val targetIsValid = columnBinaries(targetIndex) == targetBit && rowBinaries(targetIndex) == targetBit
+
+        val gapStatesAreValid =
+          rowBinaries
+            .zip(columnBinaries)
+            .zipWithIndex
+            .filter(b => b._2 != controlIndex && b._2 != targetIndex)
+            .forall(b => b._1._1 == b._1._2)
+
+        if (controlIsValid && targetIsValid && gapStatesAreValid) {
+          finalMatrix.setEntry(r, c, Complex.e(phi))
+        }
+      }
+    }
+
+    finalMatrix.getData
   }
 
   /**
@@ -126,11 +153,7 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
     val normalizedControlIndexes = gate.controlIndexes.map(_ - minIndex)
     val normalizedTargetIndexes = gate.targetIndexes.map(_ - minIndex)
 
-    val sortedControlIndexes = gate.indexes.sorted
-
-    val gapQubitCount = (sortedControlIndexes.tail, sortedControlIndexes).zipped.map((a, b) => a - b - 1).sum
-    val qubitCount = gate.qubitCount + gapQubitCount
-
+    val qubitCount = totalQubitCount(gate)
     val stateCount = Math.pow(2, qubitCount).toInt
 
     val finalMatrix = Array.ofDim[Vector](stateCount)
@@ -173,6 +196,14 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
     }
 
     finalMatrix
+  }
+
+  def totalQubitCount(gate: Gate): Int = {
+    val sortedControlIndexes = gate.indexes.sorted
+
+    val gapQubitCount = (sortedControlIndexes.tail, sortedControlIndexes).zipped.map((a, b) => a - b - 1).sum
+
+    gate.qubitCount + gapQubitCount
   }
 
   def targetMatrix(targetGate: Gate): Matrix =
