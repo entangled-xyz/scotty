@@ -9,7 +9,7 @@ object PHASE {
 
     Array(
       Array(Complex(1), Complex(0)),
-      Array(Complex(0), Complex(Math.cos(phi), Math.sin(phi)))
+      Array(Complex(0), Complex.e(phi))
     )
   }
 }
