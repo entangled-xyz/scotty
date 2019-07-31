@@ -102,28 +102,14 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
     val targetIndex = gate.targetIndexes(0) - minIndex
 
     val qubitCount = totalQubitCount(gate)
-    val stateCount = Math.pow(2, qubitCount).toInt
 
-    val finalMatrix = MatrixWrapper.identity(stateCount)
+    val finalMatrix = MatrixWrapper.identity(Math.pow(2, qubitCount).toInt)
 
-    for (r <- 0 until finalMatrix.getRowDimension) {
-      val rowBinaries = MathUtils.toBinaryPadded(r, qubitCount).toArray
+    for (i <- 0 until finalMatrix.getRowDimension) {
+      val binaries = MathUtils.toBinaryPadded(i, qubitCount).toArray
 
-      for (c <- 0 until finalMatrix.getColumnDimension) {
-        val columnBinaries = MathUtils.toBinaryPadded(c, qubitCount).toArray
-        val controlIsValid = columnBinaries(controlIndex) == Zero() && rowBinaries(controlIndex) == Zero()
-        val targetIsValid = columnBinaries(targetIndex) == targetBit && rowBinaries(targetIndex) == targetBit
-
-        val gapStatesAreValid =
-          rowBinaries
-            .zip(columnBinaries)
-            .zipWithIndex
-            .filter(b => b._2 != controlIndex && b._2 != targetIndex)
-            .forall(b => b._1._1 == b._1._2)
-
-        if (controlIsValid && targetIsValid && gapStatesAreValid) {
-          finalMatrix.setEntry(r, c, Complex.e(phi))
-        }
+      if (binaries(controlIndex) == Zero() && binaries(targetIndex) == targetBit) {
+        finalMatrix.setEntry(i, i, Complex.e(phi))
       }
     }
 
