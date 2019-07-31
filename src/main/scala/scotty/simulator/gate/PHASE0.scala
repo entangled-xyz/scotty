@@ -3,13 +3,13 @@ package scotty.simulator.gate
 import scotty.quantum.QuantumContext._
 import scotty.quantum.math.Complex
 
-object PHASE {
+object PHASE0 {
   def matrix(params: Seq[Double]): Matrix = {
     val phi = params(0)
 
     Array(
-      Array(Complex(1), Complex(0)),
-      Array(Complex(0), Complex.e(phi))
+      Array(Complex.e(phi), Complex(0)),
+      Array(Complex(0), Complex(1))
     )
   }
 }

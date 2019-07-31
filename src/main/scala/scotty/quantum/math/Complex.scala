@@ -15,4 +15,6 @@ object Complex {
 
     f"$r%1.3f${if (i >= 0) "+" else ""}$i%1.3fi"
   }
+
+  def e(phi: Double): Complex = Complex(Math.cos(phi), Math.sin(phi))
 }

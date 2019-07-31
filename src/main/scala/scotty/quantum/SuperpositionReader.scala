@@ -23,11 +23,15 @@ case class StateProbabilityReader(state: Superposition) extends SuperpositionRea
   )).toSeq
 
   override def toString: String = read
-    .map(p => {
+    .flatMap(p => {
       val prob = p.probability.toPercent
-      s"${p.state.mkString("")}: " +
-        s"Amplitude: ${Complex.toString(p.amplitude)}, " +
-        f"P: $prob%1.2f%%"
+
+      if (prob == 0) None
+      else Some(
+        s"${p.state.mkString("")}: " +
+          s"Amplitude: ${Complex.toString(p.amplitude)}, " +
+          f"P: $prob%1.2f%%"
+      )
     })
     .mkString("\n")
 }
