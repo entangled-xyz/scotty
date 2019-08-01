@@ -108,7 +108,7 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
     for (i <- 0 until finalMatrix.getRowDimension) {
       val binaries = MathUtils.toBinaryPadded(i, qubitCount).toArray
 
-      if (binaries(controlIndex) == Zero() && binaries(targetIndex) == targetBit) {
+      if (binaries(controlIndex).isInstanceOf[Zero] && binaries(targetIndex) == targetBit) {
         finalMatrix.setEntry(i, i, Complex.e(phi))
       }
     }
@@ -149,7 +149,7 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
 
       val allControlsTrigger = binaries.zipWithIndex.forall(b => {
         if (normalizedControlIndexes.contains(b._2))
-          if (b._1 == One()) true else false
+          if (b._1.isInstanceOf[One]) true else false
         else true
       })
 
@@ -197,7 +197,7 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
 
   def swapMatrix(gate: SwapGate): Matrix = {
     def phase(s: Bit) = {
-      if (s == One()) gate match {
+      if (s.isInstanceOf[One]) gate match {
         case _: ISWAP => Superposition(Complex(0), Complex(0, 1))
         case g: PSWAP => Superposition(Complex(0), Complex(Math.cos(g.phi), Math.sin(g.phi)))
         case _ => Superposition(s.toBasisState)

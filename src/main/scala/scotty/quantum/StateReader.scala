@@ -9,18 +9,23 @@ import scotty.quantum.math.{Complex, MathUtils}
 import scotty.quantum.math.MathUtils._
 import scotty.simulator.QuantumSimulator
 
-sealed trait SuperpositionReader[T] {
-  val state: Superposition
+sealed trait StateReader[T] {
+  val state: State
+
+  lazy val isCollapsed: Boolean = state.isInstanceOf[Collapsed]
 
   def read: Seq[T]
 }
 
-case class StateProbabilityReader(state: Superposition) extends SuperpositionReader[StateData] {
-  def read: Seq[StateData] = state.vector.zipWithIndex.map(pair => StateData(
-    MathUtils.toBinaryPadded(pair._2, state.qubitCount),
-    pair._1,
-    Math.pow(pair._1.abs, 2)
-  )).toSeq
+case class StateProbabilityReader(state: State) extends StateReader[StateData] {
+  def read: Seq[StateData] = state match {
+    case sp: Superposition => sp.vector.zipWithIndex.map(pair => StateData(
+      MathUtils.toBinaryPadded(pair._2, state.qubitCount),
+      pair._1,
+      Math.pow(pair._1.abs, 2)
+    )).toSeq
+    case c: Collapsed => Seq(StateData(c.toBinaryRegister.values.toSeq, Complex(1), 1))
+  }
 
   override def toString: String = read
     .flatMap(p => {
@@ -41,7 +46,7 @@ object StateProbabilityReader {
 }
 
 case class QubitProbabilityReader(register: Option[QubitRegister],
-                                  state: Superposition) extends SuperpositionReader[QubitData] {
+                                  state: State) extends StateReader[QubitData] {
   def read: Seq[QubitData] = {
     val stateData = StateProbabilityReader(state).read
 
@@ -49,7 +54,7 @@ case class QubitProbabilityReader(register: Option[QubitRegister],
       QubitData(
         register.flatMap(_.values(index).label),
         index,
-        stateData.foldLeft(0d)((sum, data) => if (data.state(index) == One()) sum + data.probability else sum))
+        stateData.foldLeft(0d)((sum, data) => if (data.state(index).isInstanceOf[One]) sum + data.probability else sum))
     })
   }
 
@@ -59,8 +64,9 @@ case class QubitProbabilityReader(register: Option[QubitRegister],
 }
 
 object QubitProbabilityReader {
-  def apply(register: QubitRegister, state: Superposition): QubitProbabilityReader = this(Some(register), state)
-  def apply(state: Superposition): QubitProbabilityReader = this(None, state)
+  def apply(register: QubitRegister, state: State): QubitProbabilityReader = this(Some(register), state)
+
+  def apply(state: State): QubitProbabilityReader = this(None, state)
 
   case class QubitData(label: Option[String], index: Int, probability: Double) {
     override def toString: String = {
@@ -74,20 +80,30 @@ object QubitProbabilityReader {
   }
 }
 
-case class BlochSphereReader(state: Superposition) extends SuperpositionReader[BlochSphereData] {
+case class BlochSphereReader(state: State) extends StateReader[BlochSphereData] {
   require(state.qubitCount == 1, ErrorMessage.BlochSphereQubitCountNotOne)
 
-  def read: Seq[BlochSphereData] = {
-    val densityMatrix = QuantumSimulator().densityMatrix(Qubit(state.vector(0), state.vector(1)))
+  def read: Seq[BlochSphereData] = state match {
+    case sp: Superposition =>
+      val densityMatrix = QuantumSimulator().densityMatrix(Qubit(sp.vector(0), sp.vector(1)))
 
-    val x = 2 * densityMatrix(0)(1).getReal
-    val y = 2 * densityMatrix(1)(0).getImaginary
-    val z = densityMatrix(0)(0).subtract(densityMatrix(1)(1)).abs
+      val x = 2 * densityMatrix(0)(1).getReal
+      val y = 2 * densityMatrix(1)(0).getImaginary
+      val z = densityMatrix(0)(0).subtract(densityMatrix(1)(1)).abs
 
-    val theta = Math.acos(z)
-    val phi = Math.acos(x / Math.sin(theta))
+      val theta = Math.acos(z)
+      val phi = Math.acos(x / Math.sin(theta))
 
-    Seq(BlochSphereData(phi, theta, Coordinates(x, y, z)))
+      Seq(BlochSphereData(phi, theta, Coordinates(x, y, z)))
+    case c: Collapsed =>
+      val x = 0
+      val y = 0
+      val z = if (c.toBinaryRegister.values(0).isInstanceOf[Zero]) 1 else -1
+
+      val theta = if (c.toBinaryRegister.values(0).isInstanceOf[Zero]) 0 else Math.PI
+      val phi = 0
+
+      Seq(BlochSphereData(phi, theta, Coordinates(x, y, z)))
   }
 
   override def toString: String = {

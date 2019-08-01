@@ -5,7 +5,9 @@ import scotty.quantum.gate.Gate
 import scotty.quantum.math.Complex.Complex
 import scotty.quantum.math.{Complex, MathUtils}
 
-sealed trait State
+sealed trait State {
+  val qubitCount: Int
+}
 
 case class Superposition(vector: Vector) extends State {
   lazy val qubitCount: Int = if (vector.length == 0) 0 else (Math.log10(vector.length) / Math.log10(2)).toInt
@@ -48,6 +50,8 @@ object Superposition {
 }
 
 case class Collapsed(register: QubitRegister, index: Int) extends State {
+  val qubitCount: Int = register.size
+
   def toBinaryRegister: BinaryRegister = BinaryRegister(
     MathUtils
       .toBinaryPadded(index, register.size)
