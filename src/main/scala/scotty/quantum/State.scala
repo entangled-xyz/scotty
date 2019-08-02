@@ -26,6 +26,8 @@ case class Superposition(vector: Vector) extends State {
     case s: Superposition => vector.toSeq == s.vector.toSeq
     case _ => super.equals(obj)
   }
+
+  override def toString: String = s"Superposition(${vector.toList})"
 }
 
 object Superposition {
