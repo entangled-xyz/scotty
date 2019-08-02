@@ -71,4 +71,8 @@ class QuantumSimulatorSpec extends FlatSpec {
       case _ =>
     }
   }
+
+  it should "run and measure multiple trials of the same circuit" in {
+    assert(sim.runAndMeasure(Circuit(X(0)), 5).trials.length == 5)
+  }
 }

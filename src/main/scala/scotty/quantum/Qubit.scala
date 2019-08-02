@@ -10,7 +10,7 @@ case class Qubit(a: Complex, b: Complex, label: Option[String]) extends Labeled[
 
   def toBasisState: Vector = Array(a, b)
 
-  override def toString: String = s"Qubit(${Complex.toString(a)}, ${Complex.toString(b)})"
+  def toHumanString: String = s"Qubit(${Complex.toString(a)}, ${Complex.toString(b)})"
 }
 
 object Qubit {

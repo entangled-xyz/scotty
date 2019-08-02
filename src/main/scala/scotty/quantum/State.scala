@@ -22,11 +22,6 @@ case class Superposition(vector: Vector) extends State {
     if (vector.length == 0) sp
     else ctx.tensorProduct(this, sp)
 
-  def toString(fullState: Boolean): String =
-    if (fullState) StateProbabilityReader(this).toString else QubitProbabilityReader(this).toString
-
-  override def toString: String = toString(true)
-
   override def equals(obj: Any): Boolean = obj match {
     case s: Superposition => vector.toSeq == s.vector.toSeq
     case _ => super.equals(obj)
@@ -58,7 +53,7 @@ case class Collapsed(register: QubitRegister, index: Int) extends State {
       .zipWithIndex.map(b => register.values(b._2).label.fold(b._1)(b._1.withLabel)): _*
   )
 
-  override def toString: String = toBinaryRegister.values
+  def toHumanString: String = toBinaryRegister.values
     .zipWithIndex
     .map(p => s"${p._1.label.getOrElse(s"bit_${p._2}")}: ${p._1.toInt}")
     .mkString("\n")

@@ -38,6 +38,12 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
     if (shouldMeasure) measure(circuit.register, result) else result
   }
 
+  def runAndMeasure(circuit: Circuit, trialsCount: Int): TrialsResult = {
+    TrialsResult((0 until trialsCount).map(i => {
+      runAndMeasure(circuit)
+    }).toList)
+  }
+
   def registerToSuperposition(register: QubitRegister): Superposition =
     register.values.foldLeft(Superposition())((superposition, q) =>
       superposition.combine(Superposition(q))(this))
