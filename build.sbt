@@ -8,9 +8,8 @@ ThisBuild / organization := "xyz.entangled"
 ThisBuild / scalaVersion := defaultScalaVersion
 ThisBuild / crossScalaVersions := Seq(
   defaultScalaVersion,
-  "2.11.12",
-  "2.12.8",
-  )
+  "2.12.8"
+)
 
 val scalaTestVersion = "3.0.8"
 
