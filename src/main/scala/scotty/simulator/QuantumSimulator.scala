@@ -1,16 +1,18 @@
 package scotty.simulator
 
-import scotty.quantum.{Superposition, _}
+import scotty.Config
 import scotty.quantum.QuantumContext._
-import scotty.quantum.gate.{ControlGate, Dagger, Gate, StandardGate, SwapGate, TargetGate}
 import scotty.quantum.gate.Gate.GateGen
 import scotty.quantum.gate.StandardGate.{CPHASE00, CPHASE01, ISWAP, PSWAP}
-import scotty.quantum.math.MathUtils
-import scala.util.Random
-import scotty.quantum.math.Complex
+import scotty.quantum.gate._
+import scotty.quantum.math.{Complex, MathUtils}
+import scotty.quantum.{Superposition, _}
 import scotty.simulator.QuantumSimulator.RawGate
 import scotty.simulator.math.linearalgebra.Types.{ApacheMatrix, ApacheVector}
 import scotty.simulator.math.linearalgebra.{MatrixWrapper, VectorWrapper}
+import scala.collection.parallel.ForkJoinTaskSupport
+import scala.collection.parallel.immutable.ParVector
+import scala.util.Random
 
 case class QuantumSimulator()(implicit random: Random = new Random) extends QuantumContext {
   def measure(register: QubitRegister, sp: Superposition): Collapsed = {
@@ -36,6 +38,18 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
       .foldLeft(registerToSuperposition(circuit.register))((state, gate) => state.applyGate(gate)(this))
 
     if (shouldMeasure) measure(circuit.register, result) else result
+  }
+
+  def runAndMeasure(circuit: Circuit,
+                    trialsCount: Int,
+                    parallelismLevel: Int = Config.DefaultSimulatorParallelism): TrialsResult = {
+    val experiments = ParVector.fill(trialsCount)(0)
+
+    experiments.tasksupport = new ForkJoinTaskSupport(
+      new java.util.concurrent.ForkJoinPool(parallelismLevel)
+    )
+
+    TrialsResult(experiments.map(_ => runAndMeasure(circuit)).toList)
   }
 
   def registerToSuperposition(register: QubitRegister): Superposition =

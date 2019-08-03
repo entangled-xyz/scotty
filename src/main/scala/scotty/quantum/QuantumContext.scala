@@ -29,6 +29,8 @@ trait QuantumContext {
       case s: Collapsed => s
     }
   }
+
+  def runAndMeasure(circuit: Circuit, trialsCount: Int, parallelismLevel: Int): TrialsResult
 }
 
 object QuantumContext {
