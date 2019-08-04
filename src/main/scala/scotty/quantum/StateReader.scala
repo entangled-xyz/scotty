@@ -33,7 +33,7 @@ case class StateProbabilityReader(state: State) extends StateReader[StateData] {
 
       if (prob == 0) None
       else Some(
-        s"${p.state.mkString("")}: " +
+        s"${p.state.map(_.toHumanString).mkString("")}: " +
           s"Amplitude: ${Complex.toString(p.amplitude)}, " +
           f"P: $prob%1.2f%%"
       )

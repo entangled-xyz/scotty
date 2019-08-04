@@ -42,14 +42,14 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
 
   def runAndMeasure(circuit: Circuit,
                     trialsCount: Int,
-                    parallelismLevel: Int = Config.DefaultSimulatorParallelism): TrialsResult = {
+                    parallelismLevel: Int = Config.DefaultSimulatorParallelism): ExperimentResult = {
     val experiments = ParVector.fill(trialsCount)(0)
 
     experiments.tasksupport = new ForkJoinTaskSupport(
       new java.util.concurrent.ForkJoinPool(parallelismLevel)
     )
 
-    TrialsResult(experiments.map(_ => runAndMeasure(circuit)).toList)
+    ExperimentResult(experiments.map(_ => runAndMeasure(circuit)).toList)
   }
 
   def registerToSuperposition(register: QubitRegister): Superposition =
