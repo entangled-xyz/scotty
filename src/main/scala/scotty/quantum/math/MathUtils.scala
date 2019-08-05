@@ -8,6 +8,10 @@ object MathUtils {
 
   implicit class DoubleHelpers(d: Double) {
     def toPercent: Double = d * 100
+
+    def ~=(d2: Double): Boolean = {
+      if ((d - d2).abs < 0.000001) true else false
+    }
   }
 
   implicit class IntHelpers(i: Int) {

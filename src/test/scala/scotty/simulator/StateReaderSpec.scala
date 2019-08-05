@@ -27,10 +27,10 @@ class StateReaderSpec extends FlatSpec with TestHelpers {
     val data1 = QubitProbabilityReader(sp).read(1)
 
     assert(data0.index === 0)
-    assert(data0.probability === 0.5d)
+    assert(data0.probabilityOfOne === 0.5d)
 
     assert(data1.index === 1)
-    assert(data1.probability === 1d)
+    assert(data1.probabilityOfOne === 1d)
   }
 
   "BlochSphereReader" should "read correct StateData" in {

@@ -68,10 +68,12 @@ object QubitProbabilityReader {
 
   def apply(state: State): QubitProbabilityReader = this(None, state)
 
-  case class QubitData(label: Option[String], index: Int, probability: Double) {
+  case class QubitData(label: Option[String], index: Int, probabilityOfOne: Double) {
+    val probabilityOfZero: Double = 1 - probabilityOfOne
+
     override def toString: String = {
-      val probZero = (1 - probability).toPercent
-      val probOne = probability.toPercent
+      val probZero = probabilityOfZero.toPercent
+      val probOne = probabilityOfOne.toPercent
 
       s"${label.getOrElse(s"qubit_$index")}: " +
         f"P(0) = $probZero%1.2f%% " +

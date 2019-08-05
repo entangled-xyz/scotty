@@ -39,7 +39,7 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
 
   "H" should "set superposition to 50/50" in {
     sim.run(Circuit(H(0))) match {
-      case s: Superposition => assert(QubitProbabilityReader(s).read(0).probability === 0.5)
+      case s: Superposition => assert(QubitProbabilityReader(s).read(0).probabilityOfOne === 0.5)
       case _ =>
     }
   }
