@@ -2,7 +2,7 @@ package scotty.simulator
 
 import org.scalatest.FlatSpec
 import scotty.TestHelpers
-import scotty.quantum.gate.StandardGate.{H, RY, RZ, X}
+import scotty.quantum.gate.StandardGate.{H, I, RY, RZ, X}
 import scotty.quantum.math.Complex
 import scotty.quantum._
 
@@ -33,7 +33,7 @@ class StateReaderSpec extends FlatSpec with TestHelpers {
     assert(data1.probabilityOfOne === 1d)
   }
 
-  "BlochSphereReader" should "read correct StateData" in {
+  "BlochSphereReader" should "read correct StateData for an arbitrary superposition" in {
     val sp = QuantumSimulator().run(Circuit(RY(Math.PI / 4, 0), RZ(Math.PI / 8, 0)))
     val data = BlochSphereReader(sp).read(0)
 
@@ -42,6 +42,28 @@ class StateReaderSpec extends FlatSpec with TestHelpers {
     assert(data.coordinates.z === 0.71)
     assert(data.phi === Math.PI / 8)
     assert(data.theta === Math.PI / 4)
+  }
+
+  it should "read correct StateData for |0>" in {
+    val sp = QuantumSimulator().run(Circuit(I(0)))
+    val data = BlochSphereReader(sp).read(0)
+
+    assert(data.coordinates.x === 0d)
+    assert(data.coordinates.y === 0d)
+    assert(data.coordinates.z === 1d)
+    assert(data.phi === 0d)
+    assert(data.theta === 0d)
+  }
+
+  it should "read correct StateData for |1>" in {
+    val sp = QuantumSimulator().run(Circuit(X(0)))
+    val data = BlochSphereReader(sp).read(0)
+
+    assert(data.coordinates.x === 0d)
+    assert(data.coordinates.y === 0d)
+    assert(data.coordinates.z === -1d)
+    assert(data.phi === 0d)
+    assert(data.theta === Math.PI)
   }
 
   it should "throw IllegalArgumentException if there are more than one qubit in the superposition" in {

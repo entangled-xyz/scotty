@@ -91,10 +91,10 @@ case class BlochSphereReader(state: State) extends StateReader[BlochSphereData] 
 
       val x = 2 * densityMatrix(0)(1).getReal
       val y = 2 * densityMatrix(1)(0).getImaginary
-      val z = densityMatrix(0)(0).subtract(densityMatrix(1)(1)).abs
+      val z = densityMatrix(0)(0).abs - densityMatrix(1)(1).abs
 
       val theta = Math.acos(z)
-      val phi = Math.acos(x / Math.sin(theta))
+      val phi = if (theta == 0 || theta == Math.PI) 0 else Math.acos(x / Math.sin(theta))
 
       Seq(BlochSphereData(phi, theta, Coordinates(x, y, z)))
     case c: Collapsed =>
