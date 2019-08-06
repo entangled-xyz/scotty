@@ -19,17 +19,21 @@ Here is an example of a quantum teleportation algorithm written in Scotty to giv
 ```scala
 def entangle(q1: Int, q2: Int) = Circuit(H(q1), CNOT(q1, q2))
 
-val msg = Qubit(Complex(0.8), Complex(0.6))
+val msg = Qubit(Complex(0.8), Complex(0.6), "message")
+val here = Qubit.zero("here")
+val there = Qubit.zero("there")
+
+val register = QubitRegister(msg, here, there)
 
 val circuit = entangle(1, 2)
-  .combine(Circuit(CNOT(0, 1), H(0)))
+  .combine(CNOT(0, 1), H(0))
   .combine(CNOT(1, 2), Controlled(0, Z(2)))
-  .withRegister(msg, Qubit.zero("here"), Qubit.zero("there"))
+  .withRegister(register)
 
-QuantumSimulator().run(circuit) match {
-  case s: Superposition => assert(QubitProbabilityReader(s).read("there")
-    .forall(q => q.probability == Math.pow(msg.b.abs, 2)))
-}
+assert(
+  QubitProbabilityReader(register, QuantumSimulator().run(circuit))
+    .read("there")
+    .fold(false)(_.probabilityOfOne ~= msg.probabilityOfOne))
 ```
 
 Here we just setup a quantum circuit with a custom register of qubits, ran it in the quantum simulator, and then peeked at the *superposition* probability of a "there" qubit.

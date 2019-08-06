@@ -68,10 +68,12 @@ object QubitProbabilityReader {
 
   def apply(state: State): QubitProbabilityReader = this(None, state)
 
-  case class QubitData(label: Option[String], index: Int, probability: Double) {
+  case class QubitData(label: Option[String], index: Int, probabilityOfOne: Double) {
+    val probabilityOfZero: Double = 1 - probabilityOfOne
+
     override def toString: String = {
-      val probZero = (1 - probability).toPercent
-      val probOne = probability.toPercent
+      val probZero = probabilityOfZero.toPercent
+      val probOne = probabilityOfOne.toPercent
 
       s"${label.getOrElse(s"qubit_$index")}: " +
         f"P(0) = $probZero%1.2f%% " +
@@ -89,10 +91,10 @@ case class BlochSphereReader(state: State) extends StateReader[BlochSphereData] 
 
       val x = 2 * densityMatrix(0)(1).getReal
       val y = 2 * densityMatrix(1)(0).getImaginary
-      val z = densityMatrix(0)(0).subtract(densityMatrix(1)(1)).abs
+      val z = densityMatrix(0)(0).abs - densityMatrix(1)(1).abs
 
       val theta = Math.acos(z)
-      val phi = Math.acos(x / Math.sin(theta))
+      val phi = if (theta == 0 || theta == Math.PI) 0 else Math.acos(x / Math.sin(theta))
 
       Seq(BlochSphereData(phi, theta, Coordinates(x, y, z)))
     case c: Collapsed =>
