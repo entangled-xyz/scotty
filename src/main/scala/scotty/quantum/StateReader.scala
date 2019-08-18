@@ -4,7 +4,6 @@ import scotty.ErrorMessage
 import scotty.quantum.BlochSphereReader.{BlochSphereData, Coordinates}
 import scotty.quantum.QubitProbabilityReader.QubitData
 import scotty.quantum.StateProbabilityReader.StateData
-import scotty.quantum.math.Complex.Complex
 import scotty.quantum.math.{Complex, MathUtils}
 import scotty.quantum.math.MathUtils._
 import scotty.simulator.QuantumSimulator
@@ -89,8 +88,8 @@ case class BlochSphereReader(state: State) extends StateReader[BlochSphereData] 
     case sp: Superposition =>
       val densityMatrix = QuantumSimulator().densityMatrix(Qubit(sp.vector(0), sp.vector(1)))
 
-      val x = 2 * densityMatrix(0)(1).getReal
-      val y = 2 * densityMatrix(1)(0).getImaginary
+      val x = 2 * densityMatrix(0)(1).r
+      val y = 2 * densityMatrix(1)(0).i
       val z = densityMatrix(0)(0).abs - densityMatrix(1)(1).abs
 
       val theta = Math.acos(z)

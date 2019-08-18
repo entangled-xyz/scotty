@@ -1,8 +1,8 @@
 package scotty.quantum
 
-import org.apache.commons.math3.complex.Complex
 import scotty.quantum.QuantumContext._
 import scotty.quantum.gate.{Gate, TargetGate}
+import scotty.quantum.math.Complex
 
 trait QuantumContext {
   def run(circuit: Circuit): State

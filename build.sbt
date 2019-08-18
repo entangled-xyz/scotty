@@ -13,8 +13,6 @@ ThisBuild / crossScalaVersions := Seq(
 
 val scalaTestVersion = "3.0.8"
 
-libraryDependencies += "org.apache.commons" % "commons-math3" % "3.0"
-
 libraryDependencies ++= {
   CrossVersion.partialVersion(scalaVersion.value) match {
     case Some((2, major)) if major >= 13 => Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0")

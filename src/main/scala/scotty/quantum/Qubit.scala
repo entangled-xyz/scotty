@@ -1,7 +1,6 @@
 package scotty.quantum
 
 import scotty.quantum.QuantumContext.Vector
-import scotty.quantum.math.Complex.Complex
 import scotty.quantum.math.{Complex, MathUtils}
 import scotty.{ErrorMessage, Labeled}
 

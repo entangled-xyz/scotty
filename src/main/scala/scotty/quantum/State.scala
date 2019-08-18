@@ -2,7 +2,6 @@ package scotty.quantum
 
 import scotty.quantum.QuantumContext.Vector
 import scotty.quantum.gate.Gate
-import scotty.quantum.math.Complex.Complex
 import scotty.quantum.math.{Complex, MathUtils}
 
 sealed trait State {

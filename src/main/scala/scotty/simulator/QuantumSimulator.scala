@@ -8,8 +8,6 @@ import scotty.quantum.gate._
 import scotty.quantum.math.{Complex, MathUtils}
 import scotty.quantum.{Superposition, _}
 import scotty.simulator.QuantumSimulator.RawGate
-import scotty.simulator.math.linearalgebra.Types.{ApacheMatrix, ApacheVector}
-import scotty.simulator.math.linearalgebra.{MatrixWrapper, VectorWrapper}
 import scala.collection.parallel.ForkJoinTaskSupport
 import scala.collection.parallel.immutable.ParVector
 import scala.util.Random

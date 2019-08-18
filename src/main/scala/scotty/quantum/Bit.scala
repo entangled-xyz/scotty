@@ -1,7 +1,6 @@
 package scotty.quantum
 
 import scotty.quantum.math.Complex
-import scotty.quantum.math.Complex.Complex
 import scotty.{ErrorMessage, Labeled}
 
 sealed trait Bit extends Labeled[String] {
