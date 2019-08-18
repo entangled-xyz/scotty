@@ -10,13 +10,14 @@ import scala.collection.parallel.immutable.ParVector
   *
   * @param data Raw data representing all complex numbers in a flat array of <code>Double</code>s.
   */
-case class Vector(data: Array[Double]) {
+case class VectorWrapper(data: Array[Double]) {
   def size: Int = data.length / 2
 
-  def tensorProduct(vector: Vector): Vector = Vector(Vector.tensorProduct(data, vector.data))
+  def tensorProduct(vector: VectorWrapper): VectorWrapper =
+    VectorWrapper(VectorWrapper.tensorProduct(data, vector.data))
 }
 
-object Vector {
+object VectorWrapper {
   def tensorProduct(v1: Array[Double], v2: Array[Double]): Array[Double] = {
     val v1Length = v1.length / 2
     val v2Length = v2.length / 2

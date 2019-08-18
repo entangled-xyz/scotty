@@ -8,6 +8,7 @@ import scotty.quantum.gate._
 import scotty.quantum.math.{Complex, MathUtils}
 import scotty.quantum.{Superposition, _}
 import scotty.simulator.QuantumSimulator.RawGate
+import scotty.simulator.math.{MatrixWrapper, VectorWrapper}
 import scala.collection.parallel.ForkJoinTaskSupport
 import scala.collection.parallel.immutable.ParVector
 import scala.util.Random
@@ -61,17 +62,15 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
   }
 
   def prepareGate(gate: Gate, qubitCount: Int): Gate = {
-    val gateFieldMatrix = MatrixWrapper.fieldMatrix(gate.matrix(this))
-
-    def pad(): Seq[ApacheMatrix] = {
+    def pad(): Seq[Matrix] = {
       def topPad = (0 until gate.indexes.sortWith(_ < _)(0)).map(_ => MatrixWrapper.identity(2))
       def bottomPad = (gate.indexes.sortWith(_ > _)(0) until qubitCount - 1).map(_ => MatrixWrapper.identity(2))
 
-      (topPad :+ gateFieldMatrix) ++ bottomPad
+      (topPad :+ gate.matrix(this)) ++ bottomPad
     }
 
     RawGate(
-      pad().reduce((a, b) => MatrixWrapper(a.getData).tensorProduct(b)).getData
+      pad().reduce((a, b) => MatrixWrapper(a).tensorProduct(b)).getData
     )
   }
 

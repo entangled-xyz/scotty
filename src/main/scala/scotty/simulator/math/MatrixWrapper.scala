@@ -9,16 +9,17 @@ import scotty.quantum.math.Complex
   *
   * @param data Raw data representing all complex numbers in a flat array of <code>Double</code>s.
   */
-case class Matrix(data: Array[Double]) {
-  def dimension: Int = Matrix.dimension(data)
+case class MatrixWrapper(data: Array[Double]) {
+  def dimension: Int = MatrixWrapper.dimension(data)
 
-  def tensorProduct(matrix: Matrix): Matrix = Matrix(Matrix.tensorProduct(data, matrix.data))
+  def tensorProduct(matrix: MatrixWrapper): MatrixWrapper =
+    MatrixWrapper(MatrixWrapper.tensorProduct(data, matrix.data))
 }
 
-object Matrix {
+object MatrixWrapper {
   def dimension(data: Array[Double]): Int = Math.sqrt(data.length / 2).toInt
 
-  def apply(data: Array[Array[Complex]]): Matrix = Matrix(data.flatten.map(c => Array(c.r, c.i)).flatten)
+  def apply(data: Array[Array[Complex]]): MatrixWrapper = MatrixWrapper(data.flatten.map(c => Array(c.r, c.i)).flatten)
 
   def tensorProduct(m1: Array[Double], m2: Array[Double]): Array[Double] = {
     val thisDimension = m1.length
@@ -43,5 +44,15 @@ object Matrix {
     }
 
     newData
+  }
+
+  def identity(dimension: Int): Array[Double] = {
+    val data = Array.fill(dimension * dimension * 2)(0d)
+
+    for (i <- 0 until data.length / 2) {
+      data(i * 2)(i * 2) = 1d
+    }
+
+    data
   }
 }
