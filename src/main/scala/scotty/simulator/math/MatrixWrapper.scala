@@ -1,5 +1,6 @@
 package scotty.simulator.math
 
+import scotty.quantum.QuantumContext.{Matrix, Vector}
 import scotty.quantum.math.Complex
 
 /**
@@ -9,50 +10,51 @@ import scotty.quantum.math.Complex
   *
   * @param data Raw data representing all complex numbers in a flat array of <code>Double</code>s.
   */
-case class MatrixWrapper(data: Array[Double]) {
+case class MatrixWrapper(data: Matrix) {
   def dimension: Int = MatrixWrapper.dimension(data)
-
-  def tensorProduct(matrix: MatrixWrapper): MatrixWrapper =
-    MatrixWrapper(MatrixWrapper.tensorProduct(data, matrix.data))
 }
 
 object MatrixWrapper {
-  def dimension(data: Array[Double]): Int = Math.sqrt(data.length / 2).toInt
+  def dimension(data: Matrix): Int = data.length
 
-  def apply(data: Array[Array[Complex]]): MatrixWrapper = MatrixWrapper(data.flatten.map(c => Array(c.r, c.i)).flatten)
+  def apply(data: Array[Array[Complex]]): MatrixWrapper =
+    MatrixWrapper(data.map(row => row.map(v => Array(v.r, v.i)).flatten))
 
-  def tensorProduct(m1: Array[Double], m2: Array[Double]): Array[Double] = {
-    val thisDimension = m1.length
-    val thatDimension = m2.length
-    val newDimension = thisDimension * thatDimension
-    val newData = Array.fill(newDimension * newDimension * 2)(0d)
+  def identity(dimension: Int): Matrix = {
+    val data = Array.fill(dimension)(Array.fill(dimension * 2)(0d))
 
-    for (r1 <- 0 until thisDimension) {
-      for (r2 <- 0 until thatDimension) {
-        for (c1 <- 0 until thisDimension) {
-          for (c2 <- 0 until thatDimension) {
-            val k1 = (r1 * thisDimension + c1) * 2
-            val k2 = (r2 * thatDimension + c2) * 2
-            val k3 = ((r1 * thatDimension + r2) * newDimension + (c1 * thatDimension + c2)) * 2
-            val (r, i) = Complex.product(m1(k1), m1(k1 + 1), m2(k2), m2(k2 + 1))
-
-            newData(k3) = r
-            newData(k3 + 1) = i
-          }
-        }
-      }
-    }
-
-    newData
-  }
-
-  def identity(dimension: Int): Array[Double] = {
-    val data = Array.fill(dimension * dimension * 2)(0d)
-
-    for (i <- 0 until data.length / 2) {
+    for (i <- 0 until dimension) {
       data(i * 2)(i * 2) = 1d
     }
 
+    data
+  }
+
+  def product(matrix: Matrix, vector: Vector): Vector = {
+    val newVector = Array.fill(vector.length)(0d)
+
+    for (rowIndex <- matrix.indices) {
+      val rowValue = Array(0d, 0d)
+
+      for (index <- matrix.indices) {
+        val product = Complex.product(
+          matrix(rowIndex)(2 * index),
+          matrix(rowIndex)(2 * index + 1),
+          vector(2 * rowIndex),
+          vector(2 * rowIndex + 1))
+
+        rowValue(2 * rowIndex) = product._1
+        rowValue(2 * rowIndex + 1) = product._2
+      }
+
+      newVector(rowIndex) = rowValue(0)
+      newVector(rowIndex + 1) = rowValue(1)
+    }
+
+    newVector
+  }
+
+  def conjugateTranspose(data: Matrix): Matrix = {
     data
   }
 }

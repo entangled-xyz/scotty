@@ -7,6 +7,7 @@ import scotty.quantum.StateProbabilityReader.StateData
 import scotty.quantum.math.{Complex, MathUtils}
 import scotty.quantum.math.MathUtils._
 import scotty.simulator.QuantumSimulator
+import sun.reflect.generics.reflectiveObjects.NotImplementedException
 
 sealed trait StateReader[T] {
   val state: State
@@ -18,11 +19,11 @@ sealed trait StateReader[T] {
 
 case class StateProbabilityReader(state: State) extends StateReader[StateData] {
   def read: Seq[StateData] = state match {
-    case sp: Superposition => sp.vector.zipWithIndex.map(pair => StateData(
-      MathUtils.toBinaryPadded(pair._2, state.qubitCount),
-      pair._1,
-      Math.pow(pair._1.abs, 2)
-    )).toSeq
+//    case sp: Superposition => sp.vector.zipWithIndex.map(pair => StateData(
+//      MathUtils.toBinaryPadded(pair._2, state.qubitCount),
+//      pair._1,
+//      Math.pow(pair._1.abs, 2)
+//    )).toSeq
     case c: Collapsed => Seq(StateData(c.toBinaryRegister.values.toSeq, Complex(1), 1))
   }
 
@@ -85,17 +86,17 @@ case class BlochSphereReader(state: State) extends StateReader[BlochSphereData] 
   require(state.qubitCount == 1, ErrorMessage.BlochSphereQubitCountNotOne)
 
   def read: Seq[BlochSphereData] = state match {
-    case sp: Superposition =>
-      val densityMatrix = QuantumSimulator().densityMatrix(Qubit(sp.vector(0), sp.vector(1)))
-
-      val x = 2 * densityMatrix(0)(1).r
-      val y = 2 * densityMatrix(1)(0).i
-      val z = densityMatrix(0)(0).abs - densityMatrix(1)(1).abs
-
-      val theta = Math.acos(z)
-      val phi = if (theta == 0 || theta == Math.PI) 0 else Math.acos(x / Math.sin(theta))
-
-      Seq(BlochSphereData(phi, theta, Coordinates(x, y, z)))
+//    case sp: Superposition =>
+//      val densityMatrix = QuantumSimulator().densityMatrix(Qubit(sp.vector(0), sp.vector(1)))
+//
+//      val x = 2 * densityMatrix(0)(1).r
+//      val y = 2 * densityMatrix(1)(0).i
+//      val z = densityMatrix(0)(0).abs - densityMatrix(1)(1).abs
+//
+//      val theta = Math.acos(z)
+//      val phi = if (theta == 0 || theta == Math.PI) 0 else Math.acos(x / Math.sin(theta))
+//
+//      Seq(BlochSphereData(phi, theta, Coordinates(x, y, z)))
     case c: Collapsed =>
       val x = 0
       val y = 0

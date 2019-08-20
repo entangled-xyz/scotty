@@ -9,17 +9,17 @@ trait QuantumContext {
 
   def gateMatrix(gate: Gate): Matrix
 
-  def tensorProduct(gate1: Gate, gate2: Gate): TargetGate
+//  def tensorProduct(gate1: Gate, gate2: Gate): TargetGate
 
-  def tensorProduct(sp1: Superposition, sp2: Superposition): Superposition
+//  def tensorProduct(sp1: Superposition, sp2: Superposition): Superposition
 
-  def product(gate: Gate, sp: Superposition): Superposition
+//  def product(gate: Gate, sp: Superposition): Superposition
 
-  def outerProduct(sp1: Superposition, sp2: Superposition): Matrix
+//  def outerProduct(sp1: Superposition, sp2: Superposition): Matrix
 
-  def densityMatrix(qubit: Qubit): Matrix
+//  def densityMatrix(qubit: Qubit): Matrix
 
-  def isUnitary(gate: Gate): Boolean
+//  def isUnitary(gate: Gate): Boolean
 
   def measure(register: QubitRegister, sp: Superposition): Collapsed
 
@@ -34,8 +34,8 @@ trait QuantumContext {
 }
 
 object QuantumContext {
-  type Vector = Array[Complex]
-  type Matrix = Array[Array[Complex]]
+  type Vector = Array[Double]
+  type Matrix = Array[Array[Double]]
 
   case class QuantumException(message: String) extends Exception(message)
 }

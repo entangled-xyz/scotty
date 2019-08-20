@@ -11,15 +11,15 @@ sealed trait State {
 case class Superposition(vector: Vector) extends State {
   lazy val qubitCount: Int = if (vector.length == 0) 0 else (Math.log10(vector.length) / Math.log10(2)).toInt
 
-  def applyGate(gate: Gate)(implicit ctx: QuantumContext): Superposition =
-    if (vector.length == 0) this
-    else ctx.product(gate, this)
+//  def applyGate(gate: Gate)(implicit ctx: QuantumContext): Superposition =
+//    if (vector.length == 0) this
+//    else ctx.product(gate, this)
 
   def probabilities: Seq[Double] = vector.map(s => Math.pow(s.abs, 2))
 
-  def combine(sp: Superposition)(implicit ctx: QuantumContext): Superposition =
-    if (vector.length == 0) sp
-    else ctx.tensorProduct(this, sp)
+//  def combine(sp: Superposition)(implicit ctx: QuantumContext): Superposition =
+//    if (vector.length == 0) sp
+//    else ctx.tensorProduct(this, sp)
 
   override def equals(obj: Any): Boolean = obj match {
     case s: Superposition => vector.toSeq == s.vector.toSeq
@@ -30,13 +30,11 @@ case class Superposition(vector: Vector) extends State {
 }
 
 object Superposition {
-  def apply(): Superposition = this(Array[Complex]())
+  def apply(): Superposition = this(Array[Double]())
 
-  def apply(q: Qubit): Superposition = this(Array(q.a, q.b))
+  def apply(q: Qubit): Superposition = this(Array(q.a.r, q.a.i, q.b.r, q.a.i))
 
-  def apply(bit: Bit): Superposition = this(bit.toBasisState)
-
-  def apply(a: Complex, b: Complex): Superposition = this(Array(a, b))
+  def apply(a: Complex, b: Complex): Superposition = this(Array(a.r, a.i, b.r, b.i))
 
   def apply(state: Superposition): Superposition = this(state.vector)
 

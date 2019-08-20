@@ -2,6 +2,7 @@ package scotty.simulator.math
 
 import scotty.quantum.math.Complex
 import scala.collection.parallel.immutable.ParVector
+import scotty.quantum.QuantumContext.Vector
 
 /**
   * The <code>Vector</code> class contains a representation of a complex number vector.
@@ -10,7 +11,7 @@ import scala.collection.parallel.immutable.ParVector
   *
   * @param data Raw data representing all complex numbers in a flat array of <code>Double</code>s.
   */
-case class VectorWrapper(data: Array[Double]) {
+case class VectorWrapper(data: Vector) {
   def size: Int = data.length / 2
 
   def tensorProduct(vector: VectorWrapper): VectorWrapper =
@@ -18,7 +19,7 @@ case class VectorWrapper(data: Array[Double]) {
 }
 
 object VectorWrapper {
-  def tensorProduct(v1: Array[Double], v2: Array[Double]): Array[Double] = {
+  def tensorProduct(v1: Vector, v2: Vector): Vector = {
     val v1Length = v1.length / 2
     val v2Length = v2.length / 2
     val newData = Array.fill(2 * v1Length * v2Length)(0d)

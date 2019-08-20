@@ -9,6 +9,22 @@ case class Complex(r: Double, i: Double) {
 }
 
 object Complex {
+  implicit class ComplexToDoubleVector(vs: Array[Complex]) {
+    def toDouble: Array[Double] = vs.map(v => Array(v.r, v.i)).flatten
+  }
+
+  implicit class ComplexToDoubleMatrix(vs: Array[Array[Complex]]) {
+    def toDouble: Array[Array[Double]] = vs.map(r => r.map(v => Array(v.r, v.i)).flatten)
+  }
+
+  implicit class ComplexToDoubleVectorList(vs: List[Complex]) {
+    def toDouble: List[Double] = vs.flatMap(v => Array(v.r, v.i))
+  }
+
+  implicit class ComplexToDoubleMatrixList(vs: List[List[Complex]]) {
+    def toDouble: List[List[Double]] = vs.map(r => r.flatMap(v => Array(v.r, v.i)))
+  }
+
   def apply(r: Double): Complex = Complex(r, 0)
 
   def product(r1: Double, i1: Double, r2: Double, i2: Double): (Double, Double) = {

@@ -7,7 +7,7 @@ import scotty.{ErrorMessage, Labeled}
 case class Qubit(a: Complex, b: Complex, label: Option[String]) extends Labeled[String] {
   require(Qubit.areAmplitudesValid(this), ErrorMessage.IncorrectQubitAmplitudes)
 
-  def toBasisState: Vector = Array(a, b)
+  def toBasisState: Vector = Array(a.r, a.i, b.r, b.i)
 
   def toHumanString: String = s"Qubit(${Complex.toString(a)}, ${Complex.toString(b)})"
 

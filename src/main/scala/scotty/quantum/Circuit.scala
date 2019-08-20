@@ -1,6 +1,7 @@
 package scotty.quantum
 
 import scotty.ErrorMessage
+import scotty.quantum.gate.Gate
 
 case class Circuit(register: QubitRegister, ops: Op*) {
   val indexes: Range = 0 until register.size
@@ -14,6 +15,11 @@ case class Circuit(register: QubitRegister, ops: Op*) {
   def withRegister(newQubits: Qubit*): Circuit = Circuit(QubitRegister(newQubits: _*), ops: _*)
 
   def isValid: Boolean = register.size >= Circuit.qubitCountFromOps(ops.toSeq)
+
+  def gates: Seq[Gate] = ops.collect {
+    case g: Gate => Seq(g)
+    case cc: CircuitConnector => cc.circuit.gates
+  }.flatten.toSeq
 
   require(isValid, ErrorMessage.QubitCountMismatch)
 }

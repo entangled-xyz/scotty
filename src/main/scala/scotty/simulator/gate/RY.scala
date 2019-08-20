@@ -10,6 +10,6 @@ object RY {
     Array(
       Array(Complex(Math.cos(theta / 2)), Complex(-Math.sin(theta / 2))),
       Array(Complex(Math.sin(theta / 2)), Complex(Math.cos(theta / 2)))
-    )
+    ).toDouble
   }
 }
