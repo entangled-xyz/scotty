@@ -36,19 +36,19 @@ object MatrixWrapper {
     for (rowIndex <- matrix.indices) {
       val rowValue = Array(0d, 0d)
 
-      for (index <- matrix.indices) {
-        val product = Complex.product(
-          matrix(rowIndex)(2 * index),
-          matrix(rowIndex)(2 * index + 1),
-          vector(2 * rowIndex),
-          vector(2 * rowIndex + 1))
+      for (valueIndex <- matrix.indices) {
+        val (r, i) = Complex.product(
+          matrix(rowIndex)(2 * valueIndex),
+          matrix(rowIndex)(2 * valueIndex + 1),
+          vector(2 * valueIndex),
+          vector(2 * valueIndex + 1))
 
-        rowValue(2 * rowIndex) = product._1
-        rowValue(2 * rowIndex + 1) = product._2
+        rowValue(0) += r
+        rowValue(1) += i
       }
 
-      newVector(rowIndex) = rowValue(0)
-      newVector(rowIndex + 1) = rowValue(1)
+      newVector(2 * rowIndex) = rowValue(0)
+      newVector(2 * rowIndex + 1) = rowValue(1)
     }
 
     newVector
