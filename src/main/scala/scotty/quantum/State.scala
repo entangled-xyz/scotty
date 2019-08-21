@@ -9,7 +9,7 @@ sealed trait State {
 }
 
 case class Superposition(vector: Vector) extends State {
-  lazy val qubitCount: Int = if (vector.length == 0) 0 else (Math.log10(vector.length) / Math.log10(2)).toInt
+  lazy val qubitCount: Int = if (vector.length / 2 == 0) 0 else (Math.log10(vector.length / 2) / Math.log10(2)).toInt
 
 //  def applyGate(gate: Gate)(implicit ctx: QuantumContext): Superposition =
 //    if (vector.length == 0) this
