@@ -14,7 +14,7 @@ case class DefGate(matrixGen: GateGen, override val params: Seq[Double], indexes
       if (indexes.length <= 1) indexes.length
       else 1 + indexes.max - indexes.min
 
-    Math.pow(2, lengthWithGaps) == matrix.length && matrix.forall(r => r.length == matrix.length)
+    Math.pow(2, lengthWithGaps) == matrix.length && matrix.forall(r => r.length / 2 == matrix.length)
   }
 
   require(indexesMatchMatrixDimensions, ErrorMessage.GateMatrixDoesntMatchIndexes)
