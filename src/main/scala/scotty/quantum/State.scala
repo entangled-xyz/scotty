@@ -6,16 +6,15 @@ import scotty.quantum.math.{Complex, MathUtils}
 
 sealed trait State {
   val qubitCount: Int
+  val register: QubitRegister
 }
 
-case class Superposition(vector: Vector) extends State {
+case class Superposition(register: QubitRegister, vector: Vector) extends State {
   lazy val qubitCount: Int = if (vector.length / 2 == 0) 0 else (Math.log10(vector.length / 2) / Math.log10(2)).toInt
 
 //  def applyGate(gate: Gate)(implicit ctx: QuantumContext): Superposition =
 //    if (vector.length == 0) this
 //    else ctx.product(gate, this)
-
-  def probabilities: Seq[Double] = vector.map(s => Math.pow(s.abs, 2))
 
 //  def combine(sp: Superposition)(implicit ctx: QuantumContext): Superposition =
 //    if (vector.length == 0) sp
@@ -27,20 +26,6 @@ case class Superposition(vector: Vector) extends State {
   }
 
   override def toString: String = s"Superposition(${vector.toList})"
-}
-
-object Superposition {
-  def apply(): Superposition = this(Array[Double]())
-
-  def apply(q: Qubit): Superposition = this(Array(q.a.r, q.a.i, q.b.r, q.a.i))
-
-  def apply(a: Complex, b: Complex): Superposition = this(Array(a.r, a.i, b.r, b.i))
-
-  def apply(state: Superposition): Superposition = this(state.vector)
-
-  def one: Superposition = this(Complex(0), Complex(1))
-
-  def zero: Superposition = this(Complex(1), Complex(0))
 }
 
 case class Collapsed(register: QubitRegister, index: Int) extends State {

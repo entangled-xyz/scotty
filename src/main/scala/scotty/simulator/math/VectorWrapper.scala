@@ -1,8 +1,9 @@
 package scotty.simulator.math
 
 import scotty.quantum.math.Complex
+
 import scala.collection.parallel.immutable.ParVector
-import scotty.quantum.QuantumContext.Vector
+import scotty.quantum.QuantumContext.{Matrix, Vector}
 
 /**
   * The <code>Vector</code> class contains a representation of a complex number vector.
@@ -35,4 +36,8 @@ object VectorWrapper {
 
     newData
   }
+
+//  def outerProduct(v1: Vector, v2: Vector): Matrix = {
+//
+//  }
 }

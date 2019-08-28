@@ -6,6 +6,7 @@ import scotty.quantum.QubitProbabilityReader.QubitData
 import scotty.quantum.StateProbabilityReader.StateData
 import scotty.quantum.math.{Complex, MathUtils}
 import scotty.quantum.math.MathUtils._
+import scotty.simulator.QuantumSimulator
 
 sealed trait StateReader[T] {
   val state: State

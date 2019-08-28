@@ -14,19 +14,23 @@ import scala.collection.parallel.mutable.ParArray
 import scala.util.Random
 
 case class QuantumSimulator()(implicit random: Random = new Random) extends QuantumContext {
-  def measure(register: QubitRegister, sp: Superposition): Collapsed = {
+  def measure(register: QubitRegister, state: Array[Double]): Collapsed = {
     val initialIterator = (0, 0d, None: Option[Int])
-    val result = sp.probabilities.foldLeft(initialIterator)((iterator, prob) => {
-      val probSum = iterator._2 + prob
-      val tryCollapse = (c: Int) => if (prob > 0 && random.nextDouble() <= probSum) Some(c) else None
+    val rnd = random.nextDouble()
+
+    val result = (0 until state.length / 2).foldLeft(initialIterator)((iterator, stateIndex) => {
+      val abs = Complex.abs(state(2 * stateIndex), state(2 * stateIndex + 1))
+      val totalProb = iterator._2 + Math.pow(abs, 2)
+
+      val tryCollapse = (c: Int) => if (rnd <= totalProb) Some(c) else None
 
       iterator match {
-        case (count, _, None) => (count + 1, probSum, tryCollapse(count))
-        case (count, _, valueOp) => (count + 1, probSum, valueOp)
+        case (count, _, None) => (count + 1, totalProb, tryCollapse(count))
+        case (count, _, valueOp) => (count + 1, totalProb, valueOp)
       }
-    })._3
+    })
 
-    Collapsed(register, result.get)
+    Collapsed(register, result._3.get)
   }
 
   def run(circuit: Circuit): State = {
@@ -70,9 +74,8 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
       state = finalState
     })
 
-//    if (shouldMeasure) measure(circuit.register, result) else result
-
-    Superposition(state)
+    if (shouldMeasure) measure(circuit.register, state)
+    else Superposition(circuit.register, state)
   }
 
   def padGate(gate: Gate, qubitCount: Int): Seq[Gate] = {
@@ -120,9 +123,9 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
 //  )
 //
 //  def outerProduct(sp1: Superposition, sp2: Superposition): Matrix = {
-//    VectorWrapper.fieldVector(sp1.vector).outerProduct(VectorWrapper.fieldVector(sp2.vector)).getData
+//    VectorWrapper.outerProduct(sp1.vector, sp2.vector)
 //  }
-//
+
 //  def densityMatrix(qubit: Qubit): Matrix = {
 //    val state = Superposition(qubit)
 //
@@ -241,13 +244,13 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
     QuantumSimulator.singleQubitGateGens(targetGate.name).apply(targetGate.params)
 
   def swapMatrix(gate: SwapGate): Array[Array[Double]] = {
-    def phase(s: Bit) = {
-      if (s.isInstanceOf[One]) gate match {
-        case _: ISWAP => Superposition(Complex(0), Complex(0, 1))
-        case g: PSWAP => Superposition(Complex(0), Complex(Math.cos(g.phi), Math.sin(g.phi)))
-        case _ => Superposition(s.toBasisState.toDouble)
-      } else Superposition(s.toBasisState.toDouble)
-    }.vector
+//    def phase(s: Bit) = {
+//      if (s.isInstanceOf[One]) gate match {
+//        case _: ISWAP => Superposition(Complex(0), Complex(0, 1))
+//        case g: PSWAP => Superposition(Complex(0), Complex(Math.cos(g.phi), Math.sin(g.phi)))
+//        case _ => Superposition(s.toBasisState.toDouble)
+//      } else Superposition(s.toBasisState.toDouble)
+//    }.vector
 
     val minIndex = gate.indexes.min
     val i1 = gate.index1 - minIndex

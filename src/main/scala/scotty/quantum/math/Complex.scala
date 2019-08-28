@@ -1,7 +1,7 @@
 package scotty.quantum.math
 
 case class Complex(r: Double, i: Double) {
-  def abs: Double = Math.sqrt(Math.pow(r, 2) + Math.pow(i, 2))
+  def abs: Double = Complex.abs(r, i)
 
   def *(c: Complex): Complex = Complex(r * c.r - i * c.i, r * c.i + i * c.r)
 
@@ -32,6 +32,8 @@ object Complex {
   }
 
   def e(phi: Double): Complex = Complex(Math.cos(phi), Math.sin(phi))
+
+  def abs(r: Double, i: Double) = Math.sqrt(Math.pow(r, 2) + Math.pow(i, 2))
 
   def toString(c: Complex): String = {
     val r = c.r
