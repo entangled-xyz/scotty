@@ -1,5 +1,7 @@
 package scotty.simulator
 
+import java.util
+
 import scotty.Config
 import scotty.quantum.QuantumContext._
 import scotty.quantum.gate.Gate.GateGen
@@ -99,9 +101,12 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
   }
 
   def registerToState(register: QubitRegister): Array[Double] = {
-    register.values
-      .map(q => Array(q.a.r, q.a.i, q.b.r, q.b.i))
-      .reduceLeft((state, q) => VectorWrapper.tensorProduct(state, q))
+    if (register.values.isEmpty) Array()
+    else {
+      register.values
+        .map(q => Array(q.a.r, q.a.i, q.b.r, q.b.i))
+        .reduceLeft((state, q) => VectorWrapper.tensorProduct(state, q))
+    }
   }
 
 //  def opToGate(op: Op, qubitCount: Int): collection.Seq[Gate] = op match {
@@ -244,13 +249,16 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
     QuantumSimulator.singleQubitGateGens(targetGate.name).apply(targetGate.params)
 
   def swapMatrix(gate: SwapGate): Array[Array[Double]] = {
-//    def phase(s: Bit) = {
-//      if (s.isInstanceOf[One]) gate match {
-//        case _: ISWAP => Superposition(Complex(0), Complex(0, 1))
-//        case g: PSWAP => Superposition(Complex(0), Complex(Math.cos(g.phi), Math.sin(g.phi)))
-//        case _ => Superposition(s.toBasisState.toDouble)
-//      } else Superposition(s.toBasisState.toDouble)
-//    }.vector
+    val equal = (a: Array[Double], b: Array[Double]) => util.Arrays.equals(a, b)
+    val notEqual = (a: Array[Double], b: Array[Double]) => !equal(a, b)
+
+    def phase(s: Array[Double]) = {
+      if (equal(s, One.doubleValue)) gate match {
+        case _: ISWAP => Array(Complex(0), Complex(0, 1)).toDouble
+        case g: PSWAP => Array(Complex(0), Complex(Math.cos(g.phi), Math.sin(g.phi))).toDouble
+        case _ => s
+      } else s
+    }
 
     val minIndex = gate.indexes.min
     val i1 = gate.index1 - minIndex
@@ -260,15 +268,15 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
 
     val result = (0 until Math.pow(2, qubitCount).toInt).map(stateIndex => {
       val binaries = MathUtils.toBinaryPadded(stateIndex, qubitCount).map(_.toBasisState).toArray.toDouble
-//      val s1 = Bit(binaries(i1))
-//      val s2 = Bit(binaries(i2))
-//
-//      if (s1 != s2 || s1 != Zero() && s2 != One()) {
-//        val i1Val = phase(s1)
-//
-//        binaries(i1) = phase(s2)
-//        binaries(i2) = i1Val
-//      }
+      val s1 = binaries(i1)
+      val s2 = binaries(i2)
+
+      if (notEqual(s1, s2) || notEqual(s1, Zero.doubleValue) && notEqual(s2, One.doubleValue)) {
+        val i1Val = phase(s1)
+
+        binaries(i1) = phase(s2)
+        binaries(i2) = i1Val
+      }
 
       binaries.reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2))
     }).toArray

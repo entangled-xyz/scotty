@@ -42,11 +42,15 @@ object Bit {
 }
 
 object One {
+  val doubleValue = Array(0d, 0d, 1d, 0d)
+
   def apply(): One = One(None)
   def apply(label: String): One = One(Some(label))
 }
 
 object Zero {
+  val doubleValue = Array(1d, 0d, 0d, 0d)
+
   def apply(): Zero = Zero(None)
   def apply(label: String): Zero = Zero(Some(label))
 }
