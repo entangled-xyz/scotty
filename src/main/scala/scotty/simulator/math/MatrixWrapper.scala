@@ -24,7 +24,7 @@ object MatrixWrapper {
     val data = Array.fill(dimension)(Array.fill(dimension * 2)(0d))
 
     for (i <- 0 until dimension) {
-      data(i * 2)(i * 2) = 1d
+      data(i)(i * 2) = 1d
     }
 
     data
