@@ -88,17 +88,18 @@ case class BlochSphereReader(state: State) extends StateReader[BlochSphereData] 
   require(state.qubitCount == 1, ErrorMessage.BlochSphereQubitCountNotOne)
 
   def read: Seq[BlochSphereData] = state match {
-//    case sp: Superposition =>
-//      val densityMatrix = QuantumSimulator().densityMatrix(Qubit(sp.vector(0), sp.vector(1)))
-//
-//      val x = 2 * densityMatrix(0)(1).r
-//      val y = 2 * densityMatrix(1)(0).i
-//      val z = densityMatrix(0)(0).abs - densityMatrix(1)(1).abs
-//
-//      val theta = Math.acos(z)
-//      val phi = if (theta == 0 || theta == Math.PI) 0 else Math.acos(x / Math.sin(theta))
-//
-//      Seq(BlochSphereData(phi, theta, Coordinates(x, y, z)))
+    case sp: Superposition =>
+      val densityMatrix = QuantumSimulator().densityMatrix(
+        Qubit(Complex(sp.vector(0), sp.vector(1)), Complex(sp.vector(2), sp.vector(3))))
+
+      val x = 2 * densityMatrix(0)(2)
+      val y = 2 * densityMatrix(1)(1)
+      val z = densityMatrix(0)(0).abs - densityMatrix(1)(1).abs
+
+      val theta = Math.acos(z)
+      val phi = if (theta == 0 || theta == Math.PI) 0 else Math.acos(x / Math.sin(theta))
+
+      Seq(BlochSphereData(phi, theta, Coordinates(x, y, z)))
     case c: Collapsed =>
       val x = 0
       val y = 0

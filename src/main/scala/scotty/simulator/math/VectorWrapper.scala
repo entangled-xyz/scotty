@@ -37,7 +37,18 @@ object VectorWrapper {
     newData
   }
 
-//  def outerProduct(v1: Vector, v2: Vector): Matrix = {
-//
-//  }
+  def conjugate(v: Vector): Vector = {
+    for (s <- 0 until v.length / 2) {
+      v(2 * s + 1) = -v(2 * s + 1)
+    }
+
+    v
+  }
+
+  // TODO: implement
+  def outerProduct(v1: Vector, v2: Vector): Matrix = {
+    val newData = Array.fill(v1.length)(Array.fill(2 * v1.length)(0d))
+
+    newData
+  }
 }
