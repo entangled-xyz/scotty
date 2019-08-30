@@ -27,13 +27,14 @@ object Complex {
 
   def apply(r: Double): Complex = Complex(r, 0)
 
-  def product(r1: Double, i1: Double, r2: Double, i2: Double): (Double, Double) = {
-    (r1 * r2 - i1 * i2, r1 * i2 + i1 * r2)
-  }
+  def product(r1: Double, i1: Double, r2: Double, i2: Double): (Double, Double) = (
+    r1 * r2 - i1 * i2,
+    r1 * i2 + i1 * r2
+  )
 
   def e(phi: Double): Complex = Complex(Math.cos(phi), Math.sin(phi))
 
-  def abs(r: Double, i: Double) = Math.sqrt(Math.pow(r, 2) + Math.pow(i, 2))
+  def abs(r: Double, i: Double): Double = Math.sqrt(Math.pow(r, 2) + Math.pow(i, 2))
 
   def toString(c: Complex): String = {
     val r = c.r

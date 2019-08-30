@@ -9,7 +9,7 @@ sealed trait Gate extends Op {
 
   val params: Seq[Double] = Seq[Double]()
 
-//  def isUnitary(implicit ctx: QuantumContext): Boolean = ctx.isUnitary(this)
+  def isUnitary(implicit ctx: QuantumContext): Boolean = ctx.isUnitary(this)
 
   def matrix(implicit ctx: QuantumContext): Matrix = ctx.gateMatrix(this)
 

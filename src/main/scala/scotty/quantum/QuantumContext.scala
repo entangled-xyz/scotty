@@ -17,9 +17,9 @@ trait QuantumContext {
 
 //  def outerProduct(sp1: Superposition, sp2: Superposition): Matrix
 
-//  def densityMatrix(qubit: Qubit): Matrix
+  def densityMatrix(vector: Vector): Matrix
 
-//  def isUnitary(gate: Gate): Boolean
+  def isUnitary(gate: Gate): Boolean
 
   def measure(register: QubitRegister, state: Array[Double]): Collapsed
 

@@ -127,11 +127,7 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
 //    (MatrixWrapper(gate.matrix(this)) * VectorWrapper.fieldVector(sp.vector)).getData
 //  )
 
-  def densityMatrix(qubit: Qubit): Matrix = {
-    val state = qubit.toBasisState
-
-    VectorWrapper.columnRowOuterProduct(state, VectorWrapper.conjugate(state))
-  }
+  def densityMatrix(vector: Vector): Matrix = VectorWrapper.ketBraOuterProduct(vector)
 
   def isUnitary(g: Gate): Boolean = MatrixWrapper.isUnitary(g.matrix(this))
 

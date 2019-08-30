@@ -45,13 +45,13 @@ object VectorWrapper {
     v
   }
 
-  def columnRowOuterProduct(v1: Vector, v2: Vector): Matrix = {
-    val newData = Array.fill(v1.length)(Array.fill(2 * v1.length)(0d))
+  def ketBraOuterProduct(v: Vector): Matrix = {
+    val newData = Array.fill(v.length)(Array.fill(2 * v.length)(0d))
 
     // assuming that v1 is a column and v2 is a row vector
-    for (v1Index <- 0 until v1.length / 2) {
-      for (v2Index <- 0 until v2.length / 2) {
-        val value = Complex.product(v1(2 * v1Index), v1(2 * v2Index + 1), v2(2 * v1Index), v2(2 * v2Index + 1))
+    for (v1Index <- 0 until v.length / 2) {
+      for (v2Index <- 0 until v.length / 2) {
+        val value = Complex.product(v(2 * v1Index), v(2 * v1Index + 1), v(2 * v2Index), v(2 * v2Index + 1))
 
         newData(v1Index)(2 * v2Index) = value._1
         newData(v1Index)(2 * v2Index + 1) = value._2
