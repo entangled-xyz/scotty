@@ -13,6 +13,11 @@ class DefGateSpec extends FlatSpec with TestHelpers {
     Array(1d, 0d, 0d, 0d)
   )
 
+  val nonUnitaryMatrix = Array(
+    Array(1d, 0d, 0d, 0d),
+    Array(0d, 0d, 2d, 0d)
+  )
+
   val fourByFourMatrix = Array(
     Array(1d, 0d, 0d, 0d, 0d, 0d, 0d, 0d),
     Array(0d, 0d, 1d, 0d, 0d, 0d, 0d, 0d),
@@ -81,6 +86,12 @@ class DefGateSpec extends FlatSpec with TestHelpers {
   it should "throw IllegalArgumentException if gaps between indexes are not accounted for" in {
     assertThrows[IllegalArgumentException] {
       DefGate(fourByFourMatrix, 1, 3)
+    }
+  }
+
+  it should "throw IllegalArgumentException if the matrix is not unitary" in {
+    assertThrows[IllegalArgumentException] {
+      DefGate(nonUnitaryMatrix, 0)
     }
   }
 }

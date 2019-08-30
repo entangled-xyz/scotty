@@ -1,12 +1,11 @@
 package scotty.simulator
 
 import org.scalatest.FlatSpec
+import scotty.TestHelpers
 import scotty.quantum.gate.{Dagger, DefGate}
 import scotty.quantum.math.Complex
 
-class DaggerGateSpec extends FlatSpec {
-  val sim = QuantumSimulator()
-
+class DaggerGateSpec extends FlatSpec with TestHelpers {
   "Dagger" should "apply conjugate transpose to the gate matrix" in {
     val gate = (index: Int) => DefGate(Array(
       Array(Complex(1, -1), Complex(0)),

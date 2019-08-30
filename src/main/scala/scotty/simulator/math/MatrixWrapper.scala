@@ -21,14 +21,19 @@ object MatrixWrapper {
   def apply(data: Array[Array[Complex]]): MatrixWrapper =
     MatrixWrapper(data.map(row => row.map(v => Array(v.r, v.i)).flatten))
 
-  def isUnitary(matrix: Matrix): Boolean =
-    areEqual(product(conjugateTranspose(matrix), matrix), identity(matrix.length))
+  def isUnitary(matrix: Matrix): Boolean = areEqual(
+    product(conjugateTranspose(matrix.map(r => r.clone)), matrix),
+    identity(matrix.length)
+  )
 
   def areEqual (m1: Matrix, m2: Matrix): Boolean = {
+    // require square
+    // require same dimension
+
     for (rowIndex <- m1.indices) {
       for (valueIndex <- m1.indices) {
-        if ((m1(rowIndex)(2 * valueIndex) ~= m2(rowIndex)(2 * valueIndex)) &&
-          (m1(rowIndex)(2 * valueIndex + 1) ~= m2(rowIndex)(2 * valueIndex + 1))) false
+        if ((m1(rowIndex)(2 * valueIndex) !~= m2(rowIndex)(2 * valueIndex)) ||
+          (m1(rowIndex)(2 * valueIndex + 1) !~= m2(rowIndex)(2 * valueIndex + 1))) return false
       }
     }
 
@@ -45,12 +50,42 @@ object MatrixWrapper {
     data
   }
 
-  // TODO: implement
   def product(m1: Matrix, m2: Matrix): Matrix = {
-    m1
+    // require square
+    // require same dimension
+
+    val result = Array.fill(m1.length)(Array.fill(m1.length * 2)(0d))
+    val dimensions = m1.indices
+
+    for (rowIndex <- dimensions) {
+      for (i <- dimensions) {
+        var sumR = 0d
+        var sumI = 0d
+
+        for (j <- dimensions) {
+          val r1 = m1(rowIndex)(2 * j)
+          val i1 = m1(rowIndex)(2 * j + 1)
+          val r2 = m2(j)(2 * i)
+          val i2 = m2(j)(2 * i + 1)
+
+          val product = Complex.product(r1, i1, r2, i2)
+
+          sumR += product._1
+          sumI += product._2
+        }
+
+        result(rowIndex)(2 * i) = sumR
+        result(rowIndex)(2 * i + 1) = sumI
+      }
+    }
+
+    result
   }
 
   def product(matrix: Matrix, vector: Vector): Vector = {
+    // require square
+    // require same dimension
+
     val newVector = Array.fill(vector.length)(0d)
 
     for (rowIndex <- matrix.indices) {
@@ -77,6 +112,8 @@ object MatrixWrapper {
   }
 
   def conjugateTranspose(matrix: Matrix): Matrix = {
+    // require square
+
     val halfDimension = matrix.length / 2
 
     for (rowIndex <- matrix.indices) {

@@ -1,7 +1,6 @@
 package scotty.simulator
 
 import java.util
-
 import scotty.Config
 import scotty.quantum.QuantumContext._
 import scotty.quantum.gate.Gate.GateGen
@@ -109,12 +108,6 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
     }
   }
 
-//  def opToGate(op: Op, qubitCount: Int): collection.Seq[Gate] = op match {
-//    case c: CircuitConnector => c.circuit.ops.flatMap(o => opToGate(o, qubitCount))
-//    case g: Gate => Seq(prepareGate(g, qubitCount))
-//    case m: Measure => Seq(prepareGate(StandardGate.I(m.index), qubitCount))
-//  }
-//
 //  def tensorProduct(g1: Gate, g2: Gate): TargetGate = RawGate(
 //    (MatrixWrapper(g1.matrix(this)) ⊗ MatrixWrapper.fieldMatrix(g2.matrix(this))).getData
 //  )

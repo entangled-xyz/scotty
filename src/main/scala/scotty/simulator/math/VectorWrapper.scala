@@ -21,6 +21,8 @@ case class VectorWrapper(data: Vector) {
 
 object VectorWrapper {
   def tensorProduct(v1: Vector, v2: Vector): Vector = {
+    // require same dimension
+
     val v1Length = v1.length / 2
     val v2Length = v2.length / 2
     val newData = Array.fill(2 * v1Length * v2Length)(0d)
@@ -48,7 +50,6 @@ object VectorWrapper {
   def ketBraOuterProduct(v: Vector): Matrix = {
     val newData = Array.fill(v.length)(Array.fill(2 * v.length)(0d))
 
-    // assuming that v1 is a column and v2 is a row vector
     for (v1Index <- 0 until v.length / 2) {
       for (v2Index <- 0 until v.length / 2) {
         val value = Complex.product(v(2 * v1Index), v(2 * v1Index + 1), v(2 * v2Index), v(2 * v2Index + 1))

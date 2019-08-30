@@ -84,7 +84,7 @@ object QubitProbabilityReader {
   }
 }
 
-case class BlochSphereReader(state: State)(implicit val ctx: QuantumContext) extends StateReader[BlochSphereData] {
+case class BlochSphereReader(state: State)(implicit ctx: QuantumContext) extends StateReader[BlochSphereData] {
   require(state.qubitCount == 1, ErrorMessage.BlochSphereQubitCountNotOne)
 
   def read: Seq[BlochSphereData] = state match {

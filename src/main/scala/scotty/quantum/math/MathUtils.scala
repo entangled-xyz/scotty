@@ -4,13 +4,19 @@ import scotty.quantum.{Bit, Zero}
 import scala.annotation.tailrec
 
 object MathUtils {
-  val Precision = 1e8
+  val Precision = 1e6
 
   implicit class DoubleHelpers(d: Double) {
     def toPercent: Double = d * 100
 
     def ~=(d2: Double): Boolean = {
-      if ((d - d2).abs < 0.000001) true else false
+      if ((d - d2).abs < 1 / Precision) true else false
+    }
+
+    def !~=(d2: Double): Boolean = {
+      val e = ~=(d2)
+
+      !e
     }
   }
 

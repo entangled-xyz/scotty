@@ -5,6 +5,8 @@ object ErrorMessage {
 
   val GateMatrixDoesntMatchIndexes = "Gate matrix doesn't match the number of qubit indexes provided to the gate."
 
+  val GateMatrixNotUnitary = "Gate matrix has to be unitary."
+
   val GateIndexesNotAsc = "Target qubit indexes have to be ascending."
 
   val GateIndexesNotUnique = "All qubit indexes referenced in the gate have to be unique."
