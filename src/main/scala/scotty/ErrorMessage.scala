@@ -22,4 +22,8 @@ object ErrorMessage {
   val SwapGateIndexCountNotTwo = "Swap gate should only have two qubit indexes."
 
   val BlochSphereQubitCountNotOne = "BlochSphereReader only works with the superposition of a single qubit."
+
+  val MatrixNotSquare = "Matrix has to be a square matrix."
+
+  val NotSameDimension = "Elements have to have the same dimension."
 }

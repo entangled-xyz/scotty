@@ -1,5 +1,6 @@
 package scotty.simulator.math
 
+import scotty.ErrorMessage
 import scotty.quantum.QuantumContext.{Matrix, Vector}
 import scotty.quantum.math.Complex
 import scotty.quantum.math.MathUtils._
@@ -26,9 +27,19 @@ object MatrixWrapper {
     identity(matrix.length)
   )
 
+  def isSquare(m: Matrix): Boolean =
+    if (m.length == 0) true
+    else m.length == m(0).length / 2
+
+  def areSameDimension(m1: Matrix, m2: Matrix): Boolean =
+    if (m1.length == 0 && m2.length == 0) true
+    else m1.length == m2.length && m1(0).length == m2(0).length
+
+  def areSameDimension(m: Matrix, v: Vector): Boolean = v.length == v.length
+
   def areEqual (m1: Matrix, m2: Matrix): Boolean = {
-    // require square
-    // require same dimension
+    require(isSquare(m1) && isSquare(m2), ErrorMessage.MatrixNotSquare)
+    require(areSameDimension(m1, m2), ErrorMessage.NotSameDimension)
 
     for (rowIndex <- m1.indices) {
       for (valueIndex <- m1.indices) {
@@ -51,31 +62,31 @@ object MatrixWrapper {
   }
 
   def product(m1: Matrix, m2: Matrix): Matrix = {
-    // require square
-    // require same dimension
+    require(isSquare(m1) && isSquare(m2), ErrorMessage.MatrixNotSquare)
+    require(areSameDimension(m1, m2), ErrorMessage.NotSameDimension)
 
     val result = Array.fill(m1.length)(Array.fill(m1.length * 2)(0d))
     val dimensions = m1.indices
 
     for (rowIndex <- dimensions) {
-      for (i <- dimensions) {
+      for (val1 <- dimensions) {
         var sumR = 0d
         var sumI = 0d
 
-        for (j <- dimensions) {
-          val r1 = m1(rowIndex)(2 * j)
-          val i1 = m1(rowIndex)(2 * j + 1)
-          val r2 = m2(j)(2 * i)
-          val i2 = m2(j)(2 * i + 1)
+        for (val2 <- dimensions) {
+          val r1 = m1(rowIndex)(2 * val2)
+          val i1 = m1(rowIndex)(2 * val2 + 1)
+          val r2 = m2(val2)(2 * val1)
+          val i2 = m2(val2)(2 * val1 + 1)
 
-          val product = Complex.product(r1, i1, r2, i2)
+          val (r, i) = Complex.product(r1, i1, r2, i2)
 
-          sumR += product._1
-          sumI += product._2
+          sumR += r
+          sumI += i
         }
 
-        result(rowIndex)(2 * i) = sumR
-        result(rowIndex)(2 * i + 1) = sumI
+        result(rowIndex)(2 * val1) = sumR
+        result(rowIndex)(2 * val1 + 1) = sumI
       }
     }
 
@@ -83,8 +94,8 @@ object MatrixWrapper {
   }
 
   def product(matrix: Matrix, vector: Vector): Vector = {
-    // require square
-    // require same dimension
+    require(isSquare(matrix), ErrorMessage.MatrixNotSquare)
+    require(areSameDimension(matrix, vector), ErrorMessage.NotSameDimension)
 
     val newVector = Array.fill(vector.length)(0d)
 
@@ -112,7 +123,7 @@ object MatrixWrapper {
   }
 
   def conjugateTranspose(matrix: Matrix): Matrix = {
-    // require square
+    require(isSquare(matrix), ErrorMessage.MatrixNotSquare)
 
     val halfDimension = matrix.length / 2
 

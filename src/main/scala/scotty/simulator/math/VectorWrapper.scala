@@ -1,7 +1,6 @@
 package scotty.simulator.math
 
 import scotty.quantum.math.Complex
-
 import scala.collection.parallel.immutable.ParVector
 import scotty.quantum.QuantumContext.{Matrix, Vector}
 
@@ -21,8 +20,6 @@ case class VectorWrapper(data: Vector) {
 
 object VectorWrapper {
   def tensorProduct(v1: Vector, v2: Vector): Vector = {
-    // require same dimension
-
     val v1Length = v1.length / 2
     val v2Length = v2.length / 2
     val newData = Array.fill(2 * v1Length * v2Length)(0d)
