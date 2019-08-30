@@ -9,15 +9,20 @@ import scotty.simulator.math.Implicits._
 
 class DefGateSpec extends FlatSpec with TestHelpers {
   val twoByTwoMatrix = Array(
-    Array(0, 1),
-    Array(1, 0)
+    Array(0d, 0d, 1d, 0d),
+    Array(1d, 0d, 0d, 0d)
+  )
+
+  val nonUnitaryMatrix = Array(
+    Array(1d, 0d, 0d, 0d),
+    Array(0d, 0d, 2d, 0d)
   )
 
   val fourByFourMatrix = Array(
-    Array(1, 0, 0, 0),
-    Array(0, 1, 0, 0),
-    Array(0, 0, 1, 0),
-    Array(0, 0, 0, 1)
+    Array(1d, 0d, 0d, 0d, 0d, 0d, 0d, 0d),
+    Array(0d, 0d, 1d, 0d, 0d, 0d, 0d, 0d),
+    Array(0d, 0d, 0d, 0d, 1d, 0d, 0d, 0d),
+    Array(0d, 0d, 0d, 0d, 0d, 0d, 1d, 0d)
   )
 
   val rxMatrix = (params: Seq[Double]) => {
@@ -26,7 +31,7 @@ class DefGateSpec extends FlatSpec with TestHelpers {
     Array(
       Array(Complex(Math.cos(theta / 2)), Complex(0, -Math.sin(theta / 2))),
       Array(Complex(0, -Math.sin(theta / 2)), Complex(Math.cos(theta / 2)))
-    )
+    ).toDouble
   }
 
   "Custom gate" should "be able to work with a static matrix" in {
@@ -81,6 +86,12 @@ class DefGateSpec extends FlatSpec with TestHelpers {
   it should "throw IllegalArgumentException if gaps between indexes are not accounted for" in {
     assertThrows[IllegalArgumentException] {
       DefGate(fourByFourMatrix, 1, 3)
+    }
+  }
+
+  it should "throw IllegalArgumentException if the matrix is not unitary" in {
+    assertThrows[IllegalArgumentException] {
+      DefGate(nonUnitaryMatrix, 0)
     }
   }
 }

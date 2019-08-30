@@ -1,11 +1,11 @@
 package scotty
 
 import org.scalactic.{Equality, TolerantNumerics}
-import scotty.quantum.math.Complex.Complex
+import scotty.quantum.math.Complex
 import scotty.simulator.QuantumSimulator
 
 trait TestHelpers {
-  val sim = QuantumSimulator()
+  implicit val sim = QuantumSimulator()
   val quarterTurn = Math.PI / 2
   val thirdTurn = 2 * Math.PI / 3
   val fiftyPercent = Math.sqrt(2) / 2
@@ -21,10 +21,10 @@ trait TestHelpers {
       def areEqual(a: Complex, b: Any): Boolean = {
         b match {
           case bComplex: Complex =>
-            (a.getReal <= bComplex.getReal + tolerance) &&
-              (a.getReal >= bComplex.getReal - tolerance) &&
-              (a.getImaginary <= bComplex.getImaginary + tolerance) &&
-              (a.getImaginary >= bComplex.getImaginary - tolerance)
+            (a.r <= bComplex.r + tolerance) &&
+              (a.r >= bComplex.r - tolerance) &&
+              (a.i <= bComplex.i + tolerance) &&
+              (a.i >= bComplex.i - tolerance)
           case _ => false
         }
       }

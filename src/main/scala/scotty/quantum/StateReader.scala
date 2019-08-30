@@ -4,7 +4,6 @@ import scotty.ErrorMessage
 import scotty.quantum.BlochSphereReader.{BlochSphereData, Coordinates}
 import scotty.quantum.QubitProbabilityReader.QubitData
 import scotty.quantum.StateProbabilityReader.StateData
-import scotty.quantum.math.Complex.Complex
 import scotty.quantum.math.{Complex, MathUtils}
 import scotty.quantum.math.MathUtils._
 import scotty.simulator.QuantumSimulator
@@ -19,11 +18,14 @@ sealed trait StateReader[T] {
 
 case class StateProbabilityReader(state: State) extends StateReader[StateData] {
   def read: Seq[StateData] = state match {
-    case sp: Superposition => sp.vector.zipWithIndex.map(pair => StateData(
-      MathUtils.toBinaryPadded(pair._2, state.qubitCount),
-      pair._1,
-      Math.pow(pair._1.abs, 2)
-    )).toSeq
+    case sp: Superposition => sp.vector
+      .grouped(2)
+      .map(p => Complex(p(0), p(1)))
+      .zipWithIndex.map(pair => StateData(
+        MathUtils.toBinaryPadded(pair._2, state.qubitCount),
+        pair._1,
+        Math.pow(pair._1.abs, 2)
+      )).toSeq
     case c: Collapsed => Seq(StateData(c.toBinaryRegister.values.toSeq, Complex(1), 1))
   }
 
@@ -82,16 +84,17 @@ object QubitProbabilityReader {
   }
 }
 
-case class BlochSphereReader(state: State) extends StateReader[BlochSphereData] {
+case class BlochSphereReader(state: State)(implicit ctx: QuantumContext) extends StateReader[BlochSphereData] {
   require(state.qubitCount == 1, ErrorMessage.BlochSphereQubitCountNotOne)
 
   def read: Seq[BlochSphereData] = state match {
     case sp: Superposition =>
-      val densityMatrix = QuantumSimulator().densityMatrix(Qubit(sp.vector(0), sp.vector(1)))
+      val densityMatrix = ctx.densityMatrix(sp.vector)
 
-      val x = 2 * densityMatrix(0)(1).getReal
-      val y = 2 * densityMatrix(1)(0).getImaginary
-      val z = densityMatrix(0)(0).abs - densityMatrix(1)(1).abs
+      val x = 2 * densityMatrix(0)(2)
+      val y = 2 * densityMatrix(1)(1)
+      val z = Complex.abs(densityMatrix(0)(0), densityMatrix(0)(1)) -
+        Complex.abs(densityMatrix(1)(2), densityMatrix(1)(3))
 
       val theta = Math.acos(z)
       val phi = if (theta == 0 || theta == Math.PI) 0 else Math.acos(x / Math.sin(theta))

@@ -15,7 +15,7 @@ sealed trait Gate extends Op {
 
   def toString(implicit ctx: QuantumContext): String = matrix.toList.map(_.toList.mkString(" ")).mkString("\n")
 
-  def tensorProduct(gate: Gate)(implicit ctx: QuantumContext): TargetGate = ctx.tensorProduct(this, gate)
+//  def tensorProduct(gate: Gate)(implicit ctx: QuantumContext): TargetGate = ctx.tensorProduct(this, gate)
 
   def indexesAreUnique: Boolean = indexes.distinct.size == indexes.size
 
@@ -23,7 +23,7 @@ sealed trait Gate extends Op {
 }
 
 object Gate {
-  type GateGen = Seq[Double] => Matrix
+  type GateGen = Seq[Double] => Array[Array[Double]]
 }
 
 trait TargetGate extends Gate {

@@ -10,6 +10,6 @@ object RX {
     Array(
       Array(Complex(Math.cos(theta / 2)), Complex(0, -Math.sin(theta / 2))),
       Array(Complex(0, -Math.sin(theta / 2)), Complex(Math.cos(theta / 2)))
-    )
+    ).toDouble
   }
 }

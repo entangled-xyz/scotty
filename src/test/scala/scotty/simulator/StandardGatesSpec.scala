@@ -51,7 +51,7 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
       case s: Superposition =>
         assert(StateProbabilityReader(s).read(0).amplitude == Complex(1))
         assert(StateProbabilityReader(s).read(1).amplitude == Complex(0))
-        assert(sim.measure(circuit.register, s).toBinaryRegister.values == Seq(Zero()))
+        assert(sim.measure(circuit.register, s.vector).toBinaryRegister.values == Seq(Zero()))
       case _ =>
     }
   }
@@ -63,7 +63,7 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
       case s: Superposition =>
         assert(StateProbabilityReader(s).read(0).amplitude == Complex(0))
         assert(StateProbabilityReader(s).read(1).amplitude == Complex(1))
-        assert(sim.measure(circuit.register, s).toBinaryRegister.values == Seq(One()))
+        assert(sim.measure(circuit.register, s.vector).toBinaryRegister.values == Seq(One()))
       case _ =>
     }
   }
@@ -75,7 +75,7 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
       case s: Superposition =>
         assert(StateProbabilityReader(s).read(0).amplitude == Complex(0, 0))
         assert(StateProbabilityReader(s).read(1).amplitude == Complex(0, 1))
-        assert(sim.measure(circuit.register, s).toBinaryRegister.values == Seq(One()))
+        assert(sim.measure(circuit.register, s.vector).toBinaryRegister.values == Seq(One()))
       case _ =>
     }
   }
@@ -87,7 +87,7 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
       case s: Superposition =>
         assert(StateProbabilityReader(s).read(0).amplitude == Complex(1, 0))
         assert(StateProbabilityReader(s).read(1).amplitude == Complex(0, 0))
-        assert(sim.measure(circuit.register, s).toBinaryRegister.values == Seq(Zero()))
+        assert(sim.measure(circuit.register, s.vector).toBinaryRegister.values == Seq(Zero()))
       case _ =>
     }
   }
@@ -101,7 +101,7 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
         assert(StateProbabilityReader(s).read(1).amplitude == Complex(1, 0))
         assert(StateProbabilityReader(s).read(2).amplitude == Complex(0, 0))
         assert(StateProbabilityReader(s).read(3).amplitude == Complex(0, 0))
-        assert(sim.measure(circuit.register, s).toBinaryRegister.values == Seq(Zero(), One()))
+        assert(sim.measure(circuit.register, s.vector).toBinaryRegister.values == Seq(Zero(), One()))
       case _ =>
     }
   }
@@ -115,7 +115,7 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
         assert(StateProbabilityReader(s).read(1).amplitude == Complex(0, 0))
         assert(StateProbabilityReader(s).read(2).amplitude == Complex(0, 0))
         assert(StateProbabilityReader(s).read(3).amplitude == Complex(0, 0))
-        assert(sim.measure(circuit.register, s).toBinaryRegister.values == Seq(Zero(), Zero()))
+        assert(sim.measure(circuit.register, s.vector).toBinaryRegister.values == Seq(Zero(), Zero()))
       case _ =>
     }
   }
@@ -127,7 +127,7 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
       case s: Superposition =>
         assert(StateProbabilityReader(s).read(0).amplitude == Complex(0, 0))
         assert(StateProbabilityReader(s).read(1).amplitude === Complex(0, 1))
-        assert(sim.measure(circuit.register, s).toBinaryRegister.values == Seq(One()))
+        assert(sim.measure(circuit.register, s.vector).toBinaryRegister.values == Seq(One()))
       case _ =>
     }
   }
@@ -139,7 +139,7 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
       case s: Superposition =>
         assert(StateProbabilityReader(s).read(0).amplitude == Complex(0, 0))
         assert(StateProbabilityReader(s).read(1).amplitude === Complex(fiftyPercent, fiftyPercent))
-        assert(sim.measure(circuit.register, s).toBinaryRegister.values == Seq(One()))
+        assert(sim.measure(circuit.register, s.vector).toBinaryRegister.values == Seq(One()))
       case _ =>
     }
   }
@@ -151,7 +151,7 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
       case s: Superposition =>
         assert(StateProbabilityReader(s).read(0).amplitude == Complex(0, 0))
         assert(StateProbabilityReader(s).read(1).amplitude === Complex(fiftyPercent, fiftyPercent))
-        assert(sim.measure(circuit.register, s).toBinaryRegister.values == Seq(One()))
+        assert(sim.measure(circuit.register, s.vector).toBinaryRegister.values == Seq(One()))
       case _ =>
     }
   }

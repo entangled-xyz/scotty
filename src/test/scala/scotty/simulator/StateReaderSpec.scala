@@ -2,7 +2,7 @@ package scotty.simulator
 
 import org.scalatest.FlatSpec
 import scotty.TestHelpers
-import scotty.quantum.gate.StandardGate.{H, I, RY, RZ, X}
+import scotty.quantum.gate.StandardGate.{H, I, RX, RY, RZ, X}
 import scotty.quantum.math.Complex
 import scotty.quantum._
 
@@ -34,13 +34,13 @@ class StateReaderSpec extends FlatSpec with TestHelpers {
   }
 
   "BlochSphereReader" should "read correct StateData for an arbitrary superposition" in {
-    val sp = QuantumSimulator().run(Circuit(RY(Math.PI / 4, 0), RZ(Math.PI / 8, 0)))
+    val sp = QuantumSimulator().run(Circuit(RX(Math.PI / 4, 0)))
     val data = BlochSphereReader(sp).read(0)
 
-    assert(data.coordinates.x === 0.65)
-    assert(data.coordinates.y === 0.27)
-    assert(data.coordinates.z === 0.71)
-    assert(data.phi === Math.PI / 8)
+    assert(data.coordinates.x === 0.0)
+    assert(data.coordinates.y === -0.7)
+    assert(data.coordinates.z === 0.7)
+    assert(data.phi === Math.PI / 2)
     assert(data.theta === Math.PI / 4)
   }
 

@@ -1,7 +1,6 @@
 package scotty.quantum
 
 import scotty.quantum.math.Complex
-import scotty.quantum.math.Complex.Complex
 import scotty.{ErrorMessage, Labeled}
 
 sealed trait Bit extends Labeled[String] {
@@ -43,11 +42,15 @@ object Bit {
 }
 
 object One {
+  val doubleValue = Array(0d, 0d, 1d, 0d)
+
   def apply(): One = One(None)
   def apply(label: String): One = One(Some(label))
 }
 
 object Zero {
+  val doubleValue = Array(1d, 0d, 0d, 0d)
+
   def apply(): Zero = Zero(None)
   def apply(label: String): Zero = Zero(Some(label))
 }
