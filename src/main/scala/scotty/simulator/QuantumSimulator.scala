@@ -49,7 +49,7 @@ case class QuantumSimulator(computeParallelism: Int = Config.SimulatorComputePar
 
     val qubitCount = circuit.register.size
     var currentState = registerToState(circuit.register)
-    val steps = circuit.gates.map(g => padGate(g, qubitCount))
+    val steps = circuit.gates.map(g => padGate(g, qubitCount).map(g => g.matrix(this)))
     val rows = ParArray.iterate(0, currentState.length / 2)(i => i + 1)
 
     rows.tasksupport = computeTaskSupport
@@ -61,8 +61,7 @@ case class QuantumSimulator(computeParallelism: Int = Config.SimulatorComputePar
         val binaries = MathUtils.toPaddedBinaryInts(i, qubitCount)
         var offset = 0
 
-        val finalRow = gates.foldLeft(Array.empty[Double])((row, gate) => {
-          val matrix = gate.matrix(this)
+        val finalRow = gates.foldLeft(Array.empty[Double])((row, matrix) => {
           val n = (Math.log(matrix.length) / Math.log(2)).toInt
           val slice = binaries.slice(offset, offset + n)
 
