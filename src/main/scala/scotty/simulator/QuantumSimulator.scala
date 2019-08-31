@@ -48,14 +48,14 @@ case class QuantumSimulator(computeParallelism: Int = Config.SimulatorComputePar
     val shouldMeasure = circuit.ops.exists(_.isInstanceOf[Measure])
 
     val qubitCount = circuit.register.size
-    var state = registerToState(circuit.register)
+    var currentState = registerToState(circuit.register)
     val steps = circuit.gates.map(g => padGate(g, qubitCount))
-    val rows = ParArray.iterate(0, state.length / 2)(i => i + 1)
+    val rows = ParArray.iterate(0, currentState.length / 2)(i => i + 1)
 
     rows.tasksupport = computeTaskSupport
 
     steps.foreach(gates => {
-      val finalState = Array.fill(state.length)(0d)
+      val finalState = Array.fill(currentState.length)(0d)
 
       rows.foreach(i => {
         val binaries = MathUtils.toPaddedBinaryInts(i, qubitCount)
@@ -75,18 +75,20 @@ case class QuantumSimulator(computeParallelism: Int = Config.SimulatorComputePar
         })
 
         for (j <- 0 until (finalRow.length / 2)) {
-          val (r, im) = Complex.product(finalRow(2 * j), finalRow(2 * j + 1), state(2 * j), state(2 * j + 1))
+          val (r, im) = Complex.product(
+            finalRow(2 * j), finalRow(2 * j + 1),
+            currentState(2 * j), currentState(2 * j + 1))
 
           finalState(2 * i) += r
           finalState(2 * i + 1) += im
         }
       })
 
-      state = finalState
+      currentState = finalState
     })
 
-    if (shouldMeasure) measure(circuit.register, state)
-    else Superposition(circuit.register, state)
+    if (shouldMeasure) measure(circuit.register, currentState)
+    else Superposition(circuit.register, currentState)
   }
 
   def runAndMeasure(circuit: Circuit,
