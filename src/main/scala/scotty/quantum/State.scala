@@ -2,7 +2,7 @@ package scotty.quantum
 
 import scotty.quantum.QuantumContext.Vector
 import scotty.quantum.gate.Gate
-import scotty.quantum.math.{Complex, MathUtils}
+import scotty.quantum.math.MathUtils
 
 sealed trait State {
   val qubitCount: Int
@@ -12,13 +12,13 @@ sealed trait State {
 case class Superposition(register: QubitRegister, vector: Vector) extends State {
   lazy val qubitCount: Int = if (vector.length / 2 == 0) 0 else (Math.log10(vector.length / 2) / Math.log10(2)).toInt
 
-//  def applyGate(gate: Gate)(implicit ctx: QuantumContext): Superposition =
-//    if (vector.length == 0) this
-//    else ctx.product(gate, this)
+  def applyGate(gate: Gate)(implicit ctx: QuantumContext): Superposition =
+    if (vector.length == 0) this
+    else ctx.product(register, gate, this)
 
-//  def combine(sp: Superposition)(implicit ctx: QuantumContext): Superposition =
-//    if (vector.length == 0) sp
-//    else ctx.tensorProduct(this, sp)
+  def combine(sp: Superposition)(implicit ctx: QuantumContext): Superposition =
+    if (vector.length == 0) sp
+    else ctx.tensorProduct(register, this, sp)
 
   override def equals(obj: Any): Boolean = obj match {
     case s: Superposition => vector.toSeq == s.vector.toSeq

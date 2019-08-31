@@ -1,12 +1,6 @@
 package scotty.quantum.math
 
-case class Complex(r: Double, i: Double) {
-  def abs: Double = Complex.abs(r, i)
-
-  def *(c: Complex): Complex = Complex(r * c.r - i * c.i, r * c.i + i * c.r)
-
-  def +(c: Complex): Complex = Complex(r + c.r, i + c.i)
-}
+case class Complex(r: Double, i: Double)
 
 object Complex {
   implicit class ComplexToDoubleVector(vs: Array[Complex]) {
@@ -32,9 +26,16 @@ object Complex {
     r1 * i2 + i1 * r2
   )
 
+  def sum(r1: Double, i1: Double, r2: Double, i2: Double): (Double, Double) = (
+    r1 +r2,
+    i1 + i2
+  )
+
   def e(phi: Double): Complex = Complex(Math.cos(phi), Math.sin(phi))
 
   def abs(r: Double, i: Double): Double = Math.sqrt(Math.pow(r, 2) + Math.pow(i, 2))
+
+  def abs(value: Complex): Double = abs(value.r, value.i)
 
   def toString(c: Complex): String = {
     val r = c.r

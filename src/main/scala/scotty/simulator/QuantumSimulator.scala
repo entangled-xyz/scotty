@@ -117,17 +117,11 @@ case class QuantumSimulator(computeParallelism: Int = Config.SimulatorComputePar
     }
   }
 
-//  def tensorProduct(g1: Gate, g2: Gate): TargetGate = RawGate(
-//    (MatrixWrapper(g1.matrix(this)) ⊗ MatrixWrapper.fieldMatrix(g2.matrix(this))).getData
-//  )
-//
-//  def tensorProduct(sp1: Superposition, sp2: Superposition): Superposition = Superposition(
-//    (VectorWrapper(sp1.vector) ⊗ VectorWrapper.fieldVector(sp2.vector)).getData
-//  )
-//
-//  def product(gate: Gate, sp: Superposition): Superposition = Superposition(
-//    (MatrixWrapper(gate.matrix(this)) * VectorWrapper.fieldVector(sp.vector)).getData
-//  )
+  def tensorProduct(register: QubitRegister, sp1: Superposition, sp2: Superposition): Superposition =
+    Superposition(register, VectorWrapper.tensorProduct(sp1.vector, sp2.vector, computeTaskSupport))
+
+  def product(register: QubitRegister, gate: Gate, sp: Superposition): Superposition =
+    Superposition(register, MatrixWrapper.product(gate.matrix(this), sp.vector))
 
   def densityMatrix(vector: Vector): Matrix = VectorWrapper.ketBraOuterProduct(vector)
 

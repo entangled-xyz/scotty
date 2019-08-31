@@ -15,8 +15,6 @@ sealed trait Gate extends Op {
 
   def toString(implicit ctx: QuantumContext): String = matrix.toList.map(_.toList.mkString(" ")).mkString("\n")
 
-//  def tensorProduct(gate: Gate)(implicit ctx: QuantumContext): TargetGate = ctx.tensorProduct(this, gate)
-
   def indexesAreUnique: Boolean = indexes.distinct.size == indexes.size
 
   def indexesAreAsc: Boolean = indexes.length <= 1 || (indexes, indexes.tail).zipped.forall(_ <= _)

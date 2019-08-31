@@ -1,21 +1,16 @@
 package scotty.quantum
 
 import scotty.quantum.QuantumContext._
-import scotty.quantum.gate.{Gate, TargetGate}
-import scotty.quantum.math.Complex
+import scotty.quantum.gate.Gate
 
 trait QuantumContext {
   def run(circuit: Circuit): State
 
   def gateMatrix(gate: Gate): Matrix
 
-//  def tensorProduct(gate1: Gate, gate2: Gate): TargetGate
+  def tensorProduct(register: QubitRegister, sp1: Superposition, sp2: Superposition): Superposition
 
-//  def tensorProduct(sp1: Superposition, sp2: Superposition): Superposition
-
-//  def product(gate: Gate, sp: Superposition): Superposition
-
-//  def outerProduct(sp1: Superposition, sp2: Superposition): Matrix
+  def product(register: QubitRegister, gate: Gate, sp: Superposition): Superposition
 
   def densityMatrix(vector: Vector): Matrix
 

@@ -24,7 +24,8 @@ case class DefGate(matrixGen: GateGen, override val params: Seq[Double], indexes
 }
 
 object DefGate {
-  def apply(matrix: Matrix, indexes: Int*)(implicit ctx: QuantumContext): DefGate = this((_: Seq[Double]) => matrix, Seq(), indexes)
+  def apply(matrix: Matrix, indexes: Int*)
+           (implicit ctx: QuantumContext): DefGate = this((_: Seq[Double]) => matrix, Seq(), indexes)
 
   def apply(matrixGen: GateGen, param: Double, indexes: Int*)(implicit ctx: QuantumContext): DefGate =
     this(matrixGen, Seq(param), indexes)

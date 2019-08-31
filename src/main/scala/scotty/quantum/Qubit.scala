@@ -11,9 +11,9 @@ case class Qubit(a: Complex, b: Complex, label: Option[String]) extends Labeled[
 
   def toHumanString: String = s"Qubit(${Complex.toString(a)}, ${Complex.toString(b)})"
 
-  def probabilityOfZero: Double = Math.pow(a.abs, 2)
+  def probabilityOfZero: Double = Math.pow(Complex.abs(a), 2)
 
-  def probabilityOfOne: Double = Math.pow(b.abs, 2)
+  def probabilityOfOne: Double = Math.pow(Complex.abs(b), 2)
 }
 
 object Qubit {
@@ -29,7 +29,7 @@ object Qubit {
 
   def fiftyFifty: Qubit = this(Complex(1 / Math.sqrt(2.0)), Complex(1 / Math.sqrt(2.0)), None)
 
-  def areAmplitudesValid(q: Qubit): Boolean = MathUtils.isProbabilityValid(q.a.abs, q.b.abs)
+  def areAmplitudesValid(q: Qubit): Boolean = MathUtils.isProbabilityValid(Complex.abs(q.a), Complex.abs(q.b))
 
   def apply(as: Array[Complex]): Qubit = this(as(0), as(1))
 
