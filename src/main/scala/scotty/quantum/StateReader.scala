@@ -21,7 +21,7 @@ case class StateProbabilityReader(state: State) extends StateReader[StateData] {
       .grouped(2)
       .map(p => Complex(p(0), p(1)))
       .zipWithIndex.map(pair => StateData(
-        MathUtils.toBinaryPadded(pair._2, state.qubitCount),
+        MathUtils.toPaddedBinary(pair._2, state.qubitCount),
         pair._1,
         Math.pow(Complex.abs(pair._1), 2)
       )).toSeq

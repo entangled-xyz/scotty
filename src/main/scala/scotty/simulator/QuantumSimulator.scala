@@ -56,16 +56,13 @@ case class QuantumSimulator(computeParallelism: Int = Config.SimulatorComputePar
 
     steps.foreach(gates => {
       rows.foreach(i => {
-        val binaries = MathUtils.toBinaryPadded(i, qubitCount)
+        val binaries = MathUtils.toPaddedBinaryInts(i, qubitCount)
         var offset = 0
 
         val finalRow = gates.foldLeft(Array.empty[Double])((row, gate) => {
           val matrix = gate.matrix(this)
           val n = (Math.log(matrix.length) / Math.log(2)).toInt
-          val slice = binaries.slice(offset, offset + n).map {
-            case _: One => 1
-            case _: Zero => 0
-          }
+          val slice = binaries.slice(offset, offset + n)
 
           val currentRow = matrix(Integer.parseInt(slice.mkString(""), 2))
 
@@ -145,7 +142,7 @@ case class QuantumSimulator(computeParallelism: Int = Config.SimulatorComputePar
     val finalMatrix = MatrixWrapper.identity(Math.pow(2, qubitCount).toInt)
 
     for (i <- finalMatrix.indices) {
-      val binaries = MathUtils.toBinaryPadded(i, qubitCount).toArray
+      val binaries = MathUtils.toPaddedBinary(i, qubitCount).toArray
 
       if (binaries(controlIndex).isInstanceOf[Zero] && binaries(targetIndex) == targetBit) {
         val c = Complex.e(phi)
@@ -186,7 +183,7 @@ case class QuantumSimulator(computeParallelism: Int = Config.SimulatorComputePar
     val finalMatrix = Array.ofDim[Vector](stateCount)
 
     for (i <- 0 until stateCount) {
-      val binaries = MathUtils.toBinaryPadded(i, qubitCount).toArray
+      val binaries = MathUtils.toPaddedBinary(i, qubitCount).toArray
 
       val allControlsTrigger = binaries.zipWithIndex.forall(b => {
         if (normalizedControlIndexes.contains(b._2))
@@ -258,7 +255,7 @@ case class QuantumSimulator(computeParallelism: Int = Config.SimulatorComputePar
     val qubitCount = gate.qubitCount + Math.abs(i1 - i2) - 1
 
     val result = (0 until Math.pow(2, qubitCount).toInt).map(stateIndex => {
-      val binaries = MathUtils.toBinaryPadded(stateIndex, qubitCount).map(_.toBasisState).toArray.toDouble
+      val binaries = MathUtils.toPaddedBinary(stateIndex, qubitCount).map(_.toBasisState).toArray.toDouble
       val s1 = binaries(i1)
       val s2 = binaries(i2)
 

@@ -8,7 +8,7 @@ case class ExperimentResult(trials: List[Collapsed]) {
     val qs = trials(0).qubitCount
 
     val state = (0 until Math.pow(2, qs).toInt)
-      .map(i => BinaryRegister(MathUtils.toBinaryPadded(i, qs): _*))
+      .map(i => BinaryRegister(MathUtils.toPaddedBinary(i, qs): _*))
 
     val results = trials
       .map(t => List.fill(Math.pow(2, qs).toInt)(0).updated(t.index, 1))
