@@ -6,7 +6,6 @@ import scotty.quantum.QubitProbabilityReader.QubitData
 import scotty.quantum.StateProbabilityReader.StateData
 import scotty.quantum.math.{Complex, MathUtils}
 import scotty.quantum.math.MathUtils._
-import scotty.simulator.QuantumSimulator
 
 sealed trait StateReader[T] {
   val state: State
@@ -24,7 +23,7 @@ case class StateProbabilityReader(state: State) extends StateReader[StateData] {
       .zipWithIndex.map(pair => StateData(
         MathUtils.toBinaryPadded(pair._2, state.qubitCount),
         pair._1,
-        Math.pow(pair._1.abs, 2)
+        Math.pow(Complex.abs(pair._1), 2)
       )).toSeq
     case c: Collapsed => Seq(StateData(c.toBinaryRegister.values.toSeq, Complex(1), 1))
   }

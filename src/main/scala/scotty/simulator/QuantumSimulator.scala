@@ -14,7 +14,17 @@ import scala.collection.parallel.immutable.ParVector
 import scala.collection.parallel.mutable.ParArray
 import scala.util.Random
 
-case class QuantumSimulator()(implicit random: Random = new Random) extends QuantumContext {
+case class QuantumSimulator(computeParallelism: Int = Config.SimulatorComputeParallelism,
+                            experimentParallelism: Int = Config.SimulatorExperimentParallelism)
+                           (implicit random: Random = new Random) extends QuantumContext {
+  val computeTaskSupport = new ForkJoinTaskSupport(
+    new java.util.concurrent.ForkJoinPool(computeParallelism)
+  )
+
+  val experimentTaskSupport = new ForkJoinTaskSupport(
+    new java.util.concurrent.ForkJoinPool(computeParallelism)
+  )
+
   def measure(register: QubitRegister, state: Array[Double]): Collapsed = {
     val initialIterator = (0, 0d, None: Option[Int])
     val rnd = random.nextDouble()
@@ -42,6 +52,8 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
     val steps = circuit.gates.map(g => padGate(g, qubitCount))
     val rows = ParArray.iterate(0, state.length / 2)(i => i + 1)
 
+    rows.tasksupport = computeTaskSupport
+
     steps.foreach(gates => {
       val finalState = Array.fill(state.length)(0d)
 
@@ -61,7 +73,7 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
           offset += n
 
           if (row.isEmpty) currentRow
-          else VectorWrapper.tensorProduct(row, currentRow)
+          else VectorWrapper.tensorProduct(row, currentRow, computeTaskSupport)
         })
 
         for (j <- 0 until (finalRow.length / 2)) {
@@ -79,6 +91,15 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
     else Superposition(circuit.register, state)
   }
 
+  def runAndMeasure(circuit: Circuit,
+                    trialsCount: Int): ExperimentResult = {
+    val experiments = ParVector.fill(trialsCount)(0)
+
+    experiments.tasksupport = experimentTaskSupport
+
+    ExperimentResult(experiments.map(_ => runAndMeasure(circuit)).toList)
+  }
+
   def padGate(gate: Gate, qubitCount: Int): Seq[Gate] = {
     val padGate = scotty.quantum.gate.StandardGate.I
     val topPad = (0 until gate.indexes.sortWith(_ < _)(0)).map(i => padGate(i))
@@ -87,38 +108,20 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
     (topPad :+ gate) ++ bottomPad
   }
 
-  def runAndMeasure(circuit: Circuit,
-                    trialsCount: Int,
-                    parallelismLevel: Int = Config.DefaultSimulatorParallelism): ExperimentResult = {
-    val experiments = ParVector.fill(trialsCount)(0)
-
-    experiments.tasksupport = new ForkJoinTaskSupport(
-      new java.util.concurrent.ForkJoinPool(parallelismLevel)
-    )
-
-    ExperimentResult(experiments.map(_ => runAndMeasure(circuit)).toList)
-  }
-
   def registerToState(register: QubitRegister): Array[Double] = {
     if (register.values.isEmpty) Array()
     else {
       register.values
         .map(q => Array(q.a.r, q.a.i, q.b.r, q.b.i))
-        .reduceLeft((state, q) => VectorWrapper.tensorProduct(state, q))
+        .reduceLeft((state, q) => VectorWrapper.tensorProduct(state, q, computeTaskSupport))
     }
   }
 
-//  def tensorProduct(g1: Gate, g2: Gate): TargetGate = RawGate(
-//    (MatrixWrapper(g1.matrix(this)) ⊗ MatrixWrapper.fieldMatrix(g2.matrix(this))).getData
-//  )
-//
-//  def tensorProduct(sp1: Superposition, sp2: Superposition): Superposition = Superposition(
-//    (VectorWrapper(sp1.vector) ⊗ VectorWrapper.fieldVector(sp2.vector)).getData
-//  )
-//
-//  def product(gate: Gate, sp: Superposition): Superposition = Superposition(
-//    (MatrixWrapper(gate.matrix(this)) * VectorWrapper.fieldVector(sp.vector)).getData
-//  )
+  def tensorProduct(register: QubitRegister, sp1: Superposition, sp2: Superposition): Superposition =
+    Superposition(register, VectorWrapper.tensorProduct(sp1.vector, sp2.vector, computeTaskSupport))
+
+  def product(register: QubitRegister, gate: Gate, sp: Superposition): Superposition =
+    Superposition(register, MatrixWrapper.product(gate.matrix(this), sp.vector))
 
   def densityMatrix(vector: Vector): Matrix = VectorWrapper.ketBraOuterProduct(vector)
 
@@ -198,7 +201,9 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
 
         val targetRegister = QubitRegister(filledNtis.map(i => Qubit(binaries(i).toBasisState)): _*)
 
-        val gateTargetProduct = MatrixWrapper.product(gate.finalTarget.matrix(this), registerToState(targetRegister))
+        val gateTargetProduct = MatrixWrapper.product(
+          gate.finalTarget.matrix(this),
+          registerToState(targetRegister))
 
         type LabeledVector = (Vector, Option[String])
 
@@ -213,9 +218,11 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
             case (acc, item) => acc :+ item
           }
           .map(_._1)
-          .reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2))
+          .reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2, computeTaskSupport))
       } else {
-        binaries.map(b => b.toBasisState.toDouble).reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2))
+        binaries
+          .map(b => b.toBasisState.toDouble)
+          .reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2, computeTaskSupport))
       }
     }
 
@@ -263,7 +270,7 @@ case class QuantumSimulator()(implicit random: Random = new Random) extends Quan
         binaries(i2) = i1Val
       }
 
-      binaries.reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2))
+      binaries.reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2, computeTaskSupport))
     }).toArray
 
     result

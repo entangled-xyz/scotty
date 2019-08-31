@@ -4,30 +4,31 @@ import scotty.quantum.math.Complex
 
 import scala.collection.parallel.immutable.ParVector
 import scotty.quantum.QuantumContext.{Matrix, Vector}
+import scala.collection.parallel.TaskSupport
 
 /**
-  * The <code>Vector</code> class contains a representation of a complex number vector.
+  * The <code>Vector</code> object contains pure vector methods from linear algebra.
+  *
   * Complex numbers are represented with two consecutive <code>Double</code>s. All vector
   * data is represented in a single array.
-  *
-  * @param data Raw data representing all complex numbers in a flat array of <code>Double</code>s.
   */
-case class VectorWrapper(data: Vector) {
-  def size: Int = data.length / 2
-
-  def tensorProduct(vector: VectorWrapper): VectorWrapper =
-    VectorWrapper(VectorWrapper.tensorProduct(data, vector.data))
-}
-
 object VectorWrapper {
-  def tensorProduct(v1: Vector, v2: Vector): Vector = {
-    // require same dimension
-
+  /**
+    * Returns a vector with the tensor product of two input vectors.
+    *
+    * @param v1 Array of doubles.
+    * @param v2 Array of doubles.
+    * @return Array of doubles.
+    */
+  def tensorProduct(v1: Vector, v2: Vector, taskSupport: TaskSupport): Vector = {
     val v1Length = v1.length / 2
     val v2Length = v2.length / 2
     val newData = Array.fill(2 * v1Length * v2Length)(0d)
+    val runs = ParVector.iterate(0, v1.length / 2)(i => i + 1)
 
-    ParVector.iterate(0, v1.length / 2)(i => i + 1).foreach(c1 => {
+    runs.tasksupport = taskSupport
+
+    runs.foreach(c1 => {
       for (c2 <- 0 until (v2.length / 2)) {
         val (r, i) = Complex.product(v1(2 * c1), v1(2 * c1 + 1), v2(2 * c2), v2(2 * c2 + 1))
 
@@ -39,14 +40,23 @@ object VectorWrapper {
     newData
   }
 
+  /**
+    * Return the complex conjugate of a vector.
+    *
+    * @param v Array of doubles.
+    * @return Array of doubles.
+    */
   def conjugate(v: Vector): Vector = {
-    for (s <- 0 until v.length / 2) {
-      v(2 * s + 1) = -v(2 * s + 1)
-    }
-
+    for (s <- 0 until v.length / 2) v(2 * s + 1) = -v(2 * s + 1)
     v
   }
 
+  /**
+    * Returns an outer product of the column vector and its column representation.
+    *
+    * @param v Array of doubles.
+    * @return Array of arrays of doubles.
+    */
   def ketBraOuterProduct(v: Vector): Matrix = {
     val newData = Array.fill(v.length)(Array.fill(2 * v.length)(0d))
 
