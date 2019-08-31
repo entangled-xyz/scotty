@@ -1,5 +1,6 @@
 package scotty
 
 object Config {
- val DefaultSimulatorParallelism = 7
+ val SimulatorComputeParallelism = 7
+ val SimulatorExperimentParallelism = 7
 }

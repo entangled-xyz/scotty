@@ -30,7 +30,7 @@ trait QuantumContext {
     }
   }
 
-  def runAndMeasure(circuit: Circuit, trialsCount: Int, parallelismLevel: Int): ExperimentResult
+  def runAndMeasure(circuit: Circuit, trialsCount: Int): ExperimentResult
 }
 
 object QuantumContext {
