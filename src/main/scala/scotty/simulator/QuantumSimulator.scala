@@ -56,17 +56,18 @@ case class QuantumSimulator(computeParallelism: Int = Config.SimulatorComputePar
 
     steps.foreach(gates => {
       rows.foreach(i => {
-        val bs = MathUtils.toBinaryPadded(i, qubitCount)
+        val binaries = MathUtils.toBinaryPadded(i, qubitCount)
         var offset = 0
 
         val finalRow = gates.foldLeft(Array.empty[Double])((row, gate) => {
-          val n = (Math.log(gate.matrix(this).length) / Math.log(2)).toInt
-          val slice = bs.slice(offset, offset + n).map {
+          val matrix = gate.matrix(this)
+          val n = (Math.log(matrix.length) / Math.log(2)).toInt
+          val slice = binaries.slice(offset, offset + n).map {
             case _: One => 1
             case _: Zero => 0
           }
 
-          val currentRow = gate.matrix(this)(Integer.parseInt(slice.mkString(""), 2))
+          val currentRow = matrix(Integer.parseInt(slice.mkString(""), 2))
 
           offset += n
 
