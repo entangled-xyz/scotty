@@ -1,14 +1,16 @@
 package scotty.quantum.math
 
+import scotty.quantum.QuantumContext.{Matrix, Vector}
+
 case class Complex(r: Double, i: Double)
 
 object Complex {
   implicit class ComplexToDoubleVector(vs: Array[Complex]) {
-    def toDouble: Array[Double] = vs.map(v => Array(v.r, v.i)).flatten
+    def toDouble: Vector = vs.map(v => Array(v.r, v.i)).flatten
   }
 
   implicit class ComplexToDoubleMatrix(vs: Array[Array[Complex]]) {
-    def toDouble: Array[Array[Double]] = vs.map(r => r.map(v => Array(v.r, v.i)).flatten)
+    def toDouble: Matrix = vs.map(r => r.map(v => Array(v.r, v.i)).flatten)
   }
 
   implicit class ComplexToDoubleVectorList(vs: List[Complex]) {

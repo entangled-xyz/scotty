@@ -5,7 +5,6 @@ import scotty.TestHelpers
 import scotty.quantum._
 import scotty.quantum.gate.DefGate
 import scotty.quantum.math.Complex
-import scotty.simulator.math.Implicits._
 
 class DefGateSpec extends FlatSpec with TestHelpers {
   val twoByTwoMatrix = Array(
