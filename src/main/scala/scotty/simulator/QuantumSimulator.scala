@@ -45,8 +45,7 @@ case class QuantumSimulator(computeParallelism: Int = Config.SimulatorComputePar
   }
 
   def run(circuit: Circuit): State = {
-    val shouldMeasure = circuit.ops.exists(_.isInstanceOf[Measure])
-
+    val shouldMeasure = circuit.flattenedOps.exists(_.isInstanceOf[Measure])
     val qubitCount = circuit.register.size
     var currentState = registerToState(circuit.register)
     val steps = circuit.gates.map(g => padGate(g, qubitCount).map(g => g.matrix(this)))
