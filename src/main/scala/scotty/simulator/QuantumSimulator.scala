@@ -1,7 +1,6 @@
 package scotty.simulator
 
 import java.util
-import scotty.Config
 import scotty.quantum.QuantumContext._
 import scotty.quantum.gate.Gate.GateGen
 import scotty.quantum.gate.StandardGate.{CPHASE00, CPHASE01, ISWAP, PSWAP}
@@ -9,21 +8,14 @@ import scotty.quantum.gate._
 import scotty.quantum.math.{Complex, MathUtils}
 import scotty.quantum.{Superposition, _}
 import scotty.simulator.math.{MatrixWrapper, VectorWrapper}
-import scala.collection.parallel.ForkJoinTaskSupport
+import scala.collection.parallel.ExecutionContextTaskSupport
 import scala.collection.parallel.immutable.ParVector
 import scala.collection.parallel.mutable.ParArray
+import scala.concurrent.ExecutionContext
 import scala.util.Random
 
-case class QuantumSimulator(computeParallelism: Int = Config.SimulatorComputeParallelism,
-                            experimentParallelism: Int = Config.SimulatorExperimentParallelism)
-                           (implicit random: Random = new Random) extends QuantumContext {
-  val computeTaskSupport = new ForkJoinTaskSupport(
-    new java.util.concurrent.ForkJoinPool(computeParallelism)
-  )
-
-  val experimentTaskSupport = new ForkJoinTaskSupport(
-    new java.util.concurrent.ForkJoinPool(computeParallelism)
-  )
+case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extends QuantumContext {
+  val taskSupport: Option[ExecutionContextTaskSupport] = ec.map(new ExecutionContextTaskSupport(_))
 
   def measure(register: QubitRegister, state: Array[Double]): Collapsed = {
     val initialIterator = (0, 0d, None: Option[Int])
@@ -51,7 +43,7 @@ case class QuantumSimulator(computeParallelism: Int = Config.SimulatorComputePar
     val steps = circuit.gates.map(g => padGate(g, qubitCount).map(g => g.matrix(this)))
     val rows = ParArray.iterate(0, currentState.length / 2)(i => i + 1)
 
-    rows.tasksupport = computeTaskSupport
+    taskSupport.foreach(rows.tasksupport = _)
 
     steps.foreach(gates => {
       val finalState = Array.fill(currentState.length)(0d)
@@ -69,7 +61,7 @@ case class QuantumSimulator(computeParallelism: Int = Config.SimulatorComputePar
           offset += n
 
           if (row.isEmpty) currentRow
-          else VectorWrapper.tensorProduct(row, currentRow, computeTaskSupport)
+          else VectorWrapper.tensorProduct(row, currentRow, taskSupport)
         })
 
         for (j <- 0 until (finalRow.length / 2)) {
@@ -93,7 +85,7 @@ case class QuantumSimulator(computeParallelism: Int = Config.SimulatorComputePar
                     trialsCount: Int): ExperimentResult = {
     val experiments = ParVector.fill(trialsCount)(0)
 
-    experiments.tasksupport = experimentTaskSupport
+    taskSupport.foreach(experiments.tasksupport = _)
 
     ExperimentResult(experiments.map(_ => runAndMeasure(circuit)).toList)
   }
@@ -111,12 +103,12 @@ case class QuantumSimulator(computeParallelism: Int = Config.SimulatorComputePar
     else {
       register.values
         .map(q => Array(q.a.r, q.a.i, q.b.r, q.b.i))
-        .reduceLeft((state, q) => VectorWrapper.tensorProduct(state, q, computeTaskSupport))
+        .reduceLeft((state, q) => VectorWrapper.tensorProduct(state, q, taskSupport))
     }
   }
 
   def tensorProduct(register: QubitRegister, sp1: Superposition, sp2: Superposition): Superposition =
-    Superposition(register, VectorWrapper.tensorProduct(sp1.vector, sp2.vector, computeTaskSupport))
+    Superposition(register, VectorWrapper.tensorProduct(sp1.vector, sp2.vector, taskSupport))
 
   def product(register: QubitRegister, gate: Gate, sp: Superposition): Superposition =
     Superposition(register, MatrixWrapper.product(gate.matrix(this), sp.vector))
@@ -216,11 +208,11 @@ case class QuantumSimulator(computeParallelism: Int = Config.SimulatorComputePar
             case (acc, item) => acc :+ item
           }
           .map(_._1)
-          .reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2, computeTaskSupport))
+          .reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2, taskSupport))
       } else {
         binaries
           .map(b => b.toBasisState.toDouble)
-          .reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2, computeTaskSupport))
+          .reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2, taskSupport))
       }
     }
 
@@ -268,7 +260,7 @@ case class QuantumSimulator(computeParallelism: Int = Config.SimulatorComputePar
         binaries(i2) = i1Val
       }
 
-      binaries.reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2, computeTaskSupport))
+      binaries.reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2, taskSupport))
     }).toArray
 
     result
@@ -292,4 +284,10 @@ object QuantumSimulator {
     "RY" -> RY.matrix,
     "RZ" -> RZ.matrix
   )
+
+  def apply(): QuantumSimulator = QuantumSimulator(None, new Random())
+
+  def apply(ec: ExecutionContext, random: Random): QuantumSimulator = QuantumSimulator(Some(ec), random)
+
+  def apply(ec: ExecutionContext): QuantumSimulator = QuantumSimulator(Some(ec), new Random)
 }
