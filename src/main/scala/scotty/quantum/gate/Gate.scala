@@ -21,7 +21,7 @@ sealed trait Gate extends Op {
 }
 
 object Gate {
-  type GateGen = Seq[Double] => Array[Array[Double]]
+  type GateGen = Seq[Double] => Matrix
 }
 
 trait TargetGate extends Gate {

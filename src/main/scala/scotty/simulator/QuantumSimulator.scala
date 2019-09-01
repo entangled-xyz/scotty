@@ -17,7 +17,7 @@ import scala.util.Random
 case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extends QuantumContext {
   val taskSupport: Option[ExecutionContextTaskSupport] = ec.map(new ExecutionContextTaskSupport(_))
 
-  def measure(register: QubitRegister, state: Array[Double]): Collapsed = {
+  def measure(register: QubitRegister, state: Vector): Collapsed = {
     val initialIterator = (0, 0d, None: Option[Int])
     val rnd = random.nextDouble()
 
@@ -98,7 +98,7 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
     (topPad :+ gate) ++ bottomPad
   }
 
-  def registerToState(register: QubitRegister): Array[Double] = {
+  def registerToState(register: QubitRegister): Vector = {
     if (register.values.isEmpty) Array()
     else {
       register.values
@@ -117,7 +117,7 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
 
   def isUnitary(g: Gate): Boolean = MatrixWrapper.isUnitary(g.matrix(this))
 
-  def gateMatrix(gate: Gate): Array[Array[Double]] = gate match {
+  def gateMatrix(gate: Gate): Matrix = gate match {
     case swap: SwapGate => swapMatrix(swap)
     case g: CPHASE00 => cphase0Matrix(g, g.phi, Zero())
     case g: CPHASE01 => cphase0Matrix(g, g.phi, One())
@@ -126,7 +126,7 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
     case target: TargetGate => target.customMatrix.getOrElse(targetMatrix(target))
   }
 
-  def cphase0Matrix(gate: ControlGate, phi: Double, targetBit: Bit): Array[Array[Double]] = {
+  def cphase0Matrix(gate: ControlGate, phi: Double, targetBit: Bit): Matrix = {
     val minIndex = gate.indexes.min
     val controlIndex = gate.controlIndex - minIndex
     val targetIndex = gate.targetIndexes(0) - minIndex
@@ -165,7 +165,7 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
     * @param gate control gate that this method generates a matrix for
     * @return final matrix representing the control gate acting on all involved qubits
     */
-  def controlMatrix(gate: ControlGate): Array[Array[Double]] = {
+  def controlMatrix(gate: ControlGate): Matrix = {
     val minIndex = gate.indexes.min
 
     val normalizedControlIndexes = gate.controlIndexes.map(_ - minIndex)
@@ -230,11 +230,11 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
   def targetMatrix(targetGate: Gate): Matrix =
     QuantumSimulator.singleQubitGateGens(targetGate.name).apply(targetGate.params)
 
-  def swapMatrix(gate: SwapGate): Array[Array[Double]] = {
-    val equal = (a: Array[Double], b: Array[Double]) => util.Arrays.equals(a, b)
-    val notEqual = (a: Array[Double], b: Array[Double]) => !equal(a, b)
+  def swapMatrix(gate: SwapGate): Matrix = {
+    val equal = (a: Vector, b: Vector) => util.Arrays.equals(a, b)
+    val notEqual = (a: Vector, b: Vector) => !equal(a, b)
 
-    def phase(s: Array[Double]) = {
+    def phase(s: Vector) = {
       if (equal(s, One.doubleValue)) gate match {
         case _: ISWAP => Array(Complex(0), Complex(0, 1)).toDouble
         case g: PSWAP => Array(Complex(0), Complex(Math.cos(g.phi), Math.sin(g.phi))).toDouble

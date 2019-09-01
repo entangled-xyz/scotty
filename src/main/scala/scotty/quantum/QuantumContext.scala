@@ -16,7 +16,7 @@ trait QuantumContext {
 
   def run(circuit: Circuit): State
 
-  def measure(register: QubitRegister, state: Array[Double]): Collapsed
+  def measure(register: QubitRegister, state: Vector): Collapsed
 
   def runAndMeasure(circuit: Circuit): Collapsed = {
     run(circuit) match {
