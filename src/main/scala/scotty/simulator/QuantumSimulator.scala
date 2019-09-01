@@ -287,7 +287,9 @@ object QuantumSimulator {
 
   def apply(): QuantumSimulator = QuantumSimulator(None, new Random())
 
-  def apply(ec: ExecutionContext, random: Random): QuantumSimulator = QuantumSimulator(Some(ec), random)
+  def apply(random: Random): QuantumSimulator = QuantumSimulator(None, random)
 
   def apply(ec: ExecutionContext): QuantumSimulator = QuantumSimulator(Some(ec), new Random)
+
+  def apply(ec: ExecutionContext, random: Random): QuantumSimulator = QuantumSimulator(Some(ec), random)
 }
