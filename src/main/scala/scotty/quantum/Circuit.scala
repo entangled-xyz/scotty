@@ -16,6 +16,11 @@ case class Circuit(register: QubitRegister, ops: Op*) {
 
   def isValid: Boolean = register.size >= Circuit.qubitCountFromOps(ops.toSeq)
 
+  def flattenedOps: Seq[Op] = ops.collect {
+    case cc: CircuitConnector => cc.circuit.flattenedOps
+    case op: Op => Seq(op)
+  }.flatten.toSeq
+
   def gates: Seq[Gate] = ops.collect {
     case g: Gate => Seq(g)
     case cc: CircuitConnector => cc.circuit.gates

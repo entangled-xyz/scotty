@@ -34,11 +34,15 @@ object MathUtils {
     binary(Seq(), n)
   }
 
-  def toBinaryPadded(n: Int, qubitCount: Int): List[Bit] = {
+  def bitsToInts(bits: Seq[Bit]): List[Int] = bits.map(_.toInt).toList
+
+  def toPaddedBinary(n: Int, qubitCount: Int): List[Bit] = {
     val bits = n.toBinary
 
     List.fill(qubitCount - bits.length)(Zero()) ++ bits
   }
+
+  def toPaddedBinaryInts(n: Int, qubitCount: Int): List[Int] = bitsToInts(toPaddedBinary(n, qubitCount))
 
   def isProbabilityValid(a: Double, b: Double): Boolean = {
     val sumOfSquares = Math.pow(a, 2) + Math.pow(b, 2)

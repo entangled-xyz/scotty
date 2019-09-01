@@ -20,13 +20,13 @@ object VectorWrapper {
     * @param v2 Array of doubles.
     * @return Array of doubles.
     */
-  def tensorProduct(v1: Vector, v2: Vector, taskSupport: TaskSupport): Vector = {
+  def tensorProduct(v1: Vector, v2: Vector, taskSupport: Option[TaskSupport]): Vector = {
     val v1Length = v1.length / 2
     val v2Length = v2.length / 2
     val newData = Array.fill(2 * v1Length * v2Length)(0d)
     val runs = ParVector.iterate(0, v1.length / 2)(i => i + 1)
 
-    runs.tasksupport = taskSupport
+    taskSupport.foreach(runs.tasksupport = _)
 
     runs.foreach(c1 => {
       for (c2 <- 0 until (v2.length / 2)) {
