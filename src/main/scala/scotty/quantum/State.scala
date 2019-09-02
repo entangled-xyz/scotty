@@ -20,11 +20,6 @@ case class Superposition(register: QubitRegister, vector: Vector) extends State 
     if (vector.length == 0) sp
     else ctx.tensorProduct(register, this, sp)
 
-  override def equals(obj: Any): Boolean = obj match {
-    case s: Superposition => vector.toSeq == s.vector.toSeq
-    case _ => super.equals(obj)
-  }
-
   override def toString: String = s"Superposition(${vector.toList})"
 }
 
