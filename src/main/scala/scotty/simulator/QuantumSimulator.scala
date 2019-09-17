@@ -41,14 +41,14 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
     val qubitCount = circuit.register.size
     var currentState = registerToState(circuit.register)
     val steps = circuit.gates.map(g => padGate(g, qubitCount).map(g => g.matrix(this)))
-    val rows = ParArray.iterate(0, currentState.length / 2)(i => i + 1)
+    val rowIndices = ParArray.iterate(0, currentState.length / 2)(i => i + 1)
 
-    taskSupport.foreach(rows.tasksupport = _)
+    taskSupport.foreach(rowIndices.tasksupport = _)
 
     steps.foreach(gates => {
       val finalState = Array.fill(currentState.length)(0d)
 
-      rows.foreach(i => {
+      rowIndices.foreach(i => {
         val binaries = MathUtils.toPaddedBinaryInts(i, qubitCount)
         var offset = 0
 
