@@ -35,5 +35,10 @@ object Qubit {
 
   def apply(a: Complex, b: Complex): Qubit = this(a, b, None)
 
+  def apply(bit: Bit): Qubit = bit match {
+    case _: Zero => Qubit.zero
+    case _: One => Qubit.one
+  }
+
   def apply(a: Complex, b: Complex, label: String): Qubit = this(a, b, Some(label))
 }

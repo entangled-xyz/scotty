@@ -22,11 +22,11 @@ class BitSpec extends FlatSpec {
   }
 
   it should "convert to basis state [0, 1] for One()" in {
-    assert(One().toBasisState sameElements Array(Complex(0), Complex(1)))
+    assert(One().toComplexArray sameElements Array(Complex(0), Complex(1)))
   }
 
   it should "convert to basis state [1, 0] for Zero()" in {
-    assert(Zero().toBasisState sameElements Array(Complex(1), Complex(0)))
+    assert(Zero().toComplexArray sameElements Array(Complex(1), Complex(0)))
   }
 
   it should "throw IllegalArgumentException if ints are neither zero or one" in {

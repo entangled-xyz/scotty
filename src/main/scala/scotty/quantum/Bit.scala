@@ -4,9 +4,14 @@ import scotty.quantum.math.Complex
 import scotty.{ErrorMessage, Labeled}
 
 sealed trait Bit extends Labeled[String] {
-  def toBasisState: Array[Complex] = this match {
+  def toComplexArray: Array[Complex] = this match {
     case _: One => Array(Complex(0), Complex(1))
     case _: Zero => Array(Complex(1), Complex(0))
+  }
+
+  def toDoubleArray: Array[Double] = this match {
+    case _: One => Array(0d, 0d, 1d, 0d)
+    case _: Zero => Array(1d, 0d, 0d, 0d)
   }
 
   def toInt: Int = this match {
