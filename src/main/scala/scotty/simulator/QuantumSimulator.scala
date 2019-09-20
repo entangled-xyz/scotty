@@ -87,7 +87,7 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
 
     taskSupport.foreach(experiments.tasksupport = _)
 
-    ExperimentResult(experiments.map(_ => runAndMeasure(circuit)).toList)
+    ExperimentResult(experiments.map(_ => super.runAndMeasure(circuit)).toList)
   }
 
   def padGate(gate: Gate, qubitCount: Int): Seq[Gate] = {
