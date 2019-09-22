@@ -20,7 +20,7 @@ object VectorWrapper {
   def tensorProduct(v1: Vector, v2: Vector): Vector = {
     val v1Length = v1.length / 2
     val v2Length = v2.length / 2
-    val newData = Array.fill(2 * v1Length * v2Length)(0d)
+    val newData = Array.fill(2 * v1Length * v2Length)(0f)
 
     for (c1 <- 0 until v1Length) {
       for (c2 <- 0 until v2Length) {
@@ -52,7 +52,7 @@ object VectorWrapper {
     * @return Array of arrays of doubles.
     */
   def ketBraOuterProduct(v: Vector): Matrix = {
-    val newData = Array.fill(v.length)(Array.fill(2 * v.length)(0d))
+    val newData = Array.fill(v.length)(Array.fill(2 * v.length)(0f))
 
     for (v1Index <- 0 until v.length / 2) {
       for (v2Index <- 0 until v.length / 2) {

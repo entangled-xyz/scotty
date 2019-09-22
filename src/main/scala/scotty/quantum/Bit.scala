@@ -9,9 +9,9 @@ sealed trait Bit extends Labeled[String] {
     case _: Zero => Array(Complex(1), Complex(0))
   }
 
-  def toDoubleArray: Array[Double] = this match {
-    case _: One => Array(0d, 0d, 1d, 0d)
-    case _: Zero => Array(1d, 0d, 0d, 0d)
+  def toFloatArray: Array[Float] = this match {
+    case _: One => Array(0f, 0f, 1f, 0f)
+    case _: Zero => Array(1f, 0f, 0f, 0f)
   }
 
   def toInt: Int = this match {
@@ -47,14 +47,14 @@ object Bit {
 }
 
 object One {
-  val doubleValue = Array(0d, 0d, 1d, 0d)
+  val floatValue = Array(0f, 0f, 1f, 0f)
 
   def apply(): One = One(None)
   def apply(label: String): One = One(Some(label))
 }
 
 object Zero {
-  val doubleValue = Array(1d, 0d, 0d, 0d)
+  val floatValue = Array(1f, 0f, 0f, 0f)
 
   def apply(): Zero = Zero(None)
   def apply(label: String): Zero = Zero(Some(label))

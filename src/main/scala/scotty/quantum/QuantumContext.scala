@@ -29,8 +29,8 @@ trait QuantumContext {
 }
 
 object QuantumContext {
-  type Vector = Array[Double]
-  type Matrix = Array[Array[Double]]
+  type Vector = Array[Float]
+  type Matrix = Array[Array[Float]]
 
   case class QuantumException(message: String) extends Exception(message)
 }

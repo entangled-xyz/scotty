@@ -4,7 +4,7 @@ import scotty.quantum.QuantumContext.Matrix
 
 object I {
   def matrix(params: Seq[Double]): Matrix = Array(
-    Array(1, 0, 0, 0),
-    Array(0, 0, 1, 0)
+    Array(1f, 0f, 0f, 0f),
+    Array(0f, 0f, 1f, 0f)
   )
 }

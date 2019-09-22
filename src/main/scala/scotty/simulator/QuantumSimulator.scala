@@ -46,13 +46,13 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
     taskSupport.foreach(parIndices.tasksupport = _)
 
     steps.foreach(gates => {
-      val finalState = Array.fill(currentState.length)(0d)
+      val finalState = Array.fill(currentState.length)(0f)
 
       parIndices.foreach(i => {
         val binaries = MathUtils.toPaddedBinaryInts(i, qubitCount)
         var offset = 0
 
-        val finalRow = gates.foldLeft(Array.empty[Double])((row, matrix) => {
+        val finalRow = gates.foldLeft(Array.empty[Float])((row, matrix) => {
           val n = (Math.log(matrix.length) / Math.log(2)).toInt
           val slice = binaries.slice(offset, offset + n)
 
@@ -201,7 +201,7 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
           .zipWithIndex
           .map {
             case (_, index) if filledNtis.contains(index) => gateTargetProduct -> Some("target")
-            case (binary, _) => binary.toDoubleArray -> None
+            case (binary, _) => binary.toFloatArray -> None
           }
           .foldLeft(Seq[LabeledVector]()) {
             case (acc, item) if item._2.contains("target") && acc.exists(_._2.contains("target")) => acc
@@ -211,7 +211,7 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
           .reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2))
       } else {
         binaries
-          .map(b => b.toDoubleArray)
+          .map(b => b.toFloatArray)
           .reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2))
       }
     }
@@ -235,9 +235,9 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
     val notEqual = (a: Vector, b: Vector) => !equal(a, b)
 
     def phase(s: Vector) = {
-      if (equal(s, One.doubleValue)) gate match {
-        case _: ISWAP => Array(Complex(0), Complex(0, 1)).toDouble
-        case g: PSWAP => Array(Complex(0), Complex(Math.cos(g.phi), Math.sin(g.phi))).toDouble
+      if (equal(s, One.floatValue)) gate match {
+        case _: ISWAP => Array(Complex(0), Complex(0, 1)).toFloat
+        case g: PSWAP => Array(Complex(0), Complex(Math.cos(g.phi), Math.sin(g.phi))).toFloat
         case _ => s
       } else s
     }
@@ -249,11 +249,11 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
     val qubitCount = gate.qubitCount + Math.abs(i1 - i2) - 1
 
     val result = (0 until Math.pow(2, qubitCount).toInt).map(stateIndex => {
-      val binaries = MathUtils.toPaddedBinary(stateIndex, qubitCount).map(_.toDoubleArray).toArray
+      val binaries = MathUtils.toPaddedBinary(stateIndex, qubitCount).map(_.toFloatArray).toArray
       val s1 = binaries(i1)
       val s2 = binaries(i2)
 
-      if (notEqual(s1, s2) || notEqual(s1, Zero.doubleValue) && notEqual(s2, One.doubleValue)) {
+      if (notEqual(s1, s2) || notEqual(s1, Zero.floatValue) && notEqual(s2, One.floatValue)) {
         val i1Val = phase(s1)
 
         binaries(i1) = phase(s2)

@@ -80,10 +80,10 @@ object MatrixWrapper {
     * @return Array of arrays of doubles.
     */
   def identity(dimension: Int): Matrix = {
-    val data = Array.fill(dimension)(Array.fill(dimension * 2)(0d))
+    val data = Array.fill(dimension)(Array.fill(dimension * 2)(0f))
 
     for (i <- 0 until dimension) {
-      data(i)(i * 2) = 1d
+      data(i)(i * 2) = 1f
     }
 
     data
@@ -101,13 +101,13 @@ object MatrixWrapper {
     require(isSquare(m1) && isSquare(m2), ErrorMessage.MatrixNotSquare)
     require(areSameDimension(m1, m2), ErrorMessage.NotSameDimension)
 
-    val result = Array.fill(m1.length)(Array.fill(m1.length * 2)(0d))
+    val result = Array.fill(m1.length)(Array.fill(m1.length * 2)(0f))
     val dimensions = m1.indices
 
     for (rowIndex <- dimensions) {
       for (val1 <- dimensions) {
-        var sumR = 0d
-        var sumI = 0d
+        var sumR = 0f
+        var sumI = 0f
 
         for (val2 <- dimensions) {
           val r1 = m1(rowIndex)(2 * val2)
@@ -141,10 +141,10 @@ object MatrixWrapper {
     require(isSquare(matrix), ErrorMessage.MatrixNotSquare)
     require(areSameDimension(matrix, vector), ErrorMessage.NotSameDimension)
 
-    val newVector = Array.fill(vector.length)(0d)
+    val newVector = Array.fill(vector.length)(0f)
 
     for (rowIndex <- matrix.indices) {
-      val rowValue = Array(0d, 0d)
+      val rowValue = Array(0f, 0f)
 
       for (valueIndex <- matrix.indices) {
         val doubleValueIndex = 2 * valueIndex

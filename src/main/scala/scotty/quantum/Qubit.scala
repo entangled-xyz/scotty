@@ -9,7 +9,7 @@ case class Qubit(a: Complex, b: Complex, label: Option[String]) extends Labeled[
 
   def toBasisState: Vector = Array(a.r, a.i, b.r, b.i)
 
-  def toHumanString: String = s"Qubit(${Complex.toString(a)}, ${Complex.toString(b)})"
+  def toHumanString: String = s"Qubit(${a.toString}, ${b.toString})"
 
   def probabilityOfZero: Double = Math.pow(Complex.abs(a), 2)
 

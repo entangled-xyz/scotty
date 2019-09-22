@@ -25,7 +25,7 @@ case class StateProbabilityReader(state: State) extends StateReader[StateData] {
         pair._1,
         Math.pow(Complex.abs(pair._1), 2)
       )).toSeq
-    case c: Collapsed => Seq(StateData(c.toBinaryRegister.values.toSeq, Complex(1), 1))
+    case c: Collapsed => Seq(StateData(c.toBinaryRegister.values, Complex(1), 1))
   }
 
   override def toString: String = read
