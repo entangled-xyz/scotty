@@ -10,6 +10,6 @@ object PHASE0 {
     Array(
       Array(Complex.e(phi), Complex(0)),
       Array(Complex(0), Complex(1))
-    ).toDouble
+    ).toFloat
   }
 }

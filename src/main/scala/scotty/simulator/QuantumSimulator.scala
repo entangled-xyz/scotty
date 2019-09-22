@@ -41,18 +41,18 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
     val qubitCount = circuit.register.size
     var currentState = registerToState(circuit.register)
     val steps = circuit.gates.map(g => padGate(g, qubitCount).map(g => g.matrix(this)))
-    val rows = ParArray.iterate(0, currentState.length / 2)(i => i + 1)
+    val parIndices = ParArray.iterate(0, currentState.length / 2)(i => i + 1)
 
-    taskSupport.foreach(rows.tasksupport = _)
+    taskSupport.foreach(parIndices.tasksupport = _)
 
     steps.foreach(gates => {
-      val finalState = Array.fill(currentState.length)(0d)
+      val finalState = Array.fill(currentState.length)(0f)
 
-      rows.foreach(i => {
+      parIndices.foreach(i => {
         val binaries = MathUtils.toPaddedBinaryInts(i, qubitCount)
         var offset = 0
 
-        val finalRow = gates.foldLeft(Array.empty[Double])((row, matrix) => {
+        val finalRow = gates.foldLeft(Array.empty[Float])((row, matrix) => {
           val n = (Math.log(matrix.length) / Math.log(2)).toInt
           val slice = binaries.slice(offset, offset + n)
 
@@ -61,7 +61,7 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
           offset += n
 
           if (row.isEmpty) currentRow
-          else VectorWrapper.tensorProduct(row, currentRow, taskSupport)
+          else VectorWrapper.tensorProduct(row, currentRow)
         })
 
         for (j <- 0 until (finalRow.length / 2)) {
@@ -87,7 +87,7 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
 
     taskSupport.foreach(experiments.tasksupport = _)
 
-    ExperimentResult(experiments.map(_ => runAndMeasure(circuit)).toList)
+    ExperimentResult(experiments.map(_ => super.runAndMeasure(circuit)).toList)
   }
 
   def padGate(gate: Gate, qubitCount: Int): Seq[Gate] = {
@@ -103,12 +103,12 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
     else {
       register.values
         .map(q => Array(q.a.r, q.a.i, q.b.r, q.b.i))
-        .reduceLeft((state, q) => VectorWrapper.tensorProduct(state, q, taskSupport))
+        .reduceLeft((state, q) => VectorWrapper.tensorProduct(state, q))
     }
   }
 
   def tensorProduct(register: QubitRegister, sp1: Superposition, sp2: Superposition): Superposition =
-    Superposition(register, VectorWrapper.tensorProduct(sp1.vector, sp2.vector, taskSupport))
+    Superposition(register, VectorWrapper.tensorProduct(sp1.vector, sp2.vector))
 
   def product(register: QubitRegister, gate: Gate, sp: Superposition): Superposition =
     Superposition(register, MatrixWrapper.product(gate.matrix(this), sp.vector))
@@ -189,7 +189,7 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
         val ntis = normalizedTargetIndexes
         val filledNtis = if (ntis.length > 1) ntis(0) to ntis.last else ntis
 
-        val targetRegister = QubitRegister(filledNtis.map(i => Qubit(binaries(i).toBasisState)): _*)
+        val targetRegister = QubitRegister(filledNtis.map(i => Qubit(binaries(i))): _*)
 
         val gateTargetProduct = MatrixWrapper.product(
           gate.finalTarget.matrix(this),
@@ -201,18 +201,18 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
           .zipWithIndex
           .map {
             case (_, index) if filledNtis.contains(index) => gateTargetProduct -> Some("target")
-            case (binary, _) => binary.toBasisState.toDouble -> None
+            case (binary, _) => binary.toFloatArray -> None
           }
           .foldLeft(Seq[LabeledVector]()) {
             case (acc, item) if item._2.contains("target") && acc.exists(_._2.contains("target")) => acc
             case (acc, item) => acc :+ item
           }
           .map(_._1)
-          .reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2, taskSupport))
+          .reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2))
       } else {
         binaries
-          .map(b => b.toBasisState.toDouble)
-          .reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2, taskSupport))
+          .map(b => b.toFloatArray)
+          .reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2))
       }
     }
 
@@ -235,9 +235,9 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
     val notEqual = (a: Vector, b: Vector) => !equal(a, b)
 
     def phase(s: Vector) = {
-      if (equal(s, One.doubleValue)) gate match {
-        case _: ISWAP => Array(Complex(0), Complex(0, 1)).toDouble
-        case g: PSWAP => Array(Complex(0), Complex(Math.cos(g.phi), Math.sin(g.phi))).toDouble
+      if (equal(s, One.floatValue)) gate match {
+        case _: ISWAP => Array(Complex(0), Complex(0, 1)).toFloat
+        case g: PSWAP => Array(Complex(0), Complex(Math.cos(g.phi), Math.sin(g.phi))).toFloat
         case _ => s
       } else s
     }
@@ -249,18 +249,18 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
     val qubitCount = gate.qubitCount + Math.abs(i1 - i2) - 1
 
     val result = (0 until Math.pow(2, qubitCount).toInt).map(stateIndex => {
-      val binaries = MathUtils.toPaddedBinary(stateIndex, qubitCount).map(_.toBasisState).toArray.toDouble
+      val binaries = MathUtils.toPaddedBinary(stateIndex, qubitCount).map(_.toFloatArray).toArray
       val s1 = binaries(i1)
       val s2 = binaries(i2)
 
-      if (notEqual(s1, s2) || notEqual(s1, Zero.doubleValue) && notEqual(s2, One.doubleValue)) {
+      if (notEqual(s1, s2) || notEqual(s1, Zero.floatValue) && notEqual(s2, One.floatValue)) {
         val i1Val = phase(s1)
 
         binaries(i1) = phase(s2)
         binaries(i2) = i1Val
       }
 
-      binaries.reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2, taskSupport))
+      binaries.reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2))
     }).toArray
 
     result

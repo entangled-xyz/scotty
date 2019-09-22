@@ -8,20 +8,20 @@ import scotty.quantum.math.Complex
 
 class DefGateSpec extends FlatSpec with TestHelpers {
   val twoByTwoMatrix = Array(
-    Array(0d, 0d, 1d, 0d),
-    Array(1d, 0d, 0d, 0d)
+    Array(0f, 0f, 1f, 0f),
+    Array(1f, 0f, 0f, 0f)
   )
 
   val nonUnitaryMatrix = Array(
-    Array(1d, 0d, 0d, 0d),
-    Array(0d, 0d, 2d, 0d)
+    Array(1f, 0f, 0f, 0f),
+    Array(0f, 0f, 2f, 0f)
   )
 
   val fourByFourMatrix = Array(
-    Array(1d, 0d, 0d, 0d, 0d, 0d, 0d, 0d),
-    Array(0d, 0d, 1d, 0d, 0d, 0d, 0d, 0d),
-    Array(0d, 0d, 0d, 0d, 1d, 0d, 0d, 0d),
-    Array(0d, 0d, 0d, 0d, 0d, 0d, 1d, 0d)
+    Array(1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f),
+    Array(0f, 0f, 1f, 0f, 0f, 0f, 0f, 0f),
+    Array(0f, 0f, 0f, 0f, 1f, 0f, 0f, 0f),
+    Array(0f, 0f, 0f, 0f, 0f, 0f, 1f, 0f)
   )
 
   val rxMatrix = (params: Seq[Double]) => {
@@ -30,7 +30,7 @@ class DefGateSpec extends FlatSpec with TestHelpers {
     Array(
       Array(Complex(Math.cos(theta / 2)), Complex(0, -Math.sin(theta / 2))),
       Array(Complex(0, -Math.sin(theta / 2)), Complex(Math.cos(theta / 2)))
-    ).toDouble
+    ).toFloat
   }
 
   "Custom gate" should "be able to work with a static matrix" in {

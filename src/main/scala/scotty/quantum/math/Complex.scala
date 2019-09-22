@@ -2,42 +2,48 @@ package scotty.quantum.math
 
 import scotty.quantum.QuantumContext.{Matrix, Vector}
 
-case class Complex(r: Double, i: Double)
+case class Complex(r: Float, i: Float) {
+  override def toString: String = Complex.toString(this)
+}
 
 object Complex {
-  implicit class ComplexToDoubleVector(vs: Array[Complex]) {
-    def toDouble: Vector = vs.map(v => Array(v.r, v.i)).flatten
+  implicit class ComplexToFloatVector(vs: Array[Complex]) {
+    def toFloat: Vector = vs.map(v => Array(v.r, v.i)).flatten
   }
 
-  implicit class ComplexToDoubleMatrix(vs: Array[Array[Complex]]) {
-    def toDouble: Matrix = vs.map(r => r.map(v => Array(v.r, v.i)).flatten)
+  implicit class ComplexToFloatMatrix(vs: Array[Array[Complex]]) {
+    def toFloat: Matrix = vs.map(r => r.map(v => Array(v.r, v.i)).flatten)
   }
 
-  implicit class ComplexToDoubleVectorList(vs: List[Complex]) {
-    def toDouble: List[Double] = vs.flatMap(v => Array(v.r, v.i))
+  implicit class ComplexToFloatVectorList(vs: List[Complex]) {
+    def toFloat: List[Float] = vs.flatMap(v => Array(v.r, v.i))
   }
 
-  implicit class ComplexToDoubleMatrixList(vs: List[List[Complex]]) {
-    def toDouble: List[List[Double]] = vs.map(r => r.flatMap(v => Array(v.r, v.i)))
+  implicit class ComplexToFloatMatrixList(vs: List[List[Complex]]) {
+    def toFloat: List[List[Float]] = vs.map(r => r.flatMap(v => Array(v.r, v.i)))
   }
 
-  def apply(r: Double): Complex = Complex(r, 0)
+  def apply(r: Float): Complex = Complex(r, 0)
 
-  def product(r1: Double, i1: Double, r2: Double, i2: Double): (Double, Double) = (
+  def apply(r: Double): Complex = Complex(r.toFloat, 0)
+
+  def apply(r: Double, i: Double): Complex = Complex(r.toFloat, i.toFloat)
+
+  def product(r1: Float, i1: Float, r2: Float, i2: Float): (Float, Float) = (
     r1 * r2 - i1 * i2,
     r1 * i2 + i1 * r2
   )
 
-  def sum(r1: Double, i1: Double, r2: Double, i2: Double): (Double, Double) = (
+  def sum(r1: Float, i1: Float, r2: Float, i2: Float): (Float, Float) = (
     r1 +r2,
     i1 + i2
   )
 
   def e(phi: Double): Complex = Complex(Math.cos(phi), Math.sin(phi))
 
-  def abs(r: Double, i: Double): Double = Math.sqrt(Math.pow(r, 2) + Math.pow(i, 2))
+  def abs(r: Float, i: Float): Float = Math.sqrt(Math.pow(r, 2) + Math.pow(i, 2)).toFloat
 
-  def abs(value: Complex): Double = abs(value.r, value.i)
+  def abs(value: Complex): Float = abs(value.r, value.i)
 
   def toString(c: Complex): String = {
     val r = c.r
