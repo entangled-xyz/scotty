@@ -15,7 +15,7 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
     assert(sim.runAndMeasure(Circuit(CNOT(0, 1))).toBinaryRegister.values == Seq(Zero(), Zero()))
   }
 
-  it should "throw IllegalArgumentException if indexes are not unique" in {
+  it should "throw IllegalArgumentException if indices are not unique" in {
     assertThrows[IllegalArgumentException] {
       sim.runAndMeasure(Circuit(CNOT(0, 0)))
     }
@@ -31,7 +31,7 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
       Seq(Zero(), Zero(), One(), Zero(), Zero()))
   }
 
-  it should "throw IllegalArgumentException if indexes are not unique" in {
+  it should "throw IllegalArgumentException if indices are not unique" in {
     assertThrows[IllegalArgumentException] {
       sim.runAndMeasure(Circuit(CCNOT(0, 1, 0)))
     }
@@ -225,7 +225,7 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
     }
   }
 
-  it should "throw IllegalArgumentException if indexes are not unique" in {
+  it should "throw IllegalArgumentException if indices are not unique" in {
     assertThrows[IllegalArgumentException] {
       sim.runAndMeasure(Circuit(SWAP(3, 3)))
     }

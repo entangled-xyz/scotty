@@ -4,7 +4,7 @@ import scotty.ErrorMessage
 import scotty.quantum.gate.Gate
 
 case class Circuit(register: QubitRegister, ops: Op*) {
-  val indexes: Range = 0 until register.size
+  val indices: Range = 0 until register.size
 
   def combine(newCircuit: Circuit): Circuit = Circuit(ops ++ newCircuit.ops: _*)
 
@@ -34,7 +34,7 @@ object Circuit {
 
   def apply(ops: Op*): Circuit = this(generateRegister(ops), ops: _*)
 
-  def qubitCountFromOps(ops: Seq[Op]): Int = if (ops.isEmpty) 0 else ops.flatMap(op => op.indexes).distinct.max + 1
+  def qubitCountFromOps(ops: Seq[Op]): Int = if (ops.isEmpty) 0 else ops.flatMap(op => op.indices).distinct.max + 1
 
   def generateRegister(n: Int): QubitRegister =
     QubitRegister(List.fill(n)(defaultState): _*)

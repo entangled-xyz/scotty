@@ -55,7 +55,7 @@ class ControlledGateSpec extends FlatSpec {
       Seq(Zero(), One(), One(), Zero(), Zero()))
   }
 
-  it should "throw IllegalArgumentException if indexes are not unique" in {
+  it should "throw IllegalArgumentException if indices are not unique" in {
     assertThrows[IllegalArgumentException] {
       sim.runAndMeasure(Circuit(Controlled(1, X(1))))
     }

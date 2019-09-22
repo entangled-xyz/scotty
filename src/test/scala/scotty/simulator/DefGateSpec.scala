@@ -62,7 +62,7 @@ class DefGateSpec extends FlatSpec with TestHelpers {
     }
   }
 
-  it should "throw IllegalArgumentException if there are too few indexes" in {
+  it should "throw IllegalArgumentException if there are too few indices" in {
     assertThrows[IllegalArgumentException] {
       DefGate(fourByFourMatrix, 1)
     }

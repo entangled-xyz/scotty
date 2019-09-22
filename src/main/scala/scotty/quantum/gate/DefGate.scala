@@ -11,15 +11,15 @@ case class DefGate(matrixGen: GateGen, override val params: Seq[Double], index: 
 
   override val customMatrix: Option[Matrix] = Some(matrix)
 
-  def indexesMatchMatrixDimensions: Boolean = {
+  def indicesMatchMatrixDimensions: Boolean = {
     val lengthWithGaps =
-      if (indexes.length <= 1) indexes.length
-      else 1 + indexes.max - indexes.min
+      if (indices.length <= 1) indices.length
+      else 1 + indices.max - indices.min
 
     Math.pow(2, lengthWithGaps) == matrix.length && matrix.forall(r => r.length / 2 == matrix.length)
   }
 
-  require(indexesMatchMatrixDimensions, ErrorMessage.GateMatrixDoesntMatchIndexes)
+  require(indicesMatchMatrixDimensions, ErrorMessage.GateMatrixDoesntMatchIndexes)
   require(ctx.isUnitary(this), ErrorMessage.GateMatrixNotUnitary)
 }
 

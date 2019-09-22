@@ -15,9 +15,9 @@ sealed trait Gate extends Op {
 
   def toString(implicit ctx: QuantumContext): String = matrix.toList.map(_.toList.mkString(" ")).mkString("\n")
 
-  def indexesAreUnique: Boolean = indexes.distinct.size == indexes.size
+  def indicesAreUnique: Boolean = indices.distinct.size == indices.size
 
-  def indexesAreAsc: Boolean = indexes.length <= 1 || (indexes, indexes.tail).zipped.forall(_ <= _)
+  def indicesAreAsc: Boolean = indices.length <= 1 || (indices, indices.tail).zipped.forall(_ <= _)
 }
 
 object Gate {
@@ -28,40 +28,40 @@ trait TargetGate extends Gate {
   val index: Int
   val customMatrix: Option[Matrix] = None
 
-  lazy val indexes: Seq[Int] = Seq(index)
+  lazy val indices: Seq[Int] = Seq(index)
 }
 
 trait ControlGate extends Gate {
   val controlIndex: Int
   val target: Gate
-  lazy val indexes: Seq[Int] = controlIndex +: target.indexes
+  lazy val indices: Seq[Int] = controlIndex +: target.indices
 
   lazy val finalTarget: Gate = target match {
     case c: ControlGate => c.finalTarget
     case t: Gate => t
   }
 
-  lazy val targetIndexes: Seq[Int] = finalTarget.indexes
-  lazy val controlIndexes: Seq[Int] = indexes.filter(!targetIndexes.contains(_))
+  lazy val targetIndexes: Seq[Int] = finalTarget.indices
+  lazy val controlIndexes: Seq[Int] = indices.filter(!targetIndexes.contains(_))
 
-  require(indexesAreUnique, ErrorMessage.GateIndexesNotUnique)
+  require(indicesAreUnique, ErrorMessage.GateIndexesNotUnique)
 }
 
 trait SwapGate extends Gate {
   val index1: Int
   val index2: Int
 
-  override lazy val indexes: Seq[Int] = {
+  override lazy val indices: Seq[Int] = {
     if (index1 > index2) Seq(index2, index1) else Seq(index1, index2)
   }
 
-  require(indexes.size == 2, ErrorMessage.SwapGateIndexCountNotTwo)
-  require(indexesAreAsc, ErrorMessage.GateIndexesNotAsc)
-  require(indexesAreUnique, ErrorMessage.GateIndexesNotUnique)
+  require(indices.size == 2, ErrorMessage.SwapGateIndexCountNotTwo)
+  require(indicesAreAsc, ErrorMessage.GateIndexesNotAsc)
+  require(indicesAreUnique, ErrorMessage.GateIndexesNotUnique)
 }
 
 case class Controlled(controlIndex: Int, target: Gate) extends ControlGate
 
 case class Dagger(target: Gate) extends Gate {
-  val indexes: Seq[Int] = target.indexes
+  val indices: Seq[Int] = target.indices
 }
