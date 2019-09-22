@@ -34,6 +34,8 @@ object Complex {
     r1 * i2 + i1 * r2
   )
 
+  def sum(c1: (Float, Float), c2: (Float, Float)): (Float, Float) = sum(c1._1, c1._2, c2._1, c2._2)
+
   def sum(r1: Float, i1: Float, r2: Float, i2: Float): (Float, Float) = (
     r1 +r2,
     i1 + i2

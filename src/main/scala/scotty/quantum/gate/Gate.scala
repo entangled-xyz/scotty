@@ -25,7 +25,10 @@ object Gate {
 }
 
 trait TargetGate extends Gate {
+  val index: Int
   val customMatrix: Option[Matrix] = None
+
+  lazy val indexes: Seq[Int] = Seq(index)
 }
 
 trait ControlGate extends Gate {
@@ -35,7 +38,7 @@ trait ControlGate extends Gate {
 
   lazy val finalTarget: Gate = target match {
     case c: ControlGate => c.finalTarget
-    case t: TargetGate => t
+    case t: Gate => t
   }
 
   lazy val targetIndexes: Seq[Int] = finalTarget.indexes
@@ -44,7 +47,7 @@ trait ControlGate extends Gate {
   require(indexesAreUnique, ErrorMessage.GateIndexesNotUnique)
 }
 
-trait SwapGate extends TargetGate {
+trait SwapGate extends Gate {
   val index1: Int
   val index2: Int
 
@@ -59,6 +62,6 @@ trait SwapGate extends TargetGate {
 
 case class Controlled(controlIndex: Int, target: Gate) extends ControlGate
 
-case class Dagger(target: Gate) extends TargetGate {
+case class Dagger(target: Gate) extends Gate {
   val indexes: Seq[Int] = target.indexes
 }

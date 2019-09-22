@@ -5,7 +5,7 @@ import scotty.quantum.QuantumContext
 import scotty.quantum.QuantumContext.Matrix
 import scotty.quantum.gate.Gate.GateGen
 
-case class DefGate(matrixGen: GateGen, override val params: Seq[Double], indexes: Seq[Int])
+case class DefGate(matrixGen: GateGen, override val params: Seq[Double], index: Int)
                   (implicit ctx: QuantumContext) extends TargetGate {
   val matrix: Matrix = matrixGen.apply(params)
 
@@ -24,9 +24,9 @@ case class DefGate(matrixGen: GateGen, override val params: Seq[Double], indexes
 }
 
 object DefGate {
-  def apply(matrix: Matrix, indexes: Int*)
-           (implicit ctx: QuantumContext): DefGate = this((_: Seq[Double]) => matrix, Seq(), indexes)
+  def apply(matrix: Matrix, index: Int)
+           (implicit ctx: QuantumContext): DefGate = this((_: Seq[Double]) => matrix, Seq(), index)
 
-  def apply(matrixGen: GateGen, param: Double, indexes: Int*)(implicit ctx: QuantumContext): DefGate =
-    this(matrixGen, Seq(param), indexes)
+  def apply(matrixGen: GateGen, param: Double, index: Int)(implicit ctx: QuantumContext): DefGate =
+    this(matrixGen, Seq(param), index)
 }

@@ -14,17 +14,17 @@ case class Circuit(register: QubitRegister, ops: Op*) {
 
   def withRegister(newQubits: Qubit*): Circuit = Circuit(QubitRegister(newQubits: _*), ops: _*)
 
-  def isValid: Boolean = register.size >= Circuit.qubitCountFromOps(ops.toSeq)
+  def isValid: Boolean = register.size >= Circuit.qubitCountFromOps(ops)
 
   def flattenedOps: Seq[Op] = ops.collect {
     case cc: CircuitConnector => cc.circuit.flattenedOps
     case op: Op => Seq(op)
-  }.flatten.toSeq
+  }.flatten
 
   def gates: Seq[Gate] = ops.collect {
     case g: Gate => Seq(g)
     case cc: CircuitConnector => cc.circuit.gates
-  }.flatten.toSeq
+  }.flatten
 
   require(isValid, ErrorMessage.QubitCountMismatch)
 }
@@ -32,7 +32,7 @@ case class Circuit(register: QubitRegister, ops: Op*) {
 object Circuit {
   val defaultState: Qubit = Qubit.zero
 
-  def apply(ops: Op*): Circuit = this(generateRegister(ops.toSeq), ops: _*)
+  def apply(ops: Op*): Circuit = this(generateRegister(ops), ops: _*)
 
   def qubitCountFromOps(ops: Seq[Op]): Int = if (ops.isEmpty) 0 else ops.flatMap(op => op.indexes).distinct.max + 1
 

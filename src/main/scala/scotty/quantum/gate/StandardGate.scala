@@ -3,56 +3,37 @@ package scotty.quantum.gate
 object StandardGate {
   // Single qubit gates
 
-  case class H(index: Int) extends TargetGate {
-    val indexes: Seq[Int] = Seq(index)
-  }
+  case class H(index: Int) extends TargetGate
 
-  case class I(index: Int) extends TargetGate {
-    val indexes: Seq[Int] = Seq(index)
-  }
+  case class I(index: Int) extends TargetGate
 
-  case class X(index: Int) extends TargetGate {
-    val indexes: Seq[Int] = Seq(index)
-  }
+  case class X(index: Int) extends TargetGate
 
-  case class Y(index: Int) extends TargetGate {
-    val indexes: Seq[Int] = Seq(index)
-  }
+  case class Y(index: Int) extends TargetGate
 
-  case class Z(index: Int) extends TargetGate {
-    val indexes: Seq[Int] = Seq(index)
-  }
+  case class Z(index: Int) extends TargetGate
 
-  case class S(index: Int) extends TargetGate {
-    val indexes: Seq[Int] = Seq(index)
-  }
+  case class S(index: Int) extends TargetGate
 
-  case class T(index: Int) extends TargetGate {
-    val indexes: Seq[Int] = Seq(index)
-  }
+  case class T(index: Int) extends TargetGate
 
   case class PHASE(phi: Double, index: Int) extends TargetGate {
-    val indexes: Seq[Int] = Seq(index)
     override val params: Seq[Double] = Seq(phi)
   }
 
   case class PHASE0(phi: Double, index: Int) extends TargetGate {
-    val indexes: Seq[Int] = Seq(index)
     override val params: Seq[Double] = Seq(phi)
   }
 
   case class RX(theta: Double, index: Int) extends TargetGate {
-    val indexes: Seq[Int] = Seq(index)
     override val params: Seq[Double] = Seq(theta)
   }
 
   case class RY(theta: Double, index: Int) extends TargetGate {
-    val indexes: Seq[Int] = Seq(index)
     override val params: Seq[Double] = Seq(theta)
   }
 
   case class RZ(theta: Double, index: Int) extends TargetGate {
-    val indexes: Seq[Int] = Seq(index)
     override val params: Seq[Double] = Seq(theta)
   }
 
