@@ -3,6 +3,7 @@ package scotty.simulator
 import java.util
 
 import scotty.quantum.QuantumContext._
+import scotty.quantum.StateProbabilityReader.StateData
 import scotty.quantum.gate.Gate.GateGen
 import scotty.quantum.gate.StandardGate.{CPHASE00, CPHASE01, ISWAP, PSWAP}
 import scotty.quantum.gate._
@@ -18,6 +19,20 @@ import scala.util.Random
 
 case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extends QuantumContext {
   val taskSupport: Option[ExecutionContextTaskSupport] = ec.map(new ExecutionContextTaskSupport(_))
+
+  def superpositionProbabilities(sp: Superposition): Seq[StateData] = {
+    val parIndices: ParArray[Int] = ParArray.iterate(0, sp.vector.length / 2)(i => i + 1)
+    val probabilities = Vector[StateData]()
+
+    parIndices.foldLeft(probabilities)((ps, i) => {
+      val r = sp.vector(2 * i)
+      val im = sp.vector(2 * i + 1)
+      val p = Complex.abs(Complex.product(r, im, r, im))
+
+      if (p > 0) ps :+ StateData(MathUtils.toPaddedBinary(i, sp.qubitCount), Complex(r, im), p)
+      else ps
+    })
+  }
 
   def measure(register: QubitRegister, state: Vector): Collapsed = {
     val initialIterator = (0, 0d, None: Option[Int])

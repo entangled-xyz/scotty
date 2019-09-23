@@ -45,6 +45,8 @@ object Complex {
 
   def abs(r: Float, i: Float): Float = Math.sqrt(Math.pow(r, 2) + Math.pow(i, 2)).toFloat
 
+  def abs(c: (Float, Float)): Float = abs(c._1, c._2)
+
   def abs(value: Complex): Float = abs(value.r, value.i)
 
   def toString(c: Complex): String = {

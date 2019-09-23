@@ -1,6 +1,7 @@
 package scotty.quantum
 
 import scotty.quantum.QuantumContext._
+import scotty.quantum.StateProbabilityReader.StateData
 import scotty.quantum.gate.Gate
 
 trait QuantumContext {
@@ -13,6 +14,8 @@ trait QuantumContext {
   def densityMatrix(vector: Vector): Matrix
 
   def isUnitary(gate: Gate): Boolean
+
+  def superpositionProbabilities(sp: Superposition): Seq[StateData]
 
   def run(circuit: Circuit): State
 
