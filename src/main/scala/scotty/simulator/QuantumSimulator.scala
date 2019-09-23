@@ -9,6 +9,7 @@ import scotty.quantum.gate._
 import scotty.quantum.math.{Complex, MathUtils}
 import scotty.quantum.{Superposition, _}
 import scotty.simulator.math.{MatrixWrapper, VectorWrapper}
+
 import scala.collection.parallel.{ExecutionContextTaskSupport, ParIterable}
 import scala.collection.parallel.immutable.ParVector
 import scala.collection.parallel.mutable.ParArray
@@ -144,15 +145,24 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
 
   def registerToState(register: QubitRegister): Vector = {
     if (register.values.isEmpty) Array()
-    else {
+    else if (register.values.forall(_ == Qubit.zero)) {
+      val state = Array.fill(2 * Math.pow(2, register.size).toInt)(0f)
+      state(0) = 1f
+      state
+    }
+    else if (register.values.forall(_ == Qubit.one)) {
+      val state = Array.fill(2 * Math.pow(2, register.size).toInt)(0f)
+      state(state.length - 1) = 1f
+      state
+    } else {
       register.values
         .map(q => Array(q.a.r, q.a.i, q.b.r, q.b.i))
-        .reduceLeft((state, q) => VectorWrapper.tensorProduct(state, q))
+        .reduceLeft((state, q) => VectorWrapper.tensorProduct(state, q, taskSupport))
     }
   }
 
   def tensorProduct(register: QubitRegister, sp1: Superposition, sp2: Superposition): Superposition =
-    Superposition(register, VectorWrapper.tensorProduct(sp1.vector, sp2.vector))
+    Superposition(register, VectorWrapper.tensorProduct(sp1.vector, sp2.vector, taskSupport))
 
   def product(register: QubitRegister, gate: Gate, sp: Superposition): Superposition =
     Superposition(register, MatrixWrapper.product(gate.matrix(this), sp.vector))
@@ -165,7 +175,6 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
     case swap: SwapGate => swapMatrix(swap)
     case g: CPHASE00 => cphase0Matrix(g, g.phi, Zero())
     case g: CPHASE01 => cphase0Matrix(g, g.phi, One())
-    case control: ControlGate => controlMatrix(control)
     case dagger: Dagger => MatrixWrapper.conjugateTranspose(dagger.target.matrix(this))
     case target: TargetGate => target.customMatrix.getOrElse(targetMatrix(target))
   }
@@ -186,77 +195,6 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
         val c = Complex.e(phi)
         finalMatrix(i)(2 * i) = c.r
         finalMatrix(i)(2 * i + 1) = c.i
-      }
-    }
-
-    finalMatrix
-  }
-
-  /**
-    * Generates a matrix based on the top-level control gate and nested control and target child gates.
-    *
-    * First, it generates an array of arrays. Each array is a binary representation of the decimal state vector index.
-    * For example, a vector of length 2 can be represented with the following matrix:
-    *
-    * Array(
-    *   Array(0, 0), Array(0, 1),
-    *   Array(1, 0), Array(1, 1)
-    * )
-    *
-    * Second, for each top-level array we check if control bits are triggered and if they are then we apply the final
-    * target gate to the target qubits.
-    *
-    * @param gate control gate that this method generates a matrix for
-    * @return final matrix representing the control gate acting on all involved qubits
-    */
-  def controlMatrix(gate: ControlGate): Matrix = {
-    val minIndex = gate.indices.min
-
-    val normalizedControlIndexes = gate.controlIndexes.map(_ - minIndex)
-    val normalizedTargetIndexes = gate.targetIndexes.map(_ - minIndex)
-
-    val qubitCount = totalQubitCount(gate)
-    val stateCount = Math.pow(2, qubitCount).toInt
-
-    val finalMatrix = Array.ofDim[Vector](stateCount)
-
-    for (i <- 0 until stateCount) {
-      val binaries = MathUtils.toPaddedBinary(i, qubitCount).toArray
-
-      val allControlsTrigger = binaries.zipWithIndex.forall(b => {
-        if (normalizedControlIndexes.contains(b._2))
-          if (b._1.isInstanceOf[One]) true else false
-        else true
-      })
-
-      finalMatrix(i) = if (allControlsTrigger) {
-        val ntis = normalizedTargetIndexes
-        val filledNtis = if (ntis.length > 1) ntis(0) to ntis.last else ntis
-
-        val targetRegister = QubitRegister(filledNtis.map(i => Qubit(binaries(i))): _*)
-
-        val gateTargetProduct = MatrixWrapper.product(
-          gate.finalTarget.matrix(this),
-          registerToState(targetRegister))
-
-        type LabeledVector = (Vector, Option[String])
-
-        binaries
-          .zipWithIndex
-          .map {
-            case (_, index) if filledNtis.contains(index) => gateTargetProduct -> Some("target")
-            case (binary, _) => binary.toFloatArray -> None
-          }
-          .foldLeft(Seq[LabeledVector]()) {
-            case (acc, item) if item._2.contains("target") && acc.exists(_._2.contains("target")) => acc
-            case (acc, item) => acc :+ item
-          }
-          .map(_._1)
-          .reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2))
-      } else {
-        binaries
-          .map(b => b.toFloatArray)
-          .reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2))
       }
     }
 
@@ -304,7 +242,7 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
         binaries(i2) = i1Val
       }
 
-      binaries.reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2))
+      binaries.reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2, taskSupport))
     }).toArray
 
     result
