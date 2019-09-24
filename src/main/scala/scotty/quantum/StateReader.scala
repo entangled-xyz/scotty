@@ -41,12 +41,17 @@ case class QubitProbabilityReader(register: Option[QubitRegister], state: State)
                                  (implicit ctx: QuantumContext) extends StateReader[QubitData] {
   def read: Seq[QubitData] = {
     val stateData = StateProbabilityReader(state).read
+    val offset = state.qubitCount - 1
 
     (0 until state.qubitCount).map(index => {
       QubitData(
         register.flatMap(_.values(index).label),
         index,
-        stateData.foldLeft(0d)((sum, data) => if (data.state(index).isInstanceOf[One]) sum + data.probability else sum))
+        stateData.foldLeft(0d)((sum, data) =>
+          if (data.state(offset - index).isInstanceOf[One]) sum + data.probability
+          else sum
+        )
+      )
     })
   }
 
