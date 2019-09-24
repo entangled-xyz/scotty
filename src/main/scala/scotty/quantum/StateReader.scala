@@ -21,7 +21,7 @@ case class StateProbabilityReader(state: State)(implicit ctx: QuantumContext) ex
     case c: Collapsed => Seq(StateData(c.toBinaryRegister.values, Complex(1), 1))
   }
 
-  override def toString: String = read.map(p => {
+  override def toString: String = read.flatMap(p => {
     val prob = p.probability.toPercent
 
     if (prob == 0) None

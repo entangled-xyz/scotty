@@ -1,16 +1,14 @@
 package scotty.simulator
 
 import java.util
-
 import scotty.quantum.QuantumContext._
 import scotty.quantum.StateProbabilityReader.StateData
 import scotty.quantum.gate.Gate.GateGen
-import scotty.quantum.gate.StandardGate.{CPHASE00, CPHASE01, ISWAP, PSWAP}
+import scotty.quantum.gate.StandardGate.{CNOT, CPHASE00, CPHASE01, ISWAP, PSWAP}
 import scotty.quantum.gate._
 import scotty.quantum.math.{Complex, MathUtils}
 import scotty.quantum.{Superposition, _}
 import scotty.simulator.math.{MatrixWrapper, VectorWrapper}
-
 import scala.collection.parallel.{ExecutionContextTaskSupport, ParIterable}
 import scala.collection.parallel.immutable.ParVector
 import scala.collection.parallel.mutable.ParArray
@@ -61,7 +59,7 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
     taskSupport.foreach(parIndices.tasksupport = _)
 
     circuit.gates.foreach {
-      case swap: SwapGate => ???
+      case swap: SwapGate => applySwapGate(parIndices, state, swap)
       case g: CPHASE00 => ???
       case g: CPHASE01 => ???
       case control: ControlGate => applyControlGate(parIndices, state, control)
@@ -101,6 +99,15 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
       state(target1Index) = newOneState._1
       state(target1Index + 1) = newOneState._2
     })
+  }
+
+  def applySwapGate(iterator: ParIterable[Int], state: Vector, gate: SwapGate): Unit = {
+    val index1 = gate.index1
+    val index2 = gate.index2
+
+    applyControlGate(iterator, state, CNOT(index1, index2))
+    applyControlGate(iterator, state, CNOT(index2, index1))
+    applyControlGate(iterator, state, CNOT(index1, index2))
   }
 
   def applyControlGate(iterator: ParIterable[Int], state: Vector, control: ControlGate): Unit = {
@@ -218,7 +225,6 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
 
   def totalQubitCount(gate: Gate): Int = {
     val sortedControlIndexes = gate.indices.sorted
-
     val gapQubitCount = (sortedControlIndexes.tail, sortedControlIndexes).zipped.map((a, b) => a - b - 1).sum
 
     gate.qubitCount + gapQubitCount
