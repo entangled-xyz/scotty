@@ -19,10 +19,9 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
   val taskSupport: Option[ExecutionContextTaskSupport] = ec.map(new ExecutionContextTaskSupport(_))
 
   def superpositionProbabilities(sp: Superposition): Seq[StateData] = {
-    val parIndices: ParArray[Int] = ParArray.iterate(0, sp.vector.length / 2)(i => i + 1)
     val probabilities = Vector[StateData]()
 
-    parIndices.foldLeft(probabilities)((ps, i) => {
+    parIndices(sp.vector.length).foldLeft(probabilities)((ps, i) => {
       val r = sp.vector(2 * i)
       val im = sp.vector(2 * i + 1)
       val p = Complex.abs(Complex.product(r, im, r, im))
@@ -33,18 +32,18 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
   }
 
   def measure(register: QubitRegister, state: Vector): Collapsed = {
-    val initialIterator = (0, 0d, None: Option[Int])
+    val initProbData = (0, 0d, None: Option[Int])
     val rnd = random.nextDouble()
 
-    val result = (0 until state.length / 2).foldLeft(initialIterator)((iterator, stateIndex) => {
+    val result = parIndices(state.length).foldLeft(initProbData)((probData, stateIndex) => {
       val abs = Complex.abs(state(2 * stateIndex), state(2 * stateIndex + 1))
-      val totalProb = iterator._2 + Math.pow(abs, 2)
+      val totalProb = probData._2 + Math.pow(abs, 2)
 
-      val tryCollapse = (c: Int) => if (rnd <= totalProb) Some(c) else None
+      val tryCollapse = (i: Int) => if (rnd <= totalProb) Some(i) else None
 
-      iterator match {
-        case (count, _, None) => (count + 1, totalProb, tryCollapse(count))
-        case (count, _, valueOp) => (count + 1, totalProb, valueOp)
+      probData match {
+        case (index, _, None) => (index + 1, totalProb, tryCollapse(index))
+        case (index, _, indexOp) => (index + 1, totalProb, indexOp)
       }
     })
 
@@ -54,17 +53,15 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
   def run(circuit: Circuit): State = {
     val state = registerToState(circuit.register)
     val shouldMeasure = circuit.flattenedOps.exists(_.isInstanceOf[Measure])
-    val parIndices: ParArray[Int] = ParArray.iterate(0, state.length / 4)(i => i + 1)
-
-    taskSupport.foreach(parIndices.tasksupport = _)
+    val iterator = parIndices(state.length / 2)
 
     circuit.gates.foreach {
-      case swap: SwapGate => applySwapGate(parIndices, state, swap)
+      case swap: SwapGate => applySwapGate(iterator, state, swap)
       case g: CPHASE00 => ???
       case g: CPHASE01 => ???
-      case control: ControlGate => applyControlGate(parIndices, state, control)
+      case control: ControlGate => applyControlGate(iterator, state, control)
       case dagger: Dagger => ???
-      case target: TargetGate => applyTargetGate(parIndices, state, target)
+      case target: TargetGate => applyTargetGate(iterator, state, target)
     }
 
     if (shouldMeasure) measure(circuit.register, state)
@@ -156,13 +153,24 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
     (n & mask) | ((n & ~mask) << 1)
   }
 
-  def runAndMeasure(circuit: Circuit,
+  def runExperiment(circuit: Circuit,
                     trialsCount: Int): ExperimentResult = {
     val experiments = ParVector.fill(trialsCount)(0)
 
     taskSupport.foreach(experiments.tasksupport = _)
 
-    ExperimentResult(experiments.map(_ => super.runAndMeasure(circuit)).toList)
+    ExperimentResult(experiments.map(_ => run(circuit) match {
+      case sp: Superposition => measure(circuit.register, sp.vector)
+      case c: Collapsed => c
+    }).toList)
+  }
+
+  def parIndices(stateLength: Int): ParArray[Int] = {
+    val is = ParArray.iterate(0, stateLength / 2)(i => i + 1)
+
+    taskSupport.foreach(is.tasksupport = _)
+
+    is
   }
 
   def registerToState(register: QubitRegister): Vector = {

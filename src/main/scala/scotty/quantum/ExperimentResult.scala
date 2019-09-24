@@ -27,4 +27,6 @@ object ExperimentResult {
         .mkString("\n")
     }
   }
+
+  def apply(collapsed: Collapsed): ExperimentResult = this(List(collapsed))
 }
