@@ -11,6 +11,8 @@ object ErrorMessage {
 
   val GateIndexesNotUnique = "All qubit indices referenced in the gate have to be unique."
 
+  val GateNotSingleQubit = "Target gate has to be a single-qubit gate."
+
   val IncorrectQubitAmplitudes = "Squares of amplitudes have to add up to 1."
 
   val IntToBit = "Only integers 0 and 1 can be converted to Bit."

@@ -9,18 +9,16 @@ sealed trait State {
   val register: QubitRegister
 }
 
-case class Superposition(register: QubitRegister, vector: Vector) extends State {
-  lazy val qubitCount: Int = if (vector.length / 2 == 0) 0 else (Math.log10(vector.length / 2) / Math.log10(2)).toInt
+case class Superposition(register: QubitRegister, state: Vector) extends State {
+  lazy val qubitCount: Int = if (state.length / 2 == 0) 0 else (Math.log10(state.length / 2) / Math.log10(2)).toInt
 
-  def applyGate(gate: Gate)(implicit ctx: QuantumContext): Superposition =
-    if (vector.length == 0) this
-    else ctx.product(register, gate, this)
+  def applyGate(gate: Gate)(implicit ctx: QuantumContext): Unit = ctx.applyGate(state, gate)
 
   def combine(sp: Superposition)(implicit ctx: QuantumContext): Superposition =
-    if (vector.length == 0) sp
+    if (state.length == 0) sp
     else ctx.tensorProduct(register, this, sp)
 
-  override def toString: String = s"Superposition(${vector.toList})"
+  override def toString: String = s"Superposition(${state.toList})"
 }
 
 case class Collapsed(register: QubitRegister, index: Int) extends State {
@@ -29,8 +27,8 @@ case class Collapsed(register: QubitRegister, index: Int) extends State {
   def toBinaryRegister: BinaryRegister = BinaryRegister(
     MathUtils
       .toPaddedBinary(index, register.size)
-      .zipWithIndex.map(b => register.values(b._2).label.fold(b._1)(b._1.withLabel)): _*
-  )
+      .reverse
+      .zipWithIndex.map(b => register.values(b._2).label.fold(b._1)(b._1.withLabel)): _*)
 
   def toHumanString: String = toBinaryRegister.values
     .zipWithIndex

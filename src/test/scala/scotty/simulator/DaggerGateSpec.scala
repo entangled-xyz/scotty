@@ -12,8 +12,10 @@ class DaggerGateSpec extends FlatSpec with TestHelpers {
       Array(Complex(0), Complex(0, -1))
     ).toFloat, index)
 
-    assert(Dagger(gate(0)).matrix(sim).toList.map(_.toList) == List(
-      List(Complex(1), Complex(0)),
-      List(Complex(0), Complex(0, 1))).toFloat)
+    throw new NotImplementedError()
+
+//    assert(Dagger(gate(0)).matrix(sim).toList.map(_.toList) == List(
+//      List(Complex(1), Complex(0)),
+//      List(Complex(0), Complex(0, 1))).toFloat)
   }
 }

@@ -17,7 +17,7 @@ sealed trait StateReader[T] {
 
 case class StateProbabilityReader(state: State)(implicit ctx: QuantumContext) extends StateReader[StateData] {
   def read: Seq[StateData] = state match {
-    case sp: Superposition => ctx.superpositionProbabilities(sp)
+    case sp: Superposition => ctx.probabilities(sp)
     case c: Collapsed => Seq(StateData(c.toBinaryRegister.values, Complex(1), 1))
   }
 
@@ -85,7 +85,7 @@ case class BlochSphereReader(state: State)(implicit ctx: QuantumContext) extends
 
   def read: Seq[BlochSphereData] = state match {
     case sp: Superposition =>
-      val densityMatrix = ctx.densityMatrix(sp.vector)
+      val densityMatrix = ctx.densityMatrix(sp.state)
 
       val x = 2 * densityMatrix(0)(2)
       val y = 2 * densityMatrix(1)(1)
