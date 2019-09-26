@@ -25,10 +25,6 @@ trait TargetGate extends Gate {
   lazy val indices: Seq[Int] = Seq(index)
 
   def isUnitary(implicit ctx: QuantumContext): Boolean = ctx.isUnitary(this)
-
-  def matrix(implicit ctx: QuantumContext): Matrix = ctx.targetGateMatrix(this)
-
-  def toString(implicit ctx: QuantumContext): String = matrix.toList.map(_.toList.mkString(" ")).mkString("\n")
 }
 
 trait ControlGate extends Gate {

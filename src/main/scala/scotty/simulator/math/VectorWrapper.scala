@@ -1,7 +1,6 @@
 package scotty.simulator.math
 
 import scotty.quantum.math.Complex
-
 import scala.collection.parallel.immutable.ParVector
 import scotty.quantum.QuantumContext.{Matrix, Vector}
 import scala.collection.parallel.TaskSupport

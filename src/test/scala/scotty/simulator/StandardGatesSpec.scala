@@ -50,8 +50,7 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
     sim.run(circuit) match {
       case s: Superposition =>
         assert(StateProbabilityReader(s).read(0).amplitude == Complex(1))
-        assert(StateProbabilityReader(s).read(1).amplitude == Complex(0))
-        assert(sim.measure(circuit.register, s.state).toBinaryRegister.values == Seq(Zero()))
+        assert(StateProbabilityReader(s).read(0).probability == 1d)
       case _ =>
     }
   }
@@ -239,20 +238,6 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
     assert(sim.runAndMeasure(Circuit(X(2), CSWAP(1, 0, 2))).toBinaryRegister.values == Seq(Zero(), Zero(), One()))
   }
 
-  "ISWAP" should "swap two gates and apply i to q1 when it's |1> and i to q2 if it's |0>" in {
-    val s = sim.run(Circuit(H(0), ISWAP(2, 0)))
-
-    assert(StateProbabilityReader(s).read(0).amplitude === Complex(fiftyPercent, 0))
-    assert(StateProbabilityReader(s).read(1).amplitude === Complex(0, fiftyPercent))
-  }
-
-  "PSWAP" should "swap two gates and apply phase phi to q1 when it's |1> and phase phi to q2 if it's |0>" in {
-    val s = sim.run(Circuit(X(0), PSWAP(thirdTurn, 2, 0)))
-
-    assert(StateProbabilityReader(s).read(0).amplitude === Complex(0, 0))
-    assert(StateProbabilityReader(s).read(1).amplitude === Complex(-0.5, 0.86))
-  }
-
   "PHASE" should "apply phase phi to state |1>" in {
     val s = sim.run(Circuit(H(0), PHASE(thirdTurn, 0)))
 
@@ -300,60 +285,6 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
     assert(StateProbabilityReader(s).read(0).amplitude === Complex(0.7, 0))
     assert(StateProbabilityReader(s).read(1).amplitude === Complex(0.7, 0))
     assert(StateProbabilityReader(s).read(2).amplitude === Complex(0, 0))
-    assert(StateProbabilityReader(s).read(3).amplitude === Complex(0, 0))
-  }
-
-  "CPHASE00" should "apply phase phi to |0> when control qubit is |0>" in {
-    val s = sim.run(Circuit(H(1), CPHASE00(thirdTurn, 0, 1)))
-
-    assert(StateProbabilityReader(s).read(0).amplitude === Complex(-0.35, 0.61))
-    assert(StateProbabilityReader(s).read(1).amplitude === Complex(0.7, 0))
-    assert(StateProbabilityReader(s).read(2).amplitude === Complex(0, 0))
-    assert(StateProbabilityReader(s).read(3).amplitude === Complex(0, 0))
-  }
-
-  it should "not apply phase phi to |0> when control qubit is |1>" in {
-    val s = sim.run(Circuit(X(0), CPHASE00(thirdTurn, 0, 1)))
-
-    assert(StateProbabilityReader(s).read(0).amplitude === Complex(0, 0))
-    assert(StateProbabilityReader(s).read(1).amplitude === Complex(0, 0))
-    assert(StateProbabilityReader(s).read(2).amplitude === Complex(1, 0))
-    assert(StateProbabilityReader(s).read(3).amplitude === Complex(0, 0))
-  }
-
-  it should "not apply phase phi to |0> when target qubit is |1>" in {
-    val s = sim.run(Circuit(X(1), CPHASE00(thirdTurn, 0, 1)))
-
-    assert(StateProbabilityReader(s).read(0).amplitude === Complex(0, 0))
-    assert(StateProbabilityReader(s).read(1).amplitude === Complex(1, 0))
-    assert(StateProbabilityReader(s).read(2).amplitude === Complex(0, 0))
-    assert(StateProbabilityReader(s).read(3).amplitude === Complex(0, 0))
-  }
-
-  "CPHASE01" should "apply phase phi to |1> when control qubit is |0>" in {
-    val s = sim.run(Circuit(H(1), CPHASE01(thirdTurn, 0, 1)))
-
-    assert(StateProbabilityReader(s).read(0).amplitude === Complex(0.7, 0))
-    assert(StateProbabilityReader(s).read(1).amplitude === Complex(-0.35, 0.61))
-    assert(StateProbabilityReader(s).read(2).amplitude === Complex(0, 0))
-    assert(StateProbabilityReader(s).read(3).amplitude === Complex(0, 0))
-  }
-
-  it should "not apply phase phi to |0> when target qubit is |0>" in {
-    val s = sim.run(Circuit(CPHASE01(thirdTurn, 0, 1)))
-
-    assert(StateProbabilityReader(s).read(0).amplitude === Complex(1, 0))
-    assert(StateProbabilityReader(s).read(1).amplitude === Complex(0, 0))
-    assert(StateProbabilityReader(s).read(2).amplitude === Complex(0, 0))
-    assert(StateProbabilityReader(s).read(3).amplitude === Complex(0, 0))
-  }
-
-  it should "not apply phase phi to |1> when target qubit is |0>" in {
-    val s = sim.run(Circuit(X(0), CPHASE01(thirdTurn, 0, 1)))
-
-    assert(StateProbabilityReader(s).read(0).amplitude === Complex(0, 0))
-    assert(StateProbabilityReader(s).read(1).amplitude === Complex(0, 0))
-    assert(StateProbabilityReader(s).read(2).amplitude === Complex(1, 0))
     assert(StateProbabilityReader(s).read(3).amplitude === Complex(0, 0))
   }
 }

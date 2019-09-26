@@ -29,31 +29,6 @@ class ControlledGateSpec extends FlatSpec with TestHelpers {
       Seq(One(), Zero(), One(), Zero(), One()))
   }
 
-  it should "work with a two-qubit SWAP gate" in {
-    assert(sim.runAndMeasure(Circuit(X(0), X(1), Controlled(0, SWAP(1, 2)))).toBinaryRegister.values ==
-      Seq(One(), Zero(), One()))
-  }
-
-  it should "work with a two-qubit SWAP gate with a gap" in {
-    assert(sim.runAndMeasure(Circuit(X(0), X(1), Controlled(0, SWAP(1, 3)))).toBinaryRegister.values ==
-      Seq(One(), Zero(), Zero(), One()))
-  }
-
-  it should "work with a two-qubit reversed SWAP gate with a gap" in {
-    assert(sim.runAndMeasure(Circuit(X(0), X(3), Controlled(0, SWAP(3, 1)))).toBinaryRegister.values ==
-      Seq(One(), One(), Zero(), Zero()))
-  }
-
-  it should "work with a two-qubit SWAP gate while being part of the gap" in {
-    assert(sim.runAndMeasure(Circuit(X(2), X(4), Controlled(2, SWAP(1, 4)))).toBinaryRegister.values ==
-      Seq(Zero(), One(), One(), Zero(), Zero()))
-  }
-
-  it should "work with a two-qubit reversed SWAP gate while being part of the gap" in {
-    assert(sim.runAndMeasure(Circuit(X(2), X(4), Controlled(2, SWAP(4, 1)))).toBinaryRegister.values ==
-      Seq(Zero(), One(), One(), Zero(), Zero()))
-  }
-
   it should "throw IllegalArgumentException if indices are not unique" in {
     assertThrows[IllegalArgumentException] {
       sim.runAndMeasure(Circuit(Controlled(1, X(1))))

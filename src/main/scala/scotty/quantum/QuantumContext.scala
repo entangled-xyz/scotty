@@ -5,8 +5,6 @@ import scotty.quantum.StateProbabilityReader.StateData
 import scotty.quantum.gate.{Gate, TargetGate}
 
 trait QuantumContext {
-  def targetGateMatrix(gate: TargetGate): Matrix
-
   def tensorProduct(register: QubitRegister, sp1: Superposition, sp2: Superposition): Superposition
 
   def densityMatrix(vector: Vector): Matrix
