@@ -150,13 +150,8 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
     (n & mask) | ((n & ~mask) << 1)
   }
 
-  def runExperiment(circuit: Circuit,
-                    trialsCount: Int): ExperimentResult = {
-    val experiments = ParVector.fill(trialsCount)(0)
-
-    taskSupport.foreach(experiments.tasksupport = _)
-
-    ExperimentResult(experiments.map(_ => run(circuit) match {
+  def runExperiment(circuit: Circuit, trialsCount: Int): ExperimentResult = {
+    ExperimentResult((0 until trialsCount).map(_ => run(circuit) match {
       case sp: Superposition => measure(circuit.register, sp.state)
       case c: Collapsed => c
     }).toList)
