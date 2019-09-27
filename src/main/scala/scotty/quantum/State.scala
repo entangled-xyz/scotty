@@ -24,13 +24,14 @@ case class Superposition(register: QubitRegister, state: Vector) extends State {
 case class Collapsed(register: QubitRegister, index: Int) extends State {
   val qubitCount: Int = register.size
 
+  def toBinary: String = MathUtils.toPaddedBinaryString(index, register.size)
+
   def toBinaryRegister: BinaryRegister = BinaryRegister(
     MathUtils
       .toPaddedBinary(index, register.size)
-      .reverse
       .zipWithIndex.map(b => register.values(b._2).label.fold(b._1)(b._1.withLabel)): _*)
 
-  def toHumanString: String = toBinaryRegister.values
+  def toHumanString: String = toBinaryRegister.values.reverse
     .zipWithIndex
     .map(p => s"${p._1.label.getOrElse(s"bit_${p._2}")}: ${p._1.toInt}")
     .mkString("\n")

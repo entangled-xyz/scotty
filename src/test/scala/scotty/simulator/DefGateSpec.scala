@@ -3,7 +3,7 @@ package scotty.simulator
 import org.scalatest.FlatSpec
 import scotty.TestHelpers
 import scotty.quantum._
-import scotty.quantum.gate.DefGate
+import scotty.quantum.gate.{DefGate, GateGroup}
 import scotty.quantum.math.Complex
 
 class DefGateSpec extends FlatSpec with TestHelpers {
@@ -41,7 +41,7 @@ class DefGateSpec extends FlatSpec with TestHelpers {
   }
 
   it should "be able to work with a dynamic matrix and a sequence of params" in {
-    def myGate(theta: Double, index: Int) = DefGate(rxMatrix, Seq(theta), index)
+    def myGate(theta: Double, index: Int) = DefGate(rxMatrix, theta, index)
 
     sim.run(Circuit(myGate(quarterTurn, 0))) match {
       case s: Superposition =>
@@ -59,18 +59,6 @@ class DefGateSpec extends FlatSpec with TestHelpers {
         assert(StateProbabilityReader(s).read(0).amplitude === Complex(fiftyPercent, 0))
         assert(StateProbabilityReader(s).read(1).amplitude === Complex(0, -fiftyPercent))
       case _ =>
-    }
-  }
-
-  it should "throw IllegalArgumentException if there are too few indices" in {
-    assertThrows[IllegalArgumentException] {
-      DefGate(fourByFourMatrix, 1)
-    }
-  }
-
-  it should "throw IllegalArgumentException if the matrix is not unitary" in {
-    assertThrows[IllegalArgumentException] {
-      DefGate(nonUnitaryMatrix, 0)
     }
   }
 }

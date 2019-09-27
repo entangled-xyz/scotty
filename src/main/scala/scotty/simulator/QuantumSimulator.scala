@@ -2,7 +2,6 @@ package scotty.simulator
 
 import scotty.quantum.QuantumContext._
 import scotty.quantum.StateProbabilityReader.StateData
-import scotty.quantum.gate.Gate.GateGen
 import scotty.quantum.gate.StandardGate.CNOT
 import scotty.quantum.gate._
 import scotty.quantum.math.{Complex, MathUtils}
@@ -51,7 +50,7 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
 
   def run(circuit: Circuit): State = {
     val state = registerToState(circuit.register)
-    val shouldMeasure = circuit.flattenedOps.exists(_.isInstanceOf[Measure])
+    val shouldMeasure = circuit.ops.exists(_.isInstanceOf[Measure])
     val iterator = parIndices(state.length / 2)
 
     circuit.gates.foreach(applyGate(iterator, state, _))
@@ -65,7 +64,7 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
   def applyGate(iterator: ParIterable[Int], state: Vector, gate: Gate): Unit = gate match {
     case swap: SwapGate => applySwapGate(iterator, state, swap)
     case control: ControlGate => applyControlGate(iterator, state, control)
-    case target: TargetGate => applyTargetGate(iterator, state, target.index, QuantumSimulator.matrix(target))
+    case target: TargetGate => applyTargetGate(iterator, state, target.index, target.matrix)
   }
 
   def applyTargetGate(iterator: ParIterable[Int], state: Vector, index: Int, matrix: Matrix): Unit = {
@@ -96,7 +95,7 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
   }
 
   def applyControlGate(iterator: ParIterable[Int], state: Vector, control: ControlGate): Unit = {
-    val matrix = QuantumSimulator.matrix(control.finalTarget)
+    val m = control.finalTarget.matrix
     val targetIndex = control.finalTarget.index
 
     iterator.foreach(i => {
@@ -113,8 +112,8 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
 
         if (zeroControlsTrigger) {
           val newZeroState = Complex.sum(
-            Complex.product(matrix(0)(0), matrix(0)(1), zeroState._1, zeroState._2),
-            Complex.product(matrix(0)(2), matrix(0)(3), oneState._1, oneState._2)
+            Complex.product(m(0)(0), m(0)(1), zeroState._1, zeroState._2),
+            Complex.product(m(0)(2), m(0)(3), oneState._1, oneState._2)
           )
 
           state(target0Index) = newZeroState._1
@@ -123,8 +122,8 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
 
         if (oneControlsTrigger) {
           val newOneState = Complex.sum(
-            Complex.product(matrix(1)(0), matrix(1)(1), zeroState._1, zeroState._2),
-            Complex.product(matrix(1)(2), matrix(1)(3), oneState._1, oneState._2)
+            Complex.product(m(1)(0), m(1)(1), zeroState._1, zeroState._2),
+            Complex.product(m(1)(2), m(1)(3), oneState._1, oneState._2)
           )
 
           state(target1Index) = newOneState._1
@@ -194,27 +193,10 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
 
   def densityMatrix(vector: Vector): Matrix = VectorWrapper.ketBraOuterProduct(vector)
 
-  def isUnitary(g: TargetGate): Boolean = MatrixWrapper.isUnitary(QuantumSimulator.matrix(g))
+  def isUnitary(g: TargetGate): Boolean = MatrixWrapper.isUnitary(g.matrix)
 }
 
 object QuantumSimulator {
-  import scotty.simulator.gate._
-
-  val singleQubitGateGens: Map[String, GateGen] = Map(
-    "H" -> H.matrix,
-    "X" -> X.matrix,
-    "Y" -> Y.matrix,
-    "Z" -> Z.matrix,
-    "I" -> I.matrix,
-    "S" -> S.matrix,
-    "T" -> T.matrix,
-    "PHASE" -> PHASE.matrix,
-    "PHASE0" -> PHASE0.matrix,
-    "RX" -> RX.matrix,
-    "RY" -> RY.matrix,
-    "RZ" -> RZ.matrix
-  )
-
   def apply(): QuantumSimulator = QuantumSimulator(None, new Random())
 
   def apply(random: Random): QuantumSimulator = QuantumSimulator(None, random)
@@ -222,10 +204,4 @@ object QuantumSimulator {
   def apply(ec: ExecutionContext): QuantumSimulator = QuantumSimulator(Some(ec), new Random)
 
   def apply(ec: ExecutionContext, random: Random): QuantumSimulator = QuantumSimulator(Some(ec), random)
-
-  def matrix(gate: TargetGate): Matrix = gate match {
-    case defGate: DefGate => defGate.matrix
-    case dagger: Dagger => MatrixWrapper.conjugateTranspose(QuantumSimulator.matrix(dagger.target))
-    case _ => singleQubitGateGens(gate.name).apply(gate.params)
-  }
 }

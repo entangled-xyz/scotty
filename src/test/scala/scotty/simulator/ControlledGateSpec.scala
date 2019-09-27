@@ -21,7 +21,7 @@ class ControlledGateSpec extends FlatSpec with TestHelpers {
 
   it should "change a target N qubits away up the register if control is 1" in {
     assert(sim.runAndMeasure(Circuit(X(3), Controlled(3, X(1)))).toBinaryRegister.values ==
-      Seq(Zero(), One(), Zero(), One()))
+      Seq(One(), Zero(), One(), Zero()))
   }
 
   it should "work with chained controlled gates" in {

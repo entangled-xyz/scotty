@@ -29,21 +29,15 @@ class QuantumSimulatorSpec extends FlatSpec {
   }
 
   it should "run and measure a 2 qubit circuit with an X gate applied to qubit 1" in {
-    val result = sim.runAndMeasure(Circuit(X(0)).withRegister(Qubit.one, Qubit.zero))
+    val result = sim.runAndMeasure(Circuit(X(0)).withRegister(Qubit.zero, Qubit.zero))
 
-    assert(result.toBinaryRegister.values == Seq(Zero(), Zero()))
+    assert(result.toBinaryRegister.values == Seq(Zero(), One()))
   }
 
   it should "run and measure a 2 qubit circuit with an X gate applied to qubit 2" in {
     val result = sim.runAndMeasure(Circuit(X(1)).withRegister(Qubit.zero, Qubit.zero))
 
-    assert(result.toBinaryRegister.values == Seq(Zero(), One()))
-  }
-
-  it should "run a circuit with CircuitConnector in it" in {
-    val result = sim.runAndMeasure(Circuit(X(0), CircuitConnector(Circuit(X(4))), X(2)))
-
-    assert(result.toBinaryRegister.values == Seq(One(), Zero(), One(), Zero(), One()))
+    assert(result.toBinaryRegister.values == Seq(One(), Zero()))
   }
 
   it should "return a collapsed state after being measured" in {
@@ -67,7 +61,7 @@ class QuantumSimulatorSpec extends FlatSpec {
 
   it should "work if the number of custom qubits is greater than op qubits" in {
     sim.run(Circuit(X(0), Measure(0)).withRegister(Qubit.zero, Qubit.zero, Qubit.zero, Qubit.zero)) match {
-      case s: Collapsed => assert(s.toBinaryRegister.values == Seq(One(), Zero(), Zero(), Zero()))
+      case s: Collapsed => assert(s.toBinaryRegister.values == Seq(Zero(), Zero(), Zero(), One()))
       case _ =>
     }
   }
