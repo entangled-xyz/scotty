@@ -14,56 +14,46 @@ class QuantumSimulatorSpec extends FlatSpec {
     }
   }
 
-  it should "run a circuit with one qubit" in {
-    sim.run(Circuit().withRegister(Qubit.zero)) match {
-      case s: Superposition => assert(s.qubitCount == 1)
-      case _ =>
-    }
+  it should "run a circuit with a custom register" in {
+    assert(sim.run(Circuit().withRegister("0")).qubitCount == 1)
+  }
+
+  it should "run amd measure a circuit with runAndMeasure" in {
+    assert(sim.runAndMeasure(Circuit().withRegister("01")).toBinary == "01")
+  }
+
+  it should "run and measure a circuit with the Measure op" in {
+    assert(sim.run(Circuit(Measure(0)).withRegister("01")).asInstanceOf[Collapsed].toBinary == "01")
   }
 
   it should "run and measure a circuit with 2 qubits" in {
-    val result = sim.runAndMeasure(Circuit().withRegister(Qubit.one, Qubit.zero))
-
-    assert(result.register.size == 2)
-    assert(result.toBinaryRegister.values == Seq(One(), Zero()))
+    assert(sim.runAndMeasure(Circuit().withRegister("10")).toBinary == "10")
   }
 
   it should "run and measure a 2 qubit circuit with an X gate applied to qubit 1" in {
-    val result = sim.runAndMeasure(Circuit(X(0)).withRegister(Qubit.zero, Qubit.zero))
-
-    assert(result.toBinaryRegister.values == Seq(Zero(), One()))
+    assert(sim.runAndMeasure(Circuit(X(0)).withRegister("00")).toBinary == "01")
   }
 
   it should "run and measure a 2 qubit circuit with an X gate applied to qubit 2" in {
-    val result = sim.runAndMeasure(Circuit(X(1)).withRegister(Qubit.zero, Qubit.zero))
-
-    assert(result.toBinaryRegister.values == Seq(One(), Zero()))
-  }
-
-  it should "return a collapsed state after being measured" in {
-    assert(
-      sim.runAndMeasure(Circuit(X(0)).withRegister(Qubit.zero)).toBinaryRegister.values == Seq(One())
-    )
-  }
-
-  it should "automatically get measured if there's a Measure op" in {
-    sim.run(Circuit(X(0), Measure(0)).withRegister(Qubit.zero)) match {
-      case s: Collapsed => assert(s.toBinaryRegister.values == Seq(One()))
-      case _ =>
-    }
+    assert(sim.runAndMeasure(Circuit(X(1)).withRegister("00")).toBinary == "10")
   }
 
   it should "throw IllegalArgumentException if the number of custom qubits is less than op qubits" in {
     assertThrows[IllegalArgumentException] {
-      sim.run(Circuit(X(1)).withRegister(Qubit.zero))
+      sim.run(Circuit(X(1)).withRegister("0"))
     }
   }
 
   it should "work if the number of custom qubits is greater than op qubits" in {
-    sim.run(Circuit(X(0), Measure(0)).withRegister(Qubit.zero, Qubit.zero, Qubit.zero, Qubit.zero)) match {
-      case s: Collapsed => assert(s.toBinaryRegister.values == Seq(Zero(), Zero(), Zero(), One()))
-      case _ =>
-    }
+    assert(sim.run(Circuit(X(0), Measure(0)).withRegister("0000")).asInstanceOf[Collapsed].toBinary == "0001")
+  }
+
+  it should "work with a register defined by a string" in {
+    assert(sim.runAndMeasure(Circuit(X(1)).withRegister("1111")).toBinary == "1101")
+  }
+
+  it should "work with a register defined by an int" in {
+    assert(sim.runAndMeasure(Circuit(X(1)).withRegister(15)).toBinary == "1101")
   }
 
   it should "run and measure multiple trials of the same circuit" in {

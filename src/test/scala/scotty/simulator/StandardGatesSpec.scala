@@ -8,11 +8,11 @@ import scotty.quantum.math.Complex
 
 class StandardGatesSpec extends FlatSpec with TestHelpers {
   "CNOT" should "change target qubit when control is 1" in {
-    assert(sim.runAndMeasure(Circuit(X(0), CNOT(0, 1))).toBinaryRegister.values == Seq(One(), One()))
+    assert(sim.runAndMeasure(Circuit(X(0), CNOT(0, 1))).toBinary == "11")
   }
 
   it should "not change target qubit when control is 0" in {
-    assert(sim.runAndMeasure(Circuit(CNOT(0, 1))).toBinaryRegister.values == Seq(Zero(), Zero()))
+    assert(sim.runAndMeasure(Circuit(CNOT(0, 1))).toBinary == "00")
   }
 
   it should "throw IllegalArgumentException if indices are not unique" in {
@@ -22,13 +22,11 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
   }
 
   "CCNOT" should "change target qubit when both controls are 1" in {
-    assert(sim.runAndMeasure(Circuit(X(0), X(2), CCNOT(0, 2, 4))).toBinaryRegister.values ==
-      Seq(One(), Zero(), One(), Zero(), One()))
+    assert(sim.runAndMeasure(Circuit(X(0), X(2), CCNOT(0, 2, 4))).toBinary == "10101")
   }
 
   it should "not change target qubit when one of the controls is 0" in {
-    assert(sim.runAndMeasure(Circuit(X(2), CCNOT(0, 2, 4))).toBinaryRegister.values ==
-      Seq(Zero(), Zero(), One(), Zero(), Zero()))
+    assert(sim.runAndMeasure(Circuit(X(2), CCNOT(0, 2, 4))).toBinary == "00100")
   }
 
   it should "throw IllegalArgumentException if indices are not unique" in {
@@ -38,33 +36,23 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
   }
 
   "H" should "set superposition to 50/50" in {
-    sim.run(Circuit(H(0))) match {
-      case s: Superposition => assert(QubitProbabilityReader(s).read(0).probabilityOfOne === 0.5)
-      case _ =>
-    }
+    assert(QubitProbabilityReader(sim.run(Circuit(H(0)))).read(0).probabilityOfOne === 0.5d)
   }
 
   "I" should "do nothing" in {
-    val circuit = Circuit(I(0))
+    val r = StateProbabilityReader(sim.run(Circuit(I(0)))).read(0)
 
-    sim.run(circuit) match {
-      case s: Superposition =>
-        assert(StateProbabilityReader(s).read(0).amplitude == Complex(1))
-        assert(StateProbabilityReader(s).read(0).probability == 1d)
-      case _ =>
-    }
+    assert(r.state == "0")
+    assert(r.amplitude == Complex(1))
+    assert(r.probability == 1d)
   }
 
   "X" should "negate qubit" in {
-    val circuit = Circuit(X(0))
+    val r = StateProbabilityReader(sim.run(Circuit(X(0)))).read(0)
 
-    sim.run(circuit) match {
-      case s: Superposition =>
-        assert(StateProbabilityReader(s).read(0).amplitude == Complex(0))
-        assert(StateProbabilityReader(s).read(1).amplitude == Complex(1))
-        assert(sim.measure(circuit.register, s.state).toBinaryRegister.values == Seq(One()))
-      case _ =>
-    }
+    assert(r.state == "1")
+    assert(r.amplitude == Complex(1))
+    assert(r.probability == 1d)
   }
 
   "Y" should "negate qubit" in {
@@ -72,21 +60,20 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
 
     sim.run(circuit) match {
       case s: Superposition =>
-        assert(StateProbabilityReader(s).read(0).amplitude == Complex(0, 0))
-        assert(StateProbabilityReader(s).read(1).amplitude == Complex(0, 1))
-        assert(sim.measure(circuit.register, s.state).toBinaryRegister.values == Seq(One()))
+        assert(StateProbabilityReader(s).read(0).amplitude == Complex(0, 1))
+        assert(StateProbabilityReader(s).read(0).probability == 1d)
       case _ =>
     }
   }
 
   "Z" should "change phase" in {
-    val circuit = Circuit(Z(0))
+    val circuit = Circuit(X(0), Z(0))
 
     sim.run(circuit) match {
       case s: Superposition =>
-        assert(StateProbabilityReader(s).read(0).amplitude == Complex(1, 0))
-        assert(StateProbabilityReader(s).read(1).amplitude == Complex(0, 0))
-        assert(sim.measure(circuit.register, s.state).toBinaryRegister.values == Seq(Zero()))
+        println(s)
+        assert(StateProbabilityReader(s).read(0).amplitude == Complex(-1, 0))
+        assert(StateProbabilityReader(s).read(0).probability == 1d)
       case _ =>
     }
   }
@@ -96,7 +83,7 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
 
     sim.run(circuit) match {
       case s: Superposition =>
-        assert(StateProbabilityReader(s).read(0).amplitude == Complex(0, 0))
+        assert(StateProbabilityReader(s).read(0).amplitude == Complex(1, 0))
         assert(StateProbabilityReader(s).read(1).amplitude == Complex(1, 0))
         assert(StateProbabilityReader(s).read(2).amplitude == Complex(0, 0))
         assert(StateProbabilityReader(s).read(3).amplitude == Complex(0, 0))

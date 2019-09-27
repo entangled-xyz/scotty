@@ -8,7 +8,6 @@ import scotty.quantum.math.{Complex, MathUtils}
 import scotty.quantum.{Superposition, _}
 import scotty.simulator.math.{MatrixWrapper, VectorWrapper}
 import scala.collection.parallel.{ExecutionContextTaskSupport, ParIterable}
-import scala.collection.parallel.immutable.ParVector
 import scala.collection.parallel.mutable.ParArray
 import scala.concurrent.ExecutionContext
 import scala.util.Random
@@ -24,7 +23,7 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
       val im = sp.state(2 * i + 1)
       val p = Complex.abs(Complex.product(r, im, r, im))
 
-      if (p > 0) ps :+ StateData(MathUtils.toPaddedBinary(i, sp.qubitCount), Complex(r, im), p)
+      if (p > 0) ps :+ StateData(MathUtils.toPaddedBinaryString(i, sp.qubitCount), Complex(r, im), p)
       else ps
     })
   }

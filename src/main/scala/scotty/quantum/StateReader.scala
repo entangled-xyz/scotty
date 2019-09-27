@@ -18,7 +18,7 @@ sealed trait StateReader[T] {
 case class StateProbabilityReader(state: State)(implicit ctx: QuantumContext) extends StateReader[StateData] {
   def read: Seq[StateData] = state match {
     case sp: Superposition => ctx.probabilities(sp)
-    case c: Collapsed => Seq(StateData(c.toBinaryRegister.values, Complex(1), 1))
+    case c: Collapsed => Seq(StateData(c.toBinary, Complex(1), 1))
   }
 
   override def toString: String = read.flatMap(p => {
@@ -26,15 +26,13 @@ case class StateProbabilityReader(state: State)(implicit ctx: QuantumContext) ex
 
     if (prob == 0) None
     else Some(
-      s"${p.state.map(_.toHumanString).mkString("")}: " +
-        s"Amplitude: ${Complex.toString(p.amplitude)}, " +
-        f"P: $prob%1.2f%%"
+      s"${p.state}: Amplitude: ${Complex.toString(p.amplitude)}, " + f"P: $prob%1.2f%%"
     )
   }).mkString("\n")
 }
 
 object StateProbabilityReader {
-  case class StateData(state: Seq[Bit], amplitude: Complex, probability: Double)
+  case class StateData(state: String, amplitude: Complex, probability: Double)
 }
 
 case class QubitProbabilityReader(register: Option[QubitRegister], state: State)
@@ -48,7 +46,7 @@ case class QubitProbabilityReader(register: Option[QubitRegister], state: State)
         register.flatMap(_.values(index).label),
         index,
         stateData.foldLeft(0d)((sum, data) =>
-          if (data.state(offset - index).isInstanceOf[One]) sum + data.probability
+          if (data.state.toCharArray()(offset - index) == '1') sum + data.probability
           else sum
         )
       )
