@@ -2,11 +2,12 @@ package scotty.simulator
 
 import scotty.quantum.QuantumContext._
 import scotty.quantum.StateProbabilityReader.StateData
-import scotty.quantum.gate.StandardGate.CNOT
+import scotty.quantum.gate.StandardGate.{CCNOT, CNOT, CSWAP, SWAP}
 import scotty.quantum.gate._
 import scotty.quantum.math.{Complex, MathUtils}
 import scotty.quantum.{Superposition, _}
 import scotty.simulator.math.{MatrixWrapper, VectorWrapper}
+
 import scala.collection.parallel.{ExecutionContextTaskSupport, ParIterable}
 import scala.collection.parallel.mutable.ParArray
 import scala.concurrent.ExecutionContext
@@ -61,19 +62,25 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
   def applyGate(state: Vector, gate: Gate): Unit = applyGate(parIndices(state.length / 2), state, gate)
 
   def applyGate(iterator: ParIterable[Int], state: Vector, gate: Gate): Unit = gate match {
-    case swap: SwapGate => applySwapGate(iterator, state, swap)
+    case swap: SWAP => QuantumSimulator.swapGate.apply(swap.index1, swap.index2)
+    case cswap: CSWAP => QuantumSimulator.cswapGate.apply(cswap.controlIndex, cswap.index1, cswap.index2)
     case control: ControlGate => applyControlGate(iterator, state, control)
     case target: TargetGate => applyTargetGate(iterator, state, target.index, target.matrix)
+    case _ => ???
+  }
+
+  def applyGateGroup(iterator: ParIterable[Int], state: Vector, gg: GateGroup): Unit = {
+    gg.gates.foreach(g => applyGate(iterator, state, g))
   }
 
   def applyTargetGate(iterator: ParIterable[Int], state: Vector, index: Int, matrix: Matrix): Unit = {
     iterator.foreach(i => {
       val clearedBit = nthCleared(i, index)
-      val target0Index = 2 * clearedBit
-      val target1Index = 2 * (clearedBit | (1 << index))
+      val oneIndex = 2 * clearedBit
+      val zeroIndex = 2 * (clearedBit | (1 << index))
 
-      val zeroState = (state(target0Index), state(target0Index + 1))
-      val oneState = (state(target1Index), state(target1Index + 1))
+      val zeroState = (state(oneIndex), state(oneIndex + 1))
+      val oneState = (state(zeroIndex), state(zeroIndex + 1))
 
       val newZeroState = Complex.sum(
         Complex.product(matrix(0)(0), matrix(0)(1), zeroState._1, zeroState._2),
@@ -85,11 +92,11 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
         Complex.product(matrix(1)(2), matrix(1)(3), oneState._1, oneState._2)
       )
 
-      state(target0Index) = newZeroState._1
-      state(target0Index + 1) = newZeroState._2
+      state(oneIndex) = newZeroState._1
+      state(oneIndex + 1) = newZeroState._2
 
-      state(target1Index) = newOneState._1
-      state(target1Index + 1) = newOneState._2
+      state(zeroIndex) = newOneState._1
+      state(zeroIndex + 1) = newOneState._2
     })
   }
 
@@ -99,15 +106,15 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
 
     iterator.foreach(i => {
       val clearedBit = nthCleared(i, targetIndex)
-      val target0Index = 2 * clearedBit
-      val target1Index = 2 * (clearedBit | (1 << targetIndex))
+      val zeroIndex = 2 * clearedBit
+      val oneIndex = 2 * (clearedBit | (1 << targetIndex))
 
-      val zeroControlsTrigger = control.controlIndexes.forall(idx => ((1 << idx) & (target0Index / 2)) > 0)
-      val oneControlsTrigger = control.controlIndexes.forall(idx => ((1 << idx) & (target1Index / 2)) > 0)
+      val zeroControlsTrigger = control.controlIndexes.forall(idx => ((1 << idx) & (zeroIndex / 2)) > 0)
+      val oneControlsTrigger = control.controlIndexes.forall(idx => ((1 << idx) & (oneIndex / 2)) > 0)
 
       if (zeroControlsTrigger || oneControlsTrigger) {
-        val zeroState = (state(target0Index), state(target0Index + 1))
-        val oneState = (state(target1Index), state(target1Index + 1))
+        val zeroState = (state(zeroIndex), state(zeroIndex + 1))
+        val oneState = (state(oneIndex), state(oneIndex + 1))
 
         if (zeroControlsTrigger) {
           val newZeroState = Complex.sum(
@@ -115,8 +122,8 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
             Complex.product(m(0)(2), m(0)(3), oneState._1, oneState._2)
           )
 
-          state(target0Index) = newZeroState._1
-          state(target0Index + 1) = newZeroState._2
+          state(zeroIndex) = newZeroState._1
+          state(zeroIndex + 1) = newZeroState._2
         }
 
         if (oneControlsTrigger) {
@@ -125,23 +132,12 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
             Complex.product(m(1)(2), m(1)(3), oneState._1, oneState._2)
           )
 
-          state(target1Index) = newOneState._1
-          state(target1Index + 1) = newOneState._2
+          state(oneIndex) = newOneState._1
+          state(oneIndex + 1) = newOneState._2
         }
       }
     })
   }
-
-  def applySwapGate(iterator: ParIterable[Int], state: Vector, gate: SwapGate): Unit = {
-    val i1 = gate.index1
-    val i2 = gate.index2
-
-    swapGate(i1, i2).foreach(applyGate(iterator, state, _))
-  }
-
-  def swapGate(i1: Int, i2: Int): List[Gate] = List(
-    CNOT(i1, i2), CNOT(i2, i1), CNOT(i1, i2)
-  )
 
   def nthCleared(n: Int, target: Int): Int = {
     val mask = (1 << target) - 1
@@ -173,7 +169,7 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
     }
     else if (register.values.forall(_ == Qubit.one)) {
       val state = Array.fill(2 * Math.pow(2, register.size).toInt)(0f)
-      state(state.length - 1) = 1f
+      state(state.length - 2) = 1f
       state
     } else {
       register.values
@@ -191,6 +187,9 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
 }
 
 object QuantumSimulator {
+  val swapGate = (i1: Int, i2: Int) => GateGroup(CNOT(i1, i2), CNOT(i2, i1), CNOT(i1, i2))
+  val cswapGate = (i1: Int, i2: Int, i3: Int) => GateGroup(CNOT(i3, i2), CCNOT(i1, i2, i3), CNOT(i3, i2))
+
   def apply(): QuantumSimulator = QuantumSimulator(None, new Random())
 
   def apply(random: Random): QuantumSimulator = QuantumSimulator(None, random)
