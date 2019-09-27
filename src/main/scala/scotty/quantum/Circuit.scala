@@ -10,6 +10,11 @@ case class Circuit(register: QubitRegister, ops: Op*) {
 
   def combine(newOps: Op*): Circuit = Circuit(ops ++ newOps: _*)
 
+  def withRegister(newRegister: String): Circuit =
+    Circuit(QubitRegister(newRegister.toCharArray.map(c => Qubit(Bit(c.asDigit))): _*), ops: _*)
+
+  def withRegister(newRegister: Int): Circuit = withRegister(newRegister.toBinaryString)
+
   def withRegister(newRegister: QubitRegister): Circuit = Circuit(newRegister, ops: _*)
 
   def withRegister(newQubits: Qubit*): Circuit = Circuit(QubitRegister(newQubits: _*), ops: _*)
