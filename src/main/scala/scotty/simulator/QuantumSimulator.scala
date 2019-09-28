@@ -62,8 +62,10 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
   def applyGate(state: Vector, gate: Gate): Unit = applyGate(parIndices(state.length / 2), state, gate)
 
   def applyGate(iterator: ParIterable[Int], state: Vector, gate: Gate): Unit = gate match {
-    case swap: SWAP => QuantumSimulator.swapGate.apply(swap.index1, swap.index2)
-    case cswap: CSWAP => QuantumSimulator.cswapGate.apply(cswap.controlIndex, cswap.index1, cswap.index2)
+    case swap: SWAP =>
+      applyGateGroup(iterator, state, QuantumSimulator.swapGate.apply(swap.index1, swap.index2))
+    case cswap: CSWAP =>
+      applyGateGroup(iterator, state, QuantumSimulator.cswapGate.apply(cswap.controlIndex, cswap.index1, cswap.index2))
     case control: ControlGate => applyControlGate(iterator, state, control)
     case target: TargetGate => applyTargetGate(iterator, state, target.index, target.matrix)
     case _ => ???
