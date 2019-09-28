@@ -185,11 +185,11 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
   }
 
   "CSWAP" should "swap two qubits when control is 1" in {
-    assert(sim.runAndMeasure(Circuit(X(1), X(2), CSWAP(1, 0, 2))).toBinaryRegister.values == Seq(One(), One(), Zero()))
+    assert(sim.runAndMeasure(Circuit(X(1), X(2), CSWAP(1, 0, 2))).toBitRegister.values == Seq(One(), One(), Zero()))
   }
 
   it should "not swap two qubits when control is 0" in {
-    assert(sim.runAndMeasure(Circuit(X(2), CSWAP(1, 0, 2))).toBinaryRegister.values == Seq(Zero(), Zero(), One()))
+    assert(sim.runAndMeasure(Circuit(X(2), CSWAP(1, 0, 2))).toBitRegister.values == Seq(Zero(), Zero(), One()))
   }
 
   "PHASE" should "apply phase phi to state |1>" in {

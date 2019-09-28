@@ -26,12 +26,12 @@ case class Collapsed(register: QubitRegister, index: Int) extends State {
 
   def toBinary: String = MathUtils.toPaddedBinaryString(index, register.size)
 
-  def toBinaryRegister: BinaryRegister = BinaryRegister(
+  def toBitRegister: BitRegister = BitRegister(
     MathUtils
       .toPaddedBinary(index, register.size)
       .zipWithIndex.map(b => register.values(b._2).label.fold(b._1)(b._1.withLabel)): _*)
 
-  def toHumanString: String = toBinaryRegister.values.reverse
+  def toHumanString: String = toBitRegister.values.reverse
     .zipWithIndex
     .map(p => s"${p._1.label.getOrElse(s"bit_${p._2}")}: ${p._1.toInt}")
     .mkString("\n")

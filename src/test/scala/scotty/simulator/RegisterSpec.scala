@@ -1,7 +1,7 @@
 package scotty.simulator
 
 import org.scalatest.FlatSpec
-import scotty.quantum.{BinaryRegister, One, Qubit, QubitRegister, Zero}
+import scotty.quantum.{BitRegister, One, Qubit, QubitRegister, Zero}
 
 class RegisterSpec extends FlatSpec {
   val sim = QuantumSimulator()
@@ -14,7 +14,7 @@ class RegisterSpec extends FlatSpec {
 
   it should "throw IllegalArgumentException if bit labels have duplicates" in {
     assertThrows[IllegalArgumentException] {
-      BinaryRegister(One("test"), Zero("test"))
+      BitRegister(One("test"), Zero("test"))
     }
   }
 }

@@ -36,8 +36,8 @@ class DefGateSpec extends FlatSpec with TestHelpers {
   "Custom gate" should "be able to work with a static matrix" in {
     def myGate(index: Int) = DefGate(twoByTwoMatrix, index)
 
-    assert(sim.runAndMeasure(Circuit(myGate(0))).toBinaryRegister.values == Seq(One()))
-    assert(sim.runAndMeasure(Circuit(myGate(0)).withRegister(Qubit.one)).toBinaryRegister.values == Seq(Zero()))
+    assert(sim.runAndMeasure(Circuit(myGate(0))).toBitRegister.values == Seq(One()))
+    assert(sim.runAndMeasure(Circuit(myGate(0)).withRegister(Qubit.one)).toBitRegister.values == Seq(Zero()))
   }
 
   it should "be able to work with a dynamic matrix and a sequence of params" in {

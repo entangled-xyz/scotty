@@ -97,9 +97,9 @@ case class BlochSphereReader(state: State)(implicit ctx: QuantumContext) extends
     case c: Collapsed =>
       val x = 0
       val y = 0
-      val z = if (c.toBinaryRegister.values(0).isInstanceOf[Zero]) 1 else -1
+      val z = if (c.toBitRegister.values(0).isInstanceOf[Zero]) 1 else -1
 
-      val theta = if (c.toBinaryRegister.values(0).isInstanceOf[Zero]) 0 else Math.PI
+      val theta = if (c.toBitRegister.values(0).isInstanceOf[Zero]) 0 else Math.PI
       val phi = 0
 
       Array(BlochSphereData(phi, theta, Coordinates(x, y, z)))
