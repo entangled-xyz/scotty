@@ -192,6 +192,32 @@ class StandardGatesSpec extends FlatSpec with TestHelpers {
     assert(sim.runAndMeasure(Circuit(X(2), CSWAP(1, 0, 2))).toBinary == "100")
   }
 
+  "ISWAP" should "swap qubits and apply an i phase" in {
+    val r1 = StateProbabilityReader(sim.run(Circuit(H(0), ISWAP(0, 1)))).read(0)
+    val r2 = StateProbabilityReader(sim.run(Circuit(H(0), ISWAP(0, 1)))).read(1)
+
+    assert(r1.state == "00")
+    assert(r1.amplitude === Complex(0.7, 0))
+    assert(r1.probability === 0.5d)
+
+    assert(r2.state == "10")
+    assert(r2.amplitude === Complex(0, 0.7))
+    assert(r2.probability === 0.5d)
+  }
+
+  "PSWAP" should "swap qubits and apply a phi phase" in {
+    val r1 = StateProbabilityReader(sim.run(Circuit(H(0), PSWAP(Math.PI / 3, 0, 1)))).read(0)
+    val r2 = StateProbabilityReader(sim.run(Circuit(H(0), PSWAP(Math.PI / 3, 0, 1)))).read(1)
+
+    assert(r1.state == "00")
+    assert(r1.amplitude === Complex(0.7, 0))
+    assert(r1.probability === 0.5d)
+
+    assert(r2.state == "10")
+    assert(r2.amplitude === Complex(0.35, 0.61))
+    assert(r2.probability === 0.5d)
+  }
+
   "PHASE" should "apply phase phi to state |1>" in {
     val r1 = StateProbabilityReader(sim.run(Circuit(H(0), PHASE(Math.PI / 4, 0)))).read(0)
     val r2 = StateProbabilityReader(sim.run(Circuit(H(0), PHASE(Math.PI / 4, 0)))).read(1)

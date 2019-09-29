@@ -2,7 +2,7 @@ package scotty.simulator
 
 import scotty.quantum.QuantumContext._
 import scotty.quantum.StateProbabilityReader.StateData
-import scotty.quantum.gate.StandardGate.{CCNOT, CNOT, CPHASE, CPHASE00, CPHASE01, CPHASE10, CSWAP, SWAP, X}
+import scotty.quantum.gate.StandardGate.{CCNOT, CNOT, CPHASE, CPHASE00, CPHASE01, CPHASE10, CSWAP, ISWAP, PHASE, PSWAP, S, SWAP, X}
 import scotty.quantum.gate._
 import scotty.quantum.math.{Complex, MathUtils}
 import scotty.quantum.{Superposition, _}
@@ -64,6 +64,8 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
   def applyGate(iterator: ParIterable[Int], state: Vector, gate: Gate): Unit = gate match {
     case g: SWAP => applyGateGroup(iterator, state, QuantumSimulator.swap.apply(g.index1, g.index2))
     case g: CSWAP => applyGateGroup(iterator, state, QuantumSimulator.cswap.apply(g.controlIndex, g.index1, g.index2))
+    case g: ISWAP => applyGateGroup(iterator, state, QuantumSimulator.iswap.apply(g.index1, g.index2))
+    case g: PSWAP => applyGateGroup(iterator, state, QuantumSimulator.pswap.apply(g.phi, g.index1, g.index2))
     case g: CPHASE00 =>
       applyGateGroup(iterator, state, QuantumSimulator.cphase00.apply(g.phi, g.controlIndex, g.targetIndex))
     case g: CPHASE01 =>
@@ -193,6 +195,8 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
 object QuantumSimulator {
   val swap = (i0: Int, i1: Int) => GateGroup(CNOT(i0, i1), CNOT(i1, i0), CNOT(i0, i1))
   val cswap = (i0: Int, i1: Int, i2: Int) => GateGroup(CNOT(i2, i1), CCNOT(i0, i1, i2), CNOT(i2, i1))
+  val iswap = (i0: Int, i1: Int) => GateGroup(SWAP(i0, i1), S(i0), S(i1), CPHASE(Math.PI / 2, i0, i1))
+  val pswap = (phi: Double, i0: Int, i1: Int) => GateGroup(SWAP(i0, i1), PHASE(phi, i0), PHASE(phi, i1), CPHASE(phi, i0, i1))
   val cphase00 = (phi: Double, i0: Int, i1: Int) => GateGroup(X(i0), CPHASE10(phi, i0, i1), X(i0))
   val cphase01 = (phi: Double, i0: Int, i1: Int) => GateGroup(X(i0), CPHASE(phi, i0, i1), X(i0))
 
