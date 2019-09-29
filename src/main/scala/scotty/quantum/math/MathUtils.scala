@@ -44,6 +44,8 @@ object MathUtils {
 
   def toPaddedBinaryInts(n: Int, qubitCount: Int): List[Int] = bitsToInts(toPaddedBinary(n, qubitCount))
 
+  def toPaddedBinaryString(n: Int, qubitCount: Int): String = toPaddedBinaryInts(n, qubitCount).mkString("")
+
   def isProbabilityValid(a: Double, b: Double): Boolean = {
     val sumOfSquares = Math.pow(a, 2) + Math.pow(b, 2)
 

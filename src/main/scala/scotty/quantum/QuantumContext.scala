@@ -1,18 +1,19 @@
 package scotty.quantum
 
 import scotty.quantum.QuantumContext._
-import scotty.quantum.gate.Gate
+import scotty.quantum.StateProbabilityReader.StateData
+import scotty.quantum.gate.{Gate, TargetGate}
 
 trait QuantumContext {
-  def gateMatrix(gate: Gate): Matrix
-
   def tensorProduct(register: QubitRegister, sp1: Superposition, sp2: Superposition): Superposition
-
-  def product(register: QubitRegister, gate: Gate, sp: Superposition): Superposition
 
   def densityMatrix(vector: Vector): Matrix
 
-  def isUnitary(gate: Gate): Boolean
+  def isUnitary(gate: TargetGate): Boolean
+
+  def probabilities(sp: Superposition): Seq[StateData]
+
+  def applyGate(state: Vector, gate: Gate): Unit
 
   def run(circuit: Circuit): State
 
@@ -20,12 +21,12 @@ trait QuantumContext {
 
   def runAndMeasure(circuit: Circuit): Collapsed = {
     run(circuit) match {
-      case s: Superposition => measure(circuit.register, s.vector)
+      case s: Superposition => measure(circuit.register, s.state)
       case s: Collapsed => s
     }
   }
 
-  def runAndMeasure(circuit: Circuit, trialsCount: Int): ExperimentResult
+  def runExperiment(circuit: Circuit, trialsCount: Int): ExperimentResult
 }
 
 object QuantumContext {

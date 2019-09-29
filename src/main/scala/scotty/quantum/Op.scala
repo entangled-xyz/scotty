@@ -1,14 +1,10 @@
 package scotty.quantum
 
 trait Op {
-  lazy val qubitCount: Int = indexes.length
-  val indexes: Seq[Int]
-}
-
-case class CircuitConnector(circuit: Circuit) extends Op {
-  val indexes: Range = circuit.indexes
+  lazy val qubitCount: Int = indices.length
+  val indices: Seq[Int]
 }
 
 case class Measure(index: Int) extends Op {
-  val indexes: Seq[Int] = Seq(index)
+  val indices: Seq[Int] = Seq(index)
 }

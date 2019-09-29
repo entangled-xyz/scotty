@@ -12,11 +12,11 @@ class StateReaderSpec extends FlatSpec with TestHelpers {
     val data0 = StateProbabilityReader(sp).read(0)
     val data1 = StateProbabilityReader(sp).read(1)
 
-    assert(data0.state === Seq(Zero()))
+    assert(data0.state == "0")
     assert(data0.amplitude === Complex(fiftyPercent, 0))
     assert(data0.probability === 0.5d)
 
-    assert(data1.state === Seq(One()))
+    assert(data1.state == "1")
     assert(data1.amplitude === Complex(fiftyPercent, 0))
     assert(data1.probability === 0.5d)
   }

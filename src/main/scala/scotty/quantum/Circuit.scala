@@ -1,30 +1,30 @@
 package scotty.quantum
 
 import scotty.ErrorMessage
-import scotty.quantum.gate.Gate
+import scotty.quantum.gate.{GateGroup, Gate}
 
 case class Circuit(register: QubitRegister, ops: Op*) {
-  val indexes: Range = 0 until register.size
+  val indices: Range = 0 until register.size
 
   def combine(newCircuit: Circuit): Circuit = Circuit(ops ++ newCircuit.ops: _*)
 
   def combine(newOps: Op*): Circuit = Circuit(ops ++ newOps: _*)
 
+  def withRegister(newRegister: String): Circuit =
+    Circuit(QubitRegister(newRegister.toCharArray.map(c => Qubit(Bit(c.asDigit))): _*), ops: _*)
+
+  def withRegister(newRegister: Int): Circuit = withRegister(newRegister.toBinaryString)
+
   def withRegister(newRegister: QubitRegister): Circuit = Circuit(newRegister, ops: _*)
 
   def withRegister(newQubits: Qubit*): Circuit = Circuit(QubitRegister(newQubits: _*), ops: _*)
 
-  def isValid: Boolean = register.size >= Circuit.qubitCountFromOps(ops.toSeq)
-
-  def flattenedOps: Seq[Op] = ops.collect {
-    case cc: CircuitConnector => cc.circuit.flattenedOps
-    case op: Op => Seq(op)
-  }.flatten.toSeq
+  def isValid: Boolean = register.size >= Circuit.qubitCountFromOps(ops)
 
   def gates: Seq[Gate] = ops.collect {
+    case cc: GateGroup => cc.gates
     case g: Gate => Seq(g)
-    case cc: CircuitConnector => cc.circuit.gates
-  }.flatten.toSeq
+  }.flatten
 
   require(isValid, ErrorMessage.QubitCountMismatch)
 }
@@ -32,9 +32,9 @@ case class Circuit(register: QubitRegister, ops: Op*) {
 object Circuit {
   val defaultState: Qubit = Qubit.zero
 
-  def apply(ops: Op*): Circuit = this(generateRegister(ops.toSeq), ops: _*)
+  def apply(ops: Op*): Circuit = this(generateRegister(ops), ops: _*)
 
-  def qubitCountFromOps(ops: Seq[Op]): Int = if (ops.isEmpty) 0 else ops.flatMap(op => op.indexes).distinct.max + 1
+  def qubitCountFromOps(ops: Seq[Op]): Int = if (ops.isEmpty) 0 else ops.flatMap(op => op.indices).distinct.max + 1
 
   def generateRegister(n: Int): QubitRegister =
     QubitRegister(List.fill(n)(defaultState): _*)

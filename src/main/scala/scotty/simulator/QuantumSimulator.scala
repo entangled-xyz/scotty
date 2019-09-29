@@ -1,15 +1,14 @@
 package scotty.simulator
 
-import java.util
 import scotty.quantum.QuantumContext._
-import scotty.quantum.gate.Gate.GateGen
-import scotty.quantum.gate.StandardGate.{CPHASE00, CPHASE01, ISWAP, PSWAP}
+import scotty.quantum.StateProbabilityReader.StateData
+import scotty.quantum.gate.StandardGate.{CCNOT, CNOT, CPHASE, CPHASE00, CPHASE01, CPHASE10, CSWAP, ISWAP, PHASE, PSWAP, S, SWAP, X}
 import scotty.quantum.gate._
 import scotty.quantum.math.{Complex, MathUtils}
 import scotty.quantum.{Superposition, _}
 import scotty.simulator.math.{MatrixWrapper, VectorWrapper}
-import scala.collection.parallel.ExecutionContextTaskSupport
-import scala.collection.parallel.immutable.ParVector
+
+import scala.collection.parallel.{ExecutionContextTaskSupport, ParIterable}
 import scala.collection.parallel.mutable.ParArray
 import scala.concurrent.ExecutionContext
 import scala.util.Random
@@ -17,19 +16,32 @@ import scala.util.Random
 case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extends QuantumContext {
   val taskSupport: Option[ExecutionContextTaskSupport] = ec.map(new ExecutionContextTaskSupport(_))
 
+  def probabilities(sp: Superposition): Seq[StateData] = {
+    val probabilities = Vector[StateData]()
+
+    parIndices(sp.state.length).foldLeft(probabilities)((ps, i) => {
+      val r = sp.state(2 * i)
+      val im = sp.state(2 * i + 1)
+      val p = Complex.abs(Complex.product(r, im, r, im))
+
+      if (p > 0) ps :+ StateData(MathUtils.toPaddedBinaryString(i, sp.qubitCount), Complex(r, im), p)
+      else ps
+    })
+  }
+
   def measure(register: QubitRegister, state: Vector): Collapsed = {
-    val initialIterator = (0, 0d, None: Option[Int])
+    val initProbData = (0, 0d, None: Option[Int])
     val rnd = random.nextDouble()
 
-    val result = (0 until state.length / 2).foldLeft(initialIterator)((iterator, stateIndex) => {
+    val result = parIndices(state.length).foldLeft(initProbData)((probData, stateIndex) => {
       val abs = Complex.abs(state(2 * stateIndex), state(2 * stateIndex + 1))
-      val totalProb = iterator._2 + Math.pow(abs, 2)
+      val totalProb = probData._2 + Math.pow(abs, 2)
 
-      val tryCollapse = (c: Int) => if (rnd <= totalProb) Some(c) else None
+      val tryCollapse = (i: Int) => if (rnd <= totalProb) Some(i) else None
 
-      iterator match {
-        case (count, _, None) => (count + 1, totalProb, tryCollapse(count))
-        case (count, _, valueOp) => (count + 1, totalProb, valueOp)
+      probData match {
+        case (index, _, None) => (index + 1, totalProb, tryCollapse(index))
+        case (index, _, indexOp) => (index + 1, totalProb, indexOp)
       }
     })
 
@@ -37,253 +49,156 @@ case class QuantumSimulator(ec: Option[ExecutionContext], random: Random) extend
   }
 
   def run(circuit: Circuit): State = {
-    val shouldMeasure = circuit.flattenedOps.exists(_.isInstanceOf[Measure])
-    val qubitCount = circuit.register.size
-    var currentState = registerToState(circuit.register)
-    val steps = circuit.gates.map(g => padGate(g, qubitCount).map(g => g.matrix(this)))
-    val parIndices = ParArray.iterate(0, currentState.length / 2)(i => i + 1)
+    val state = registerToState(circuit.register)
+    val shouldMeasure = circuit.ops.exists(_.isInstanceOf[Measure])
+    val iterator = parIndices(state.length / 2)
 
-    taskSupport.foreach(parIndices.tasksupport = _)
+    circuit.gates.foreach(applyGate(iterator, state, _))
 
-    steps.foreach(gates => {
-      val finalState = Array.fill(currentState.length)(0f)
+    if (shouldMeasure) measure(circuit.register, state)
+    else Superposition(circuit.register, state)
+  }
 
-      parIndices.foreach(i => {
-        val binaries = MathUtils.toPaddedBinaryInts(i, qubitCount)
-        var offset = 0
+  def applyGate(state: Vector, gate: Gate): Unit = applyGate(parIndices(state.length / 2), state, gate)
 
-        val finalRow = gates.foldLeft(Array.empty[Float])((row, matrix) => {
-          val n = (Math.log(matrix.length) / Math.log(2)).toInt
-          val slice = binaries.slice(offset, offset + n)
+  def applyGate(iterator: ParIterable[Int], state: Vector, gate: Gate): Unit = gate match {
+    case g: SWAP => applyGateGroup(iterator, state, QuantumSimulator.swap.apply(g.index1, g.index2))
+    case g: CSWAP => applyGateGroup(iterator, state, QuantumSimulator.cswap.apply(g.controlIndex, g.index1, g.index2))
+    case g: ISWAP => applyGateGroup(iterator, state, QuantumSimulator.iswap.apply(g.index1, g.index2))
+    case g: PSWAP => applyGateGroup(iterator, state, QuantumSimulator.pswap.apply(g.phi, g.index1, g.index2))
+    case g: CPHASE00 =>
+      applyGateGroup(iterator, state, QuantumSimulator.cphase00.apply(g.phi, g.controlIndex, g.targetIndex))
+    case g: CPHASE01 =>
+      applyGateGroup(iterator, state, QuantumSimulator.cphase01.apply(g.phi, g.controlIndex, g.targetIndex))
+    case control: ControlGate => applyControlGate(iterator, state, control)
+    case target: TargetGate => applyTargetGate(iterator, state, target.index, target.matrix)
+    case _ => ???
+  }
 
-          val currentRow = matrix(Integer.parseInt(slice.mkString(""), 2))
+  def applyGateGroup(iterator: ParIterable[Int], state: Vector, gg: GateGroup): Unit = {
+    gg.gates.foreach(g => applyGate(iterator, state, g))
+  }
 
-          offset += n
+  def applyTargetGate(iterator: ParIterable[Int], state: Vector, index: Int, matrix: Matrix): Unit = {
+    iterator.foreach(i => {
+      val clearedBit = nthCleared(i, index)
+      val oneIndex = 2 * clearedBit
+      val zeroIndex = 2 * (clearedBit | (1 << index))
 
-          if (row.isEmpty) currentRow
-          else VectorWrapper.tensorProduct(row, currentRow)
-        })
+      val zeroState = (state(oneIndex), state(oneIndex + 1))
+      val oneState = (state(zeroIndex), state(zeroIndex + 1))
 
-        for (j <- 0 until (finalRow.length / 2)) {
-          val (r, im) = Complex.product(
-            finalRow(2 * j), finalRow(2 * j + 1),
-            currentState(2 * j), currentState(2 * j + 1))
+      val newZeroState = Complex.sum(
+        Complex.product(matrix(0)(0), matrix(0)(1), zeroState._1, zeroState._2),
+        Complex.product(matrix(0)(2), matrix(0)(3), oneState._1, oneState._2)
+      )
 
-          finalState(2 * i) += r
-          finalState(2 * i + 1) += im
-        }
-      })
+      val newOneState = Complex.sum(
+        Complex.product(matrix(1)(0), matrix(1)(1), zeroState._1, zeroState._2),
+        Complex.product(matrix(1)(2), matrix(1)(3), oneState._1, oneState._2)
+      )
 
-      currentState = finalState
+      state(oneIndex) = newZeroState._1
+      state(oneIndex + 1) = newZeroState._2
+
+      state(zeroIndex) = newOneState._1
+      state(zeroIndex + 1) = newOneState._2
     })
-
-    if (shouldMeasure) measure(circuit.register, currentState)
-    else Superposition(circuit.register, currentState)
   }
 
-  def runAndMeasure(circuit: Circuit,
-                    trialsCount: Int): ExperimentResult = {
-    val experiments = ParVector.fill(trialsCount)(0)
+  def applyControlGate(iterator: ParIterable[Int], state: Vector, control: ControlGate): Unit = {
+    val m = control.finalTarget.matrix
+    val targetIndex = control.finalTarget.index
 
-    taskSupport.foreach(experiments.tasksupport = _)
+    iterator.foreach(i => {
+      val clearedBit = nthCleared(i, targetIndex)
+      val zeroIndex = 2 * clearedBit
+      val oneIndex = 2 * (clearedBit | (1 << targetIndex))
 
-    ExperimentResult(experiments.map(_ => super.runAndMeasure(circuit)).toList)
+      val zeroControlsTrigger = control.controlIndexes.forall(idx => ((1 << idx) & (zeroIndex / 2)) > 0)
+      val oneControlsTrigger = control.controlIndexes.forall(idx => ((1 << idx) & (oneIndex / 2)) > 0)
+
+      if (zeroControlsTrigger || oneControlsTrigger) {
+        val zeroState = (state(zeroIndex), state(zeroIndex + 1))
+        val oneState = (state(oneIndex), state(oneIndex + 1))
+
+        if (zeroControlsTrigger) {
+          val newZeroState = Complex.sum(
+            Complex.product(m(0)(0), m(0)(1), zeroState._1, zeroState._2),
+            Complex.product(m(0)(2), m(0)(3), oneState._1, oneState._2)
+          )
+
+          state(zeroIndex) = newZeroState._1
+          state(zeroIndex + 1) = newZeroState._2
+        }
+
+        if (oneControlsTrigger) {
+          val newOneState = Complex.sum(
+            Complex.product(m(1)(0), m(1)(1), zeroState._1, zeroState._2),
+            Complex.product(m(1)(2), m(1)(3), oneState._1, oneState._2)
+          )
+
+          state(oneIndex) = newOneState._1
+          state(oneIndex + 1) = newOneState._2
+        }
+      }
+    })
   }
 
-  def padGate(gate: Gate, qubitCount: Int): Seq[Gate] = {
-    val padGate = scotty.quantum.gate.StandardGate.I
-    val topPad = (0 until gate.indexes.sortWith(_ < _)(0)).map(i => padGate(i))
-    val bottomPad = (gate.indexes.sortWith(_ > _)(0) until qubitCount - 1).map(i => padGate(i))
+  def nthCleared(n: Int, target: Int): Int = {
+    val mask = (1 << target) - 1
 
-    (topPad :+ gate) ++ bottomPad
+    (n & mask) | ((n & ~mask) << 1)
+  }
+
+  def runExperiment(circuit: Circuit, trialsCount: Int): ExperimentResult = {
+    ExperimentResult((0 until trialsCount).map(_ => run(circuit) match {
+      case sp: Superposition => measure(circuit.register, sp.state)
+      case c: Collapsed => c
+    }).toList)
+  }
+
+  def parIndices(stateLength: Int): ParArray[Int] = {
+    val is = ParArray.iterate(0, stateLength / 2)(i => i + 1)
+
+    taskSupport.foreach(is.tasksupport = _)
+
+    is
   }
 
   def registerToState(register: QubitRegister): Vector = {
     if (register.values.isEmpty) Array()
-    else {
+    else if (register.values.forall(_ == Qubit.zero)) {
+      val state = Array.fill(2 * Math.pow(2, register.size).toInt)(0f)
+      state(0) = 1f
+      state
+    }
+    else if (register.values.forall(_ == Qubit.one)) {
+      val state = Array.fill(2 * Math.pow(2, register.size).toInt)(0f)
+      state(state.length - 2) = 1f
+      state
+    } else {
       register.values
         .map(q => Array(q.a.r, q.a.i, q.b.r, q.b.i))
-        .reduceLeft((state, q) => VectorWrapper.tensorProduct(state, q))
+        .reduceLeft((state, q) => VectorWrapper.tensorProduct(state, q, taskSupport))
     }
   }
 
   def tensorProduct(register: QubitRegister, sp1: Superposition, sp2: Superposition): Superposition =
-    Superposition(register, VectorWrapper.tensorProduct(sp1.vector, sp2.vector))
-
-  def product(register: QubitRegister, gate: Gate, sp: Superposition): Superposition =
-    Superposition(register, MatrixWrapper.product(gate.matrix(this), sp.vector))
+    Superposition(register, VectorWrapper.tensorProduct(sp1.state, sp2.state, taskSupport))
 
   def densityMatrix(vector: Vector): Matrix = VectorWrapper.ketBraOuterProduct(vector)
 
-  def isUnitary(g: Gate): Boolean = MatrixWrapper.isUnitary(g.matrix(this))
-
-  def gateMatrix(gate: Gate): Matrix = gate match {
-    case swap: SwapGate => swapMatrix(swap)
-    case g: CPHASE00 => cphase0Matrix(g, g.phi, Zero())
-    case g: CPHASE01 => cphase0Matrix(g, g.phi, One())
-    case control: ControlGate => controlMatrix(control)
-    case dagger: Dagger => MatrixWrapper.conjugateTranspose(dagger.target.matrix(this))
-    case target: TargetGate => target.customMatrix.getOrElse(targetMatrix(target))
-  }
-
-  def cphase0Matrix(gate: ControlGate, phi: Double, targetBit: Bit): Matrix = {
-    val minIndex = gate.indexes.min
-    val controlIndex = gate.controlIndex - minIndex
-    val targetIndex = gate.targetIndexes(0) - minIndex
-
-    val qubitCount = totalQubitCount(gate)
-
-    val finalMatrix = MatrixWrapper.identity(Math.pow(2, qubitCount).toInt)
-
-    for (i <- finalMatrix.indices) {
-      val binaries = MathUtils.toPaddedBinary(i, qubitCount).toArray
-
-      if (binaries(controlIndex).isInstanceOf[Zero] && binaries(targetIndex) == targetBit) {
-        val c = Complex.e(phi)
-        finalMatrix(i)(2 * i) = c.r
-        finalMatrix(i)(2 * i + 1) = c.i
-      }
-    }
-
-    finalMatrix
-  }
-
-  /**
-    * Generates a matrix based on the top-level control gate and nested control and target child gates.
-    *
-    * First, it generates an array of arrays. Each array is a binary representation of the decimal state vector index.
-    * For example, a vector of length 2 can be represented with the following matrix:
-    *
-    * Array(
-    *   Array(0, 0), Array(0, 1),
-    *   Array(1, 0), Array(1, 1)
-    * )
-    *
-    * Second, for each top-level array we check if control bits are triggered and if they are then we apply the final
-    * target gate to the target qubits.
-    *
-    * @param gate control gate that this method generates a matrix for
-    * @return final matrix representing the control gate acting on all involved qubits
-    */
-  def controlMatrix(gate: ControlGate): Matrix = {
-    val minIndex = gate.indexes.min
-
-    val normalizedControlIndexes = gate.controlIndexes.map(_ - minIndex)
-    val normalizedTargetIndexes = gate.targetIndexes.map(_ - minIndex)
-
-    val qubitCount = totalQubitCount(gate)
-    val stateCount = Math.pow(2, qubitCount).toInt
-
-    val finalMatrix = Array.ofDim[Vector](stateCount)
-
-    for (i <- 0 until stateCount) {
-      val binaries = MathUtils.toPaddedBinary(i, qubitCount).toArray
-
-      val allControlsTrigger = binaries.zipWithIndex.forall(b => {
-        if (normalizedControlIndexes.contains(b._2))
-          if (b._1.isInstanceOf[One]) true else false
-        else true
-      })
-
-      finalMatrix(i) = if (allControlsTrigger) {
-        val ntis = normalizedTargetIndexes
-        val filledNtis = if (ntis.length > 1) ntis(0) to ntis.last else ntis
-
-        val targetRegister = QubitRegister(filledNtis.map(i => Qubit(binaries(i))): _*)
-
-        val gateTargetProduct = MatrixWrapper.product(
-          gate.finalTarget.matrix(this),
-          registerToState(targetRegister))
-
-        type LabeledVector = (Vector, Option[String])
-
-        binaries
-          .zipWithIndex
-          .map {
-            case (_, index) if filledNtis.contains(index) => gateTargetProduct -> Some("target")
-            case (binary, _) => binary.toFloatArray -> None
-          }
-          .foldLeft(Seq[LabeledVector]()) {
-            case (acc, item) if item._2.contains("target") && acc.exists(_._2.contains("target")) => acc
-            case (acc, item) => acc :+ item
-          }
-          .map(_._1)
-          .reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2))
-      } else {
-        binaries
-          .map(b => b.toFloatArray)
-          .reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2))
-      }
-    }
-
-    finalMatrix
-  }
-
-  def totalQubitCount(gate: Gate): Int = {
-    val sortedControlIndexes = gate.indexes.sorted
-
-    val gapQubitCount = (sortedControlIndexes.tail, sortedControlIndexes).zipped.map((a, b) => a - b - 1).sum
-
-    gate.qubitCount + gapQubitCount
-  }
-
-  def targetMatrix(targetGate: Gate): Matrix =
-    QuantumSimulator.singleQubitGateGens(targetGate.name).apply(targetGate.params)
-
-  def swapMatrix(gate: SwapGate): Matrix = {
-    val equal = (a: Vector, b: Vector) => util.Arrays.equals(a, b)
-    val notEqual = (a: Vector, b: Vector) => !equal(a, b)
-
-    def phase(s: Vector) = {
-      if (equal(s, One.floatValue)) gate match {
-        case _: ISWAP => Array(Complex(0), Complex(0, 1)).toFloat
-        case g: PSWAP => Array(Complex(0), Complex(Math.cos(g.phi), Math.sin(g.phi))).toFloat
-        case _ => s
-      } else s
-    }
-
-    val minIndex = gate.indexes.min
-    val i1 = gate.index1 - minIndex
-    val i2 = gate.index2 - minIndex
-
-    val qubitCount = gate.qubitCount + Math.abs(i1 - i2) - 1
-
-    val result = (0 until Math.pow(2, qubitCount).toInt).map(stateIndex => {
-      val binaries = MathUtils.toPaddedBinary(stateIndex, qubitCount).map(_.toFloatArray).toArray
-      val s1 = binaries(i1)
-      val s2 = binaries(i2)
-
-      if (notEqual(s1, s2) || notEqual(s1, Zero.floatValue) && notEqual(s2, One.floatValue)) {
-        val i1Val = phase(s1)
-
-        binaries(i1) = phase(s2)
-        binaries(i2) = i1Val
-      }
-
-      binaries.reduce((s1, s2) => VectorWrapper.tensorProduct(s1, s2))
-    }).toArray
-
-    result
-  }
+  def isUnitary(g: TargetGate): Boolean = MatrixWrapper.isUnitary(g.matrix)
 }
 
 object QuantumSimulator {
-  import scotty.simulator.gate._
-
-  val singleQubitGateGens: Map[String, GateGen] = Map(
-    "H" -> H.matrix,
-    "X" -> X.matrix,
-    "Y" -> Y.matrix,
-    "Z" -> Z.matrix,
-    "I" -> I.matrix,
-    "S" -> S.matrix,
-    "T" -> T.matrix,
-    "PHASE" -> PHASE.matrix,
-    "PHASE0" -> PHASE0.matrix,
-    "RX" -> RX.matrix,
-    "RY" -> RY.matrix,
-    "RZ" -> RZ.matrix
-  )
+  val swap = (i0: Int, i1: Int) => GateGroup(CNOT(i0, i1), CNOT(i1, i0), CNOT(i0, i1))
+  val cswap = (i0: Int, i1: Int, i2: Int) => GateGroup(CNOT(i2, i1), CCNOT(i0, i1, i2), CNOT(i2, i1))
+  val iswap = (i0: Int, i1: Int) => GateGroup(SWAP(i0, i1), S(i0), S(i1), CPHASE(Math.PI / 2, i0, i1))
+  val pswap = (phi: Double, i0: Int, i1: Int) => GateGroup(SWAP(i0, i1), PHASE(phi, i0), PHASE(phi, i1), CPHASE(phi, i0, i1))
+  val cphase00 = (phi: Double, i0: Int, i1: Int) => GateGroup(X(i0), CPHASE10(phi, i0, i1), X(i0))
+  val cphase01 = (phi: Double, i0: Int, i1: Int) => GateGroup(X(i0), CPHASE(phi, i0, i1), X(i0))
 
   def apply(): QuantumSimulator = QuantumSimulator(None, new Random())
 

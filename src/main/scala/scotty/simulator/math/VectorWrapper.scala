@@ -1,7 +1,9 @@
 package scotty.simulator.math
 
 import scotty.quantum.math.Complex
+import scala.collection.parallel.immutable.ParVector
 import scotty.quantum.QuantumContext.{Matrix, Vector}
+import scala.collection.parallel.TaskSupport
 
 /**
   * The <code>Vector</code> object contains pure vector methods from linear algebra.
@@ -17,19 +19,22 @@ object VectorWrapper {
     * @param v2 Array of doubles.
     * @return Array of doubles.
     */
-  def tensorProduct(v1: Vector, v2: Vector): Vector = {
+  def tensorProduct(v1: Vector, v2: Vector, taskSupport: Option[TaskSupport]): Vector = {
     val v1Length = v1.length / 2
     val v2Length = v2.length / 2
     val newData = Array.fill(2 * v1Length * v2Length)(0f)
+    val runs = ParVector.iterate(0, v1.length / 2)(i => i + 1)
 
-    for (c1 <- 0 until v1Length) {
-      for (c2 <- 0 until v2Length) {
+    taskSupport.foreach(runs.tasksupport = _)
+
+    runs.foreach(c1 => {
+      for (c2 <- 0 until (v2.length / 2)) {
         val (r, i) = Complex.product(v1(2 * c1), v1(2 * c1 + 1), v2(2 * c2), v2(2 * c2 + 1))
 
         newData(2 * c1 * v2Length + 2 * c2) = r
         newData(2 * c1 * v2Length + 2 * c2 + 1) = i
       }
-    }
+    })
 
     newData
   }

@@ -4,7 +4,7 @@ import scotty.ErrorMessage
 import scotty.quantum.BlochSphereReader.{BlochSphereData, Coordinates}
 import scotty.quantum.QubitProbabilityReader.QubitData
 import scotty.quantum.StateProbabilityReader.StateData
-import scotty.quantum.math.{Complex, MathUtils}
+import scotty.quantum.math.Complex
 import scotty.quantum.math.MathUtils._
 
 sealed trait StateReader[T] {
@@ -15,47 +15,41 @@ sealed trait StateReader[T] {
   def read: Seq[T]
 }
 
-case class StateProbabilityReader(state: State) extends StateReader[StateData] {
+case class StateProbabilityReader(state: State)(implicit ctx: QuantumContext) extends StateReader[StateData] {
   def read: Seq[StateData] = state match {
-    case sp: Superposition => sp.vector
-      .grouped(2)
-      .map(p => Complex(p(0), p(1)))
-      .zipWithIndex.map(pair => StateData(
-        MathUtils.toPaddedBinary(pair._2, state.qubitCount),
-        pair._1,
-        Math.pow(Complex.abs(pair._1), 2)
-      )).toSeq
-    case c: Collapsed => Seq(StateData(c.toBinaryRegister.values, Complex(1), 1))
+    case sp: Superposition => ctx.probabilities(sp)
+    case c: Collapsed => Seq(StateData(c.toBinary, Complex(1), 1))
   }
 
-  override def toString: String = read
-    .flatMap(p => {
-      val prob = p.probability.toPercent
+  override def toString: String = read.flatMap(p => {
+    val prob = p.probability.toPercent
 
-      if (prob == 0) None
-      else Some(
-        s"${p.state.map(_.toHumanString).mkString("")}: " +
-          s"Amplitude: ${Complex.toString(p.amplitude)}, " +
-          f"P: $prob%1.2f%%"
-      )
-    })
-    .mkString("\n")
+    if (prob == 0) None
+    else Some(
+      s"${p.state}: Amplitude: ${Complex.toString(p.amplitude)}, " + f"P: $prob%1.2f%%"
+    )
+  }).mkString("\n")
 }
 
 object StateProbabilityReader {
-  case class StateData(state: Seq[Bit], amplitude: Complex, probability: Double)
+  case class StateData(state: String, amplitude: Complex, probability: Double)
 }
 
-case class QubitProbabilityReader(register: Option[QubitRegister],
-                                  state: State) extends StateReader[QubitData] {
+case class QubitProbabilityReader(register: Option[QubitRegister], state: State)
+                                 (implicit ctx: QuantumContext) extends StateReader[QubitData] {
   def read: Seq[QubitData] = {
     val stateData = StateProbabilityReader(state).read
+    val offset = state.qubitCount - 1
 
     (0 until state.qubitCount).map(index => {
       QubitData(
         register.flatMap(_.values(index).label),
         index,
-        stateData.foldLeft(0d)((sum, data) => if (data.state(index).isInstanceOf[One]) sum + data.probability else sum))
+        stateData.foldLeft(0d)((sum, data) =>
+          if (data.state.toCharArray()(offset - index) == '1') sum + data.probability
+          else sum
+        )
+      )
     })
   }
 
@@ -65,9 +59,10 @@ case class QubitProbabilityReader(register: Option[QubitRegister],
 }
 
 object QubitProbabilityReader {
-  def apply(register: QubitRegister, state: State): QubitProbabilityReader = this(Some(register), state)
+  def apply(register: QubitRegister, state: State)(implicit ctx: QuantumContext): QubitProbabilityReader =
+    this(Some(register), state)
 
-  def apply(state: State): QubitProbabilityReader = this(None, state)
+  def apply(state: State)(implicit ctx: QuantumContext): QubitProbabilityReader = this(None, state)
 
   case class QubitData(label: Option[String], index: Int, probabilityOfOne: Double) {
     val probabilityOfZero: Double = 1 - probabilityOfOne
@@ -88,7 +83,7 @@ case class BlochSphereReader(state: State)(implicit ctx: QuantumContext) extends
 
   def read: Seq[BlochSphereData] = state match {
     case sp: Superposition =>
-      val densityMatrix = ctx.densityMatrix(sp.vector)
+      val densityMatrix = ctx.densityMatrix(sp.state)
 
       val x = 2 * densityMatrix(0)(2)
       val y = 2 * densityMatrix(1)(1)
@@ -98,16 +93,16 @@ case class BlochSphereReader(state: State)(implicit ctx: QuantumContext) extends
       val theta = Math.acos(z)
       val phi = if (theta == 0 || theta == Math.PI) 0 else Math.acos(x / Math.sin(theta))
 
-      Seq(BlochSphereData(phi, theta, Coordinates(x, y, z)))
+      Array(BlochSphereData(phi, theta, Coordinates(x, y, z)))
     case c: Collapsed =>
       val x = 0
       val y = 0
-      val z = if (c.toBinaryRegister.values(0).isInstanceOf[Zero]) 1 else -1
+      val z = if (c.toBitRegister.values(0).isInstanceOf[Zero]) 1 else -1
 
-      val theta = if (c.toBinaryRegister.values(0).isInstanceOf[Zero]) 0 else Math.PI
+      val theta = if (c.toBitRegister.values(0).isInstanceOf[Zero]) 0 else Math.PI
       val phi = 0
 
-      Seq(BlochSphereData(phi, theta, Coordinates(x, y, z)))
+      Array(BlochSphereData(phi, theta, Coordinates(x, y, z)))
   }
 
   override def toString: String = {

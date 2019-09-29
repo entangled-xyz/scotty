@@ -18,4 +18,4 @@ sealed trait Register[T <: Labeled[String]] {
 
 case class QubitRegister(values: Qubit*) extends Register[Qubit]
 
-case class BinaryRegister(values: Bit*) extends Register[Bit]
+case class BitRegister(values: Bit*) extends Register[Bit]

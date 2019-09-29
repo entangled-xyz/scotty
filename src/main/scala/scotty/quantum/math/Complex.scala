@@ -34,6 +34,8 @@ object Complex {
     r1 * i2 + i1 * r2
   )
 
+  def sum(c1: (Float, Float), c2: (Float, Float)): (Float, Float) = sum(c1._1, c1._2, c2._1, c2._2)
+
   def sum(r1: Float, i1: Float, r2: Float, i2: Float): (Float, Float) = (
     r1 +r2,
     i1 + i2
@@ -42,6 +44,8 @@ object Complex {
   def e(phi: Double): Complex = Complex(Math.cos(phi), Math.sin(phi))
 
   def abs(r: Float, i: Float): Float = Math.sqrt(Math.pow(r, 2) + Math.pow(i, 2)).toFloat
+
+  def abs(c: (Float, Float)): Float = abs(c._1, c._2)
 
   def abs(value: Complex): Float = abs(value.r, value.i)
 
