@@ -27,7 +27,7 @@ trait TargetGate extends Gate {
 
   def matrix: Matrix = matrixGen.apply(params)
 
-  override def toString: String = matrix.toList.map(_.toList.mkString(" ")).mkString("\n")
+  def toHumanString: String = matrix.toList.map(_.toList.mkString(" ")).mkString("\n")
 }
 
 trait ControlGate extends Gate {

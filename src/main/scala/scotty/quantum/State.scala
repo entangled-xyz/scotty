@@ -18,7 +18,7 @@ case class Superposition(register: QubitRegister, state: Vector) extends State {
     if (state.length == 0) sp
     else ctx.tensorProduct(register, this, sp)
 
-  override def toString: String = s"Superposition(${state.toList})"
+  def toHumanString: String = s"Superposition(${state.toList})"
 }
 
 case class Collapsed(register: QubitRegister, index: Int) extends State {
