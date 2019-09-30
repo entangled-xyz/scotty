@@ -19,9 +19,9 @@ case class Qubit(a: Complex, b: Complex, label: Option[String]) extends Labeled[
 object Qubit {
   def zero(label: Option[String]): Qubit = Qubit(Complex(1), Complex(0), label)
 
-  def zero(label: String): Qubit = one(Some(label))
+  def zero(label: String): Qubit = zero(Some(label))
 
-  def zero: Qubit = one(None)
+  def zero: Qubit = zero(None)
   
   def one(label: Option[String]): Qubit = Qubit(Complex(0), Complex(1), label)
 
