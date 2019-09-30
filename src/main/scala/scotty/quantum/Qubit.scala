@@ -7,7 +7,7 @@ import scotty.{ErrorMessage, Labeled}
 case class Qubit(a: Complex, b: Complex, label: Option[String]) extends Labeled[String] {
   require(Qubit.areAmplitudesValid(this), ErrorMessage.IncorrectQubitAmplitudes)
 
-  def toBasisState: Vector = Array(a.r, a.i, b.r, b.i)
+  def toVector: Vector = Array(a.r, a.i, b.r, b.i)
 
   def toHumanString: String = s"Qubit(${a.toString}, ${b.toString})"
 
@@ -17,17 +17,23 @@ case class Qubit(a: Complex, b: Complex, label: Option[String]) extends Labeled[
 }
 
 object Qubit {
-  def one(label: String): Qubit = Qubit(Complex(0), Complex(1), Some(label))
+  def zero(label: Option[String]): Qubit = Qubit(Complex(1), Complex(0), label)
 
-  def one: Qubit = Qubit(Complex(0), Complex(1), None)
+  def zero(label: String): Qubit = zero(Some(label))
 
-  def zero(label: String): Qubit = Qubit(Complex(1), Complex(0), Some(label))
+  def zero: Qubit = zero(None)
+  
+  def one(label: Option[String]): Qubit = Qubit(Complex(0), Complex(1), label)
 
-  def zero: Qubit = Qubit(Complex(1), Complex(0), None)
+  def one(label: String): Qubit = one(Some(label))
 
-  def fiftyFifty(label: String): Qubit = this(Complex(1 / Math.sqrt(2.0)), Complex(1 / Math.sqrt(2.0)), Some(label))
+  def one: Qubit = one(None)
 
-  def fiftyFifty: Qubit = this(Complex(1 / Math.sqrt(2.0)), Complex(1 / Math.sqrt(2.0)), None)
+  def fiftyFifty(label: Option[String]): Qubit = this(Complex(1 / Math.sqrt(2.0)), Complex(1 / Math.sqrt(2.0)), label)
+
+  def fiftyFifty(label: String): Qubit = fiftyFifty(Some(label))
+
+  def fiftyFifty: Qubit = fiftyFifty(None)
 
   def areAmplitudesValid(q: Qubit): Boolean = MathUtils.isProbabilityValid(Complex.abs(q.a), Complex.abs(q.b))
 

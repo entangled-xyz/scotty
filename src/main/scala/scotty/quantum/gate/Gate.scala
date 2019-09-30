@@ -27,7 +27,7 @@ trait TargetGate extends Gate {
 
   def matrix: Matrix = matrixGen.apply(params)
 
-  override def toString: String = matrix.toList.map(_.toList.mkString(" ")).mkString("\n")
+  def toHumanString: String = matrix.toList.map(_.toList.mkString(" ")).mkString("\n")
 }
 
 trait ControlGate extends Gate {
@@ -68,7 +68,7 @@ case class Dagger(target: TargetGate) extends TargetGate {
   val matrixGen: MatrixGen = _ => MatrixWrapper.conjugateTranspose(target.matrix)
 }
 
-case class GateGroup(gates: Gate*) extends Gate {
+case class CompositeGate(gates: Gate*) extends Gate {
   val indices: Seq[Int] = gates.flatMap(g => g.indices).distinct
 }
 

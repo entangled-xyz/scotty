@@ -3,7 +3,7 @@ package scotty.simulator
 import org.scalatest.FlatSpec
 import scotty.TestHelpers
 import scotty.quantum._
-import scotty.quantum.gate.{DefGate, GateGroup}
+import scotty.quantum.gate.{DefGate, CompositeGate}
 import scotty.quantum.math.Complex
 
 class DefGateSpec extends FlatSpec with TestHelpers {

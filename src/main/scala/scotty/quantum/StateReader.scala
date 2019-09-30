@@ -21,7 +21,7 @@ case class StateProbabilityReader(state: State)(implicit ctx: QuantumContext) ex
     case c: Collapsed => Seq(StateData(c.toBinary, Complex(1), 1))
   }
 
-  override def toString: String = read.flatMap(p => {
+  def toHumanString: String = read.flatMap(p => {
     val prob = p.probability.toPercent
 
     if (prob == 0) None
@@ -55,7 +55,7 @@ case class QubitProbabilityReader(register: Option[QubitRegister], state: State)
 
   def read(label: String): Option[QubitData] = read.find(q => q.label.contains(label))
 
-  override def toString: String = read.map(_.toString).mkString("\n")
+  def toHumanString: String = read.map(_.toString).mkString("\n")
 }
 
 object QubitProbabilityReader {
@@ -67,7 +67,7 @@ object QubitProbabilityReader {
   case class QubitData(label: Option[String], index: Int, probabilityOfOne: Double) {
     val probabilityOfZero: Double = 1 - probabilityOfOne
 
-    override def toString: String = {
+    def toHumanString: String = {
       val probZero = probabilityOfZero.toPercent
       val probOne = probabilityOfOne.toPercent
 
@@ -105,7 +105,7 @@ case class BlochSphereReader(state: State)(implicit ctx: QuantumContext) extends
       Array(BlochSphereData(phi, theta, Coordinates(x, y, z)))
   }
 
-  override def toString: String = {
+  def toHumanString: String = {
     val state = read(0)
     val phi = Math.toDegrees(state.phi)
     val theta = Math.toDegrees(state.theta)

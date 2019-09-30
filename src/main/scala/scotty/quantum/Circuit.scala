@@ -1,7 +1,7 @@
 package scotty.quantum
 
 import scotty.ErrorMessage
-import scotty.quantum.gate.{GateGroup, Gate}
+import scotty.quantum.gate.{CompositeGate, Gate}
 
 case class Circuit(register: QubitRegister, ops: Op*) {
   val indices: Range = 0 until register.size
@@ -10,10 +10,9 @@ case class Circuit(register: QubitRegister, ops: Op*) {
 
   def combine(newOps: Op*): Circuit = Circuit(ops ++ newOps: _*)
 
-  def withRegister(newRegister: String): Circuit =
-    Circuit(QubitRegister(newRegister.toCharArray.map(c => Qubit(Bit(c.asDigit))): _*), ops: _*)
+  def withRegister(newRegister: String): Circuit = Circuit(QubitRegister(newRegister), ops: _*)
 
-  def withRegister(newRegister: Int): Circuit = withRegister(newRegister.toBinaryString)
+  def withRegister(newRegister: Int): Circuit = withRegister(QubitRegister(newRegister))
 
   def withRegister(newRegister: QubitRegister): Circuit = Circuit(newRegister, ops: _*)
 
@@ -22,7 +21,7 @@ case class Circuit(register: QubitRegister, ops: Op*) {
   def isValid: Boolean = register.size >= Circuit.qubitCountFromOps(ops)
 
   def gates: Seq[Gate] = ops.collect {
-    case cc: GateGroup => cc.gates
+    case cg: CompositeGate => cg.gates
     case g: Gate => Seq(g)
   }.flatten
 

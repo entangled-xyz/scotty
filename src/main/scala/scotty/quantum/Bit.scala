@@ -1,5 +1,6 @@
 package scotty.quantum
 
+import scotty.quantum.QuantumContext.Vector
 import scotty.quantum.math.Complex
 import scotty.{ErrorMessage, Labeled}
 
@@ -9,7 +10,7 @@ sealed trait Bit extends Labeled[String] {
     case _: Zero => Array(Complex(1), Complex(0))
   }
 
-  def toFloatArray: Array[Float] = this match {
+  def toVector: Vector = this match {
     case _: One => Array(0f, 0f, 1f, 0f)
     case _: Zero => Array(1f, 0f, 0f, 0f)
   }
@@ -40,10 +41,11 @@ object Bit {
     case _ => throw new IllegalArgumentException(ErrorMessage.IntToBit)
   }
 
-  def apply(value: Array[Complex]): Bit =
-    if (value.toSeq == Seq(Complex(1), Complex(0))) Zero()
-    else if (value.toSeq == Seq(Complex(0), Complex(1))) One()
-    else throw new IllegalArgumentException(ErrorMessage.VectorToBit)
+  def apply(value: Array[Complex]): Bit = value.toSeq match {
+    case Seq(Complex(1, 0), Complex(0, 0)) => Zero()
+    case Seq(Complex(0, 0), Complex(1, 0)) => One()
+    case _ => throw new IllegalArgumentException(ErrorMessage.VectorToBit)
+  }
 }
 
 object One {

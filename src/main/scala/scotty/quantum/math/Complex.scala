@@ -3,7 +3,7 @@ package scotty.quantum.math
 import scotty.quantum.QuantumContext.{Matrix, Vector}
 
 case class Complex(r: Float, i: Float) {
-  override def toString: String = Complex.toString(this)
+  def toHumanString: String = Complex.toString(this)
 }
 
 object Complex {
