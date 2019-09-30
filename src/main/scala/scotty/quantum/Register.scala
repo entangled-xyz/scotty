@@ -16,6 +16,12 @@ sealed trait Register[T <: Labeled[String]] {
   require(areLabelsUnique, ErrorMessage.RegisterLabelsNotUnique)
 }
 
+case class BitRegister(values: Bit*) extends Register[Bit]
+
 case class QubitRegister(values: Qubit*) extends Register[Qubit]
 
-case class BitRegister(values: Bit*) extends Register[Bit]
+object QubitRegister {
+  def apply(r: String): QubitRegister = this(r.toCharArray.map(c => Qubit(Bit(c.asDigit))): _*)
+
+  def apply(r: Int): QubitRegister = this(r.toBinaryString)
+}
