@@ -30,8 +30,10 @@ val circuit = entangle(1, 2)
   .combine(CNOT(1, 2), Controlled(0, Z(2)))
   .withRegister(register)
 
+implicit val sim = QuantumSimulator()
+
 assert(
-  QubitProbabilityReader(register, QuantumSimulator().run(circuit))
+  QubitProbabilityReader(register, sim.run(circuit))
     .read("there")
     .fold(false)(_.probabilityOfOne ~= msg.probabilityOfOne))
 ```
